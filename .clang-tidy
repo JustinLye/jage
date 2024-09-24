@@ -28,7 +28,6 @@ CompileFlags:
   Remove:
   - '-std=c++23'
   - '-std=gnu++23'
-  - '-fmodules-ts'
   Add:
   - '-std=c++2b'
 ...

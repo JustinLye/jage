@@ -5,3 +5,7 @@ add_custom_target(
   run_test_unit_scheduled_action
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_unit_scheduled_action
   DEPENDS test_unit_scheduled_action)
+
+add_custom_target(run_test_unit_all DEPENDS run_test_unit_scheduled_action)
+
+add_subdirectory(mp)

@@ -1,49 +1,52 @@
 #pragma once
 
+#include <jage/mp/type_of.hpp>
+#include <jage/no_op.hpp>
+#include <jage/scheduled_action_status.hpp>
+
 #include <chrono>
-#include <cstdint>
 #include <utility>
 
 namespace jage {
-class scheduled_action {
+template <class TAction = no_op> class scheduled_action {
+  scheduled_action_status scheduled_action_status_ =
+      scheduled_action_status::active;
   std::chrono::nanoseconds nanoseconds_to_wait_{};
+  TAction action_;
 
 public:
-  enum class status : std::uint8_t {
-    paused,
-    active,
-    canceled,
-    complete,
-  };
-
   scheduled_action() = default;
-  scheduled_action(const auto nanoseconds_to_wait)
+  scheduled_action(const std::chrono::nanoseconds nanoseconds_to_wait)
       : nanoseconds_to_wait_(nanoseconds_to_wait) {}
+  scheduled_action(const std::chrono::nanoseconds nanoseconds_to_wait,
+                   TAction &&action)
+      : nanoseconds_to_wait_(nanoseconds_to_wait), action_(action) {}
 
-  [[gnu::pure, nodiscard]] auto status() const noexcept -> const status & {
-    return status_;
+  [[gnu::pure, nodiscard]] auto
+  status() const noexcept -> const scheduled_action_status & {
+    return scheduled_action_status_;
   }
 
   auto pause() noexcept -> void {
-    if (status_ != status::canceled) {
-      status_ = status::paused;
+    if (scheduled_action_status_ != scheduled_action_status::canceled) {
+      scheduled_action_status_ = scheduled_action_status::paused;
     }
   }
 
   auto resume() noexcept -> void {
-    if (status_ != status::canceled) {
-      status_ = status::active;
+    if (scheduled_action_status_ != scheduled_action_status::canceled) {
+      scheduled_action_status_ = scheduled_action_status::active;
     }
   }
 
   auto cancel() noexcept -> void {
-    if (status_ != status::complete) {
-      status_ = status::canceled;
+    if (scheduled_action_status_ != scheduled_action_status::complete) {
+      scheduled_action_status_ = scheduled_action_status::canceled;
     }
   }
 
   auto reset(const auto nanoseconds_to_wait) noexcept -> void {
-    status_ = status::active;
+    scheduled_action_status_ = scheduled_action_status::active;
     nanoseconds_to_wait_ = nanoseconds_to_wait;
   }
 
@@ -53,6 +56,9 @@ public:
 
   auto update(const auto nanoseconds_elapsed) {
     using namespace std::chrono_literals;
+    if (is_complete()) {
+      return;
+    }
     if (nanoseconds_to_wait_ < nanoseconds_elapsed) {
       nanoseconds_to_wait_ = 0ns;
     } else {
@@ -60,23 +66,26 @@ public:
     }
 
     if (nanoseconds_to_wait_ == 0ns) {
-      status_ = status::complete;
+      scheduled_action_status_ = scheduled_action_status::complete;
+      action_();
     }
   }
 
   [[gnu::pure, nodiscard]] auto is_complete() const noexcept -> bool {
     switch (status()) {
-    case status::complete:
-    case status::canceled:
+    case scheduled_action_status::complete:
+    case scheduled_action_status::canceled:
       return true;
-    case status::paused:
-    case status::active:
+    case scheduled_action_status::paused:
+    case scheduled_action_status::active:
       return false;
     }
     std::unreachable();
   }
-
-private:
-  enum status status_ { status::active };
 };
+
+template <class TAction>
+scheduled_action(const std::chrono::nanoseconds,
+                 TAction &&) -> scheduled_action<TAction>;
+
 } // namespace jage
