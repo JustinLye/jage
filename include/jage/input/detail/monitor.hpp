@@ -62,7 +62,7 @@ public:
     if (auto callback_iter = std::find_if(std::begin(callbacks_),
                                           std::end(callbacks_), has_value);
         std::end(callbacks_) != callback_iter) {
-      UpdateStateFunct(driver_, state_);
+      UpdateStateFunct(driver_.get(), state_);
       InvokeCallbackFunct(callback_iter->value(), state_);
       std::for_each(std::next(callback_iter), std::end(callbacks_),
                     [&](callback_t &callback) -> void {

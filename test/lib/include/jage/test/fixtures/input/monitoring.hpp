@@ -2,22 +2,22 @@
 
 #include <jage/input/keyboard/monitor.hpp>
 
-#include <jage/test/mocks/input/callback_mock.hpp>
-#include <jage/test/mocks/input/keyboard_driver.hpp>
+#include <jage/test/mocks/input/callback.hpp>
+#include <jage/test/mocks/input/driver.hpp>
 
 #include <gtest/gtest.h>
 
 namespace jage::test::fixtures::input {
-struct input_keyboard_monitoring : testing::Test {
+
+template <class TMonitor, class TButton> struct monitoring : testing::Test {
 protected:
-  mocks::input::callback_mock mock_callback{};
-  mocks::input::keyboard_driver mock_driver{};
-  ::jage::input::keyboard::monitor<mocks::input::keyboard_driver> monitor{
-      mock_driver};
-  using keys = ::jage::input::keyboard::keys;
+  mocks::input::callback<TButton> mock_callback{};
+  mocks::input::driver<TButton> mock_driver{};
+  TMonitor monitor{mock_driver};
+  using button_type = TButton;
   static constexpr auto null_callback = [](const auto &) -> void {};
 
-  auto expect_call_to_is_down(const keys key,
+  auto expect_call_to_is_down(const TButton key,
                               const std::uint8_t times = 1U) -> void {
     if (times > 0) {
       EXPECT_CALL(mock_driver, is_down(key))
