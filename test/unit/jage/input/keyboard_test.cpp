@@ -3,9 +3,9 @@
 #include <jage/input/keyboard_state.hpp>
 #include <jage/input/keys.hpp>
 
+#include <test/unit/jage/input/mocks/callback_mock.hpp>
 #include <test/unit/jage/input/mocks/keyboard_driver.hpp>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <array>
@@ -13,13 +13,6 @@
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-
-namespace test::unit::jage::input::mocks {
-struct callback_mock {
-  MOCK_METHOD(void, call, (const ::jage::input::keyboard_state &), (const));
-};
-
-} // namespace test::unit::jage::input::mocks
 
 using namespace test::unit::jage::input;
 using namespace testing;
