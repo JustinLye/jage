@@ -22,12 +22,10 @@ class JAGERecipe(ConanFile):
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*"
     requires = (
-        "boost/1.86.0",
         "glad/0.1.36",
         "glfw/3.4",
         "glm/1.0.1",
         "gtest/1.15.0",
-        "spdlog/1.14.1",
         "range-v3/0.12.0"
     )
 

@@ -15,12 +15,10 @@ else()
   add_compile_options(-Wall -Werror -Wnrvo -Wextra -Wpedantic)
 endif()
 
-find_package(Boost)
 find_package(glad)
 find_package(glfw3)
 find_package(glm)
 find_package(GTest)
-find_package(spdlog)
 find_package(range-v3)
 
 add_library(jage_lib INTERFACE)
