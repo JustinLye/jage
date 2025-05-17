@@ -93,7 +93,8 @@ jobs:
         libxcb-present-dev \
         libxcb-composite0-dev \
         libxcb-ewmh-dev \
-        libxcb-res0-dev
+        libxcb-res0-dev \
+        libxcb-util-dev
         sudo apt-get update -y
         conan install .  -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: Configure CMake
