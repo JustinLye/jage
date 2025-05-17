@@ -3,3 +3,7 @@ compiler=gcc
 compiler.version=14
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
+
+[buildenv]
+CC=gcc
+CXX=g++
