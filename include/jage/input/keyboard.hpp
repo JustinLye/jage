@@ -16,6 +16,7 @@
 namespace jage::input {
 template <class TDriver, std::size_t CallbackCapacity = 2> class keyboard {
   using callback_t = std::optional<std::function<void(const keyboard_state &)>>;
+  std::reference_wrapper<TDriver> driver_;
   std::array<callback_t, CallbackCapacity> callbacks_{};
   std::bitset<static_cast<std::size_t>(std::to_underlying(keys::END) + 1)>
       monitored_keys_{};
@@ -24,7 +25,8 @@ template <class TDriver, std::size_t CallbackCapacity = 2> class keyboard {
   auto update_state_() -> void {
     for (auto index = 0UZ; index < std::size(monitored_keys_); ++index) {
       if (monitored_keys_[index]) {
-        if (const auto key = static_cast<keys>(index); TDriver::is_down(key)) {
+        if (const auto key = static_cast<keys>(index);
+            driver_.get().is_down(key)) {
           keyboard_state_[key].status = key_status::down;
         }
       }
@@ -51,7 +53,7 @@ public:
     auto deregister() -> void { callback_.get().reset(); }
   };
 
-  explicit keyboard(const TDriver &) noexcept {}
+  explicit keyboard(TDriver &driver) : driver_{driver} {}
 
   auto monitor_input(const auto... key) -> void {
     (monitor_input_(static_cast<keys>(key)), ...);

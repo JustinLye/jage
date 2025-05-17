@@ -17,7 +17,6 @@
 namespace test::unit::jage::input::mocks {
 struct callback_mock {
   MOCK_METHOD(void, call, (const ::jage::input::keyboard_state &), (const));
-  auto operator()(const auto &state) const -> void { call(state); }
 };
 
 } // namespace test::unit::jage::input::mocks
@@ -27,21 +26,19 @@ using namespace testing;
 
 struct input_keyboard_monitoring : Test {
 protected:
-  mocks::callback_mock mock_callback;
-  mocks::keyboard_driver &mock_driver{mocks::keyboard_driver::instance()};
+  mocks::callback_mock mock_callback{};
+  mocks::keyboard_driver mock_driver{};
   jage::input::keyboard<mocks::keyboard_driver> keyboard{mock_driver};
   static constexpr auto null_callback = [](const auto &) -> void {};
-
-  auto TearDown() -> void override { mock_driver.reset(); }
 
   auto expect_call_to_is_down(const jage::input::keys key,
                               const std::uint8_t times = 1U) -> void {
     if (times > 0) {
-      EXPECT_CALL(mock_driver, is_down_(key))
+      EXPECT_CALL(mock_driver, is_down(key))
           .Times(times)
           .WillRepeatedly(Return(true));
     } else {
-      EXPECT_CALL(mock_driver, is_down_(key)).Times(times);
+      EXPECT_CALL(mock_driver, is_down(key)).Times(times);
     }
   }
 
@@ -112,7 +109,7 @@ TEST_F(input_keyboard_monitoring, should_invoke_registered_callback) {
 
   keyboard.monitor_input(keys::spacebar);
   std::ignore = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
+      [&](const auto &state) -> void { mock_callback.call(state); });
   keyboard.poll();
 }
 
@@ -139,9 +136,9 @@ TEST_F(input_keyboard_monitoring, should_invoke_all_registered_callbacks) {
 
   keyboard.monitor_input(keys::spacebar);
   std::ignore = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
+      [&](const auto &state) -> void { mock_callback.call(state); });
   std::ignore = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
+      [&](const auto &state) -> void { mock_callback.call(state); });
   keyboard.poll();
 }
 
@@ -149,11 +146,13 @@ TEST_F(input_keyboard_monitoring,
        should_throw_on_attempt_to_register_too_many_callbacks) {
   using jage::input::keys;
   std::ignore = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
+      [&](const auto &state) -> void { mock_callback.call(state); });
   std::ignore = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
-  EXPECT_THROW(std::ignore = keyboard.register_callback(
-                   [&](const auto &state) -> void { mock_callback(state); }),
+      [&](const auto &state) -> void { mock_callback.call(state); });
+  EXPECT_THROW(std::ignore =
+                   keyboard.register_callback([&](const auto &state) -> void {
+                     mock_callback.call(state);
+                   }),
                std::runtime_error);
 }
 
@@ -164,7 +163,7 @@ TEST_F(input_keyboard_monitoring, should_be_able_to_deregister_callback) {
 
   keyboard.monitor_input(keys::spacebar);
   auto callback = keyboard.register_callback(
-      [&](const auto &state) -> void { mock_callback(state); });
+      [&](const auto &state) -> void { mock_callback.call(state); });
   keyboard.poll();
   callback.deregister();
   keyboard.poll();
