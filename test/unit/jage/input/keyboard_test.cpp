@@ -3,41 +3,18 @@
 #include <jage/input/keyboard_state.hpp>
 #include <jage/input/keys.hpp>
 
+#include <jage/test/fixtures/input/input_keyboard_monitoring.hpp>
 #include <jage/test/mocks/input/callback_mock.hpp>
 #include <jage/test/mocks/input/keyboard_driver.hpp>
 
 #include <gtest/gtest.h>
 
-#include <cstdint>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 
-using namespace jage::test;
 using namespace testing;
-
-struct input_keyboard_monitoring : Test {
-protected:
-  mocks::input::callback_mock mock_callback{};
-  mocks::input::keyboard_driver mock_driver{};
-  jage::input::keyboard<mocks::input::keyboard_driver> keyboard{mock_driver};
-  static constexpr auto null_callback = [](const auto &) -> void {};
-
-  auto expect_call_to_is_down(const jage::input::keys key,
-                              const std::uint8_t times = 1U) -> void {
-    if (times > 0) {
-      EXPECT_CALL(mock_driver, is_down(key))
-          .Times(times)
-          .WillRepeatedly(Return(true));
-    } else {
-      EXPECT_CALL(mock_driver, is_down(key)).Times(times);
-    }
-  }
-
-  auto expect_call_to_callback(const std::uint8_t times = 1) -> void {
-    EXPECT_CALL(mock_callback, call(_)).Times(times);
-  }
-};
+using jage::test::fixtures::input::input_keyboard_monitoring;
 
 struct parameterized_input_keyboard_monitoring
     : input_keyboard_monitoring,
