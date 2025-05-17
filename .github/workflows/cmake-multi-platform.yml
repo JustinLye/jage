@@ -42,16 +42,14 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-        echo "conan-profile-name=profiles/${{ matrix.c_compiler }}-${{ matrix.build_type | toLower }}" >> "$GITHUB_OUTPUT"
-        echo "conan-preset-name=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type | toLower }}" >> "$GITHUB_OUTPUT"
     - name: Install Python
       uses: actions/setup-python@v4
     - name: Install Conan
       run: pip install --user conan
     - name: Configure Conan
-      run: conan install . -pr:a ${{ steps.strings.outputs.conan-profile-name }} --build=missing
+      run: conan install . -pr:a profiles/${{ matrix.c_compiler }}-${{ matrix.build_type | toLower }} --build=missing
     - name: Configure CMake
-      run: cmake --preset ${{ steps.strings.outputs.conan-preset-name }}
+      run: cmake --preset conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type | toLower }}
     - name: Run All Unit Tests
       run: cmake --build build --target run_all_jage_unit_tests
 
