@@ -4,6 +4,7 @@
 #include <jage/input/keys.hpp>
 
 #include <jage/test/fixtures/input/input_keyboard_monitoring.hpp>
+#include <jage/test/fixtures/input/parameterized_input_keyboard_monitoring.hpp>
 #include <jage/test/mocks/input/callback_mock.hpp>
 #include <jage/test/mocks/input/keyboard_driver.hpp>
 
@@ -15,10 +16,7 @@
 
 using namespace testing;
 using jage::test::fixtures::input::input_keyboard_monitoring;
-
-struct parameterized_input_keyboard_monitoring
-    : input_keyboard_monitoring,
-      WithParamInterface<std::underlying_type_t<jage::input::keys>> {};
+using jage::test::fixtures::input::parameterized_input_keyboard_monitoring;
 
 TEST_F(input_keyboard_monitoring, no_query_if_no_callbacks) {
   expect_call_to_is_down(jage::input::keys::spacebar, 0U);
