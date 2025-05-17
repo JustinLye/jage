@@ -17,6 +17,7 @@ class JAGERecipe(ConanFile):
 
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
+    build_prefix = "build"
 
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*"
@@ -33,8 +34,9 @@ class JAGERecipe(ConanFile):
 
 
     def layout(self):
-        self.folders.build_folder_vars = ["settings.os", "settings.compiler", "settings.compiler.version", "settings.arch", "settings.build_type"]
-        cmake_layout(self)
+        self.folders.build_folder_vars = ["self.build_prefix", "settings.os", "settings.compiler", "settings.build_type"]
+        print(dir(self.folders))
+        cmake_layout(self, build_folder=".")
         
 
     def generate(self):

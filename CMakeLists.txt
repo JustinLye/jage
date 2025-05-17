@@ -31,5 +31,4 @@ add_library(jage::lib ALIAS jage_lib)
 add_subdirectory(test)
 add_subdirectory(app)
 
-file(CREATE_LINK "${CMAKE_BINARY_DIR}/compile_commands.json"
-     "${CMAKE_SOURCE_DIR}/build/compile_commands.json" SYMBOLIC)
+file(CREATE_LINK "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/build" SYMBOLIC)
