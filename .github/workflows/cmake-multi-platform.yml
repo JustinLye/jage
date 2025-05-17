@@ -43,7 +43,7 @@ jobs:
     - name: Setup Conan Client
       run: pip install --user conan
     - name: Configure Conan
-      run: >
+      run: |
         sudo apt install -y libgl-dev libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev
         conan install .  -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: Configure CMake
