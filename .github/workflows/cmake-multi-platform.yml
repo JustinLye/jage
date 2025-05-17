@@ -41,7 +41,7 @@ jobs:
     - name: Install Python
       uses: actions/setup-python@v4
     - name: Install system dependencies
-      run: sudo apt install -y libgl-dev libx11-dev
+      run: sudo apt install -y libgl-dev libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev
     - name: Setup Conan Client
       run: pip install --user conan
     - name: Configure Conan
