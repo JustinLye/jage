@@ -43,7 +43,7 @@ jobs:
     - name: Install Conan
       run: pip install --user conan
     - name: Configure Conan
-      run: conan install . -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} --build=missing
+      run: conan install .  -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: Configure CMake
       run: cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
     - name: Run All Unit Tests
