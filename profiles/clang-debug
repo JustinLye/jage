@@ -6,24 +6,13 @@ compiler.cppstd=23
 compiler.libcxx=libstdc++11
 compiler.version=18
 build_type=Debug
-fmt/*:compiler=gcc
-fmt/*:compiler.version=11
-fmt/*:compiler.cppstd=17
-gtest/*:compiler=gcc
-gtest/*:compiler.version=11
-gtest/*:compiler.cppstd=17
-gtest/*:compiler.libcxx=libstdc++11
-spdlog/*:compiler=gcc
-spdlog/*:compiler.version=11
-spdlog/*:compiler.cppstd=17
-spdlog/*:compiler.libcxx=libstdc++11
 
 [options]
 fmt/*:shared=False
 fmt/*:header_only=True
 
 [buildenv]
-CC=clang
+CC=c
 CXX=clang++
 
 [conf]
