@@ -11,3 +11,6 @@ build_type=Debug
 [conf]
 tools.system.package_manager:mode=install
 tools.cmake.cmaketoolchain:generator=Ninja
+
+[options]
+gtest/*:build_gmock=True

@@ -4,6 +4,7 @@
         "conan": {}
     },
     "include": [
-        "build/Debug/generators/CMakePresets.json"
+        "build/linux-clang-18-x86_64-debug/generators/CMakePresets.json",
+        "build/linux-gcc-14-x86_64-debug/generators/CMakePresets.json"
     ]
 }

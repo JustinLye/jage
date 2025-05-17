@@ -20,36 +20,29 @@ class JAGERecipe(ConanFile):
 
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*"
-    build_requires = (
+    requires = (
         "boost/1.86.0",
         "glad/0.1.36",
         "glfw/3.4",
         "glm/1.0.1",
         "gtest/1.15.0",
         "spdlog/1.14.1",
+        "range-v3/0.12.0"
     )
 
 
 
     def layout(self):
+        self.folders.build_folder_vars = ["settings.os", "settings.compiler", "settings.compiler.version", "settings.arch", "settings.build_type"]
         cmake_layout(self)
+        
 
     def generate(self):
         deps = CMakeDeps(self)
         deps.generate()
-        print(dir(deps))
         tc = CMakeToolchain(self)
-        
-
         tc.generate()
         
-        print(tc.blocks.keys())
-        
-        for k in tc.blocks.keys():
-            print(f"key: {k}\n")
-            print(tc.blocks[k].values)
-
-        print(tc.blocks["arch_flags"].values)
         
 
     def build(self):

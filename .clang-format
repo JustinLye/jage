@@ -102,13 +102,15 @@ IfMacros:
 IncludeBlocks:   Regroup
 IncludeCategories:
   - Regex:           '^<jage/test'
-    Priority:        1
+    Priority:        10
   - Regex:           '^<jage/'
     Priority:        0
   - Regex:           '^<(SFML/|imgui|spdlog/|docopt|boost/)'
-    Priority:        2
+    Priority:        20
   - Regex:           '^<gtest/|gmock/'
-    Priority:        3
+    Priority:        30
+  - Regex:           '^<test/unit/jage/'
+    Priority:        1
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false

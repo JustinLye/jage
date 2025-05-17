@@ -9,11 +9,21 @@ string(REPLACE "-fmodules-ts" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 add_compile_options(-Wall -Werror -Wnrvo -Wextra -Wpedantic)
 
+find_package(Boost)
+find_package(glad)
+find_package(glfw3)
+find_package(glm)
+find_package(GTest)
+find_package(spdlog)
+find_package(range-v3)
+
 add_library(jage_lib INTERFACE)
 target_include_directories(jage_lib INTERFACE include)
+target_link_libraries(jage_lib INTERFACE range-v3::range-v3)
 add_library(jage::lib ALIAS jage_lib)
 
 add_subdirectory(test)
+add_subdirectory(app)
 
 file(CREATE_LINK "${CMAKE_BINARY_DIR}/compile_commands.json"
      "${CMAKE_SOURCE_DIR}/build/compile_commands.json" SYMBOLIC)
