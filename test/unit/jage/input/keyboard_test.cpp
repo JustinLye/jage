@@ -3,25 +3,24 @@
 #include <jage/input/keyboard_state.hpp>
 #include <jage/input/keys.hpp>
 
-#include <test/unit/jage/input/mocks/callback_mock.hpp>
-#include <test/unit/jage/input/mocks/keyboard_driver.hpp>
+#include <jage/test/mocks/input/callback_mock.hpp>
+#include <jage/test/mocks/input/keyboard_driver.hpp>
 
 #include <gtest/gtest.h>
 
-#include <array>
 #include <cstdint>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 
-using namespace test::unit::jage::input;
+using namespace jage::test;
 using namespace testing;
 
 struct input_keyboard_monitoring : Test {
 protected:
-  mocks::callback_mock mock_callback{};
-  mocks::keyboard_driver mock_driver{};
-  jage::input::keyboard<mocks::keyboard_driver> keyboard{mock_driver};
+  mocks::input::callback_mock mock_callback{};
+  mocks::input::keyboard_driver mock_driver{};
+  jage::input::keyboard<mocks::input::keyboard_driver> keyboard{mock_driver};
   static constexpr auto null_callback = [](const auto &) -> void {};
 
   auto expect_call_to_is_down(const jage::input::keys key,

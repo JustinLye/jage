@@ -4,9 +4,9 @@
 
 #include <gmock/gmock.h>
 
-namespace test::unit::jage::input::mocks {
+namespace jage::test::mocks::input {
 struct callback_mock {
   MOCK_METHOD(void, call, (const ::jage::input::keyboard_state &), (const));
 };
 
-} // namespace test::unit::jage::input::mocks
+} // namespace jage::test::mocks::input
