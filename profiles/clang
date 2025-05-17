@@ -1,0 +1,9 @@
+[settings]
+compiler=clang
+compiler.version=18
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+
+[buildenv]
+CC=clang
+CXX=clang++

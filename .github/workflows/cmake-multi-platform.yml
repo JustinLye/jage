@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os_flavor }}
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
@@ -23,33 +23,29 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest]
+        os_flavor: [ubuntu-latest]
         build_type: [release, debug]
         c_compiler: [gcc, clang]
         include:
-          - os: ubuntu-latest
+          - os_flavor: ubuntu-latest
+            os: linux
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os_flavor: ubuntu-latest
+            os: linux
             c_compiler: clang
             cpp_compiler: clang++
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
     - name: Install Python
       uses: actions/setup-python@v4
     - name: Install Conan
       run: pip install --user conan
     - name: Configure Conan
-      run: conan install . -pr:a profiles/${{ matrix.c_compiler }}-${{ matrix.build_type }} --build=missing
+      run: conan install . -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: Configure CMake
-      run: cmake --preset conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+      run: cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
     - name: Run All Unit Tests
       run: cmake --build build --target run_all_jage_unit_tests
 
