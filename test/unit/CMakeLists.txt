@@ -36,6 +36,7 @@ function(add_unit_test)
   add_custom_target(
     ${RUN_TARGET_NAME}
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_TARGET_NAME}
+            --gtest_color=yes
     DEPENDS ${EXECUTABLE_TARGET_NAME})
 
   add_dependencies(run_all_jage_unit_tests ${RUN_TARGET_NAME})
