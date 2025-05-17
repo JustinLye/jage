@@ -1,9 +1,5 @@
 #pragma once
 
-#include <jage/input/key_status.hpp>
-#include <jage/input/keyboard_state.hpp>
-#include <jage/input/keys.hpp>
-
 #include <array>
 #include <cstddef>
 #include <functional>

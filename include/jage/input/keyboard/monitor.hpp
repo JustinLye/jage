@@ -1,17 +1,17 @@
 #pragma once
 
 #include <jage/input/detail/monitor.hpp>
-#include <jage/input/detail/monitored_keyboard_state.hpp>
-#include <jage/input/keyboard_state.hpp>
-#include <jage/input/keys.hpp>
+#include <jage/input/keyboard/detail/monitored_keyboard_state.hpp>
+#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/state.hpp>
 
 #include <cstddef>
 #include <utility>
 
-namespace jage::input {
+namespace jage::input::keyboard {
 
 template <class TDriver, std::size_t CallbackCapacity = 2>
-using keyboard = detail::monitor<
+using monitor = ::jage::input::detail::monitor<
     TDriver, CallbackCapacity, detail::monitored_keyboard_state, keys,
     [](const auto &driver, detail::monitored_keyboard_state &state) -> void {
       auto &monitored_keys = state.monitored_keys;
@@ -20,7 +20,7 @@ using keyboard = detail::monitor<
         if (monitored_keys[index]) {
           if (const auto key = static_cast<keys>(index);
               driver.get().is_down(key)) {
-            state.keyboard_state[key].status = key_status::down;
+            state.keyboard_state[key].status = status::down;
           }
         }
       }
@@ -32,6 +32,6 @@ using keyboard = detail::monitor<
     [](auto &callback, const detail::monitored_keyboard_state &state) -> void {
       callback(state.keyboard_state);
     },
-    keyboard_state>;
+    state>;
 
-} // namespace jage::input
+} // namespace jage::input::keyboard

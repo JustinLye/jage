@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace jage::input {
+namespace jage::input::keyboard {
 enum class keys : std::uint8_t {
   spacebar,
   a,
