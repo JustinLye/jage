@@ -38,10 +38,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python
-      uses: actions/setup-python@v4
-    - name: Setup Conan Client
-      run: pip install --user conan
+    # - name: Install Python
+    #   uses: actions/setup-python@v4
+    # - name: Setup Conan Client
+    #   run: pip install --user conan
     - name: Configure Conan
       run: conan install .  -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: Configure CMake
