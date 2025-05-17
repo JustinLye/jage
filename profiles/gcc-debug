@@ -1,0 +1,16 @@
+
+[settings]
+arch=x86_64
+os=Linux
+compiler=gcc
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=14
+build_type=Debug
+
+[conf]
+tools.system.package_manager:mode=install
+tools.cmake.cmaketoolchain:generator=Ninja
+
+[options]
+gtest/*:build_gmock=True
