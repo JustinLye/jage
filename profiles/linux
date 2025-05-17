@@ -2,8 +2,7 @@
 [settings]
 arch=x86_64
 os=Linux
-compiler.cppstd=23
-compiler.libcxx=libstdc++11
+
 
 [conf]
 tools.system.package_manager:mode=install
