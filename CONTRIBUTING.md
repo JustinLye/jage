@@ -42,7 +42,7 @@ cmake --preset conan-build-linux-gcc-debug
 
 #### Build
 ```bash
-cmake --build build --target run_all_jage_unit_tests
+cmake --build build --target run-all-jage-unit-tests
 ```
 
 
