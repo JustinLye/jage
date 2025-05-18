@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
-      fail-fast: false
+      fail-fast: true
 
       # Set up a matrix to run the following 3 configurations:
       # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
@@ -40,11 +40,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python
-      uses: actions/setup-python@v4
-    - name: Setup Conan Client
+    - uses: actions/setup-python@v4
+      with:
+        python-verison: '3.13'
+        cache: pip
+    - name: install conan
       run: pip install --user conan
-    - name: Configure Conan
+    - name: bootstrap
       run: |
         sudo apt-get install -y \
         ${{ matrix.c_compiler }}-${{ matrix.compiler_version}} \
@@ -100,10 +102,11 @@ jobs:
         libxcb-res0-dev \
         libxcb-util-dev
         sudo apt-get update -y
-        conan install .  -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
-    - name: Configure CMake
+    - name: configure conan
+      run: conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
+    - name: configure cmake
       run: cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
-    - name: Run All Unit Tests
+    - name: unit-tests
       run: cmake --build build --target run_all_jage_unit_tests
 
     
