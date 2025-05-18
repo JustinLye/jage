@@ -55,7 +55,7 @@ public:
 
   auto update(const auto nanoseconds_elapsed) {
     using namespace std::chrono_literals;
-    if (is_complete()) {
+    if (is_complete() or scheduled_action_status::paused == status()) {
       return;
     }
     if (nanoseconds_to_wait_ < nanoseconds_elapsed) {
