@@ -36,7 +36,7 @@ jobs:
             os: linux
             c_compiler: clang
             cpp_compiler: clang++
-            complier_version: 18
+            compiler_version: 18
 
     steps:
     - uses: actions/checkout@v4
