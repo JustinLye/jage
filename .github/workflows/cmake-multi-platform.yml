@@ -31,10 +31,12 @@ jobs:
             os: linux
             c_compiler: gcc
             cpp_compiler: g++
+            compiler_version: 14
           - os_flavor: ubuntu-latest
             os: linux
             c_compiler: clang
             cpp_compiler: clang++
+            complier_version: 18
 
     steps:
     - uses: actions/checkout@v4
@@ -45,6 +47,8 @@ jobs:
     - name: Configure Conan
       run: |
         sudo apt-get install -y \
+        ${{ matrix.c_compiler }}-${{ matrix.compiler_version}} \
+        ${{ matrix.cpp_compiler }}-${{ matrix.compiler_version}} \
         libgl-dev \
         libx11-dev \
         libx11-xcb-dev \
