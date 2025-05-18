@@ -1,6 +1,5 @@
 #pragma once
 
-#include <jage/mp/type_of.hpp>
 #include <jage/no_op.hpp>
 #include <jage/scheduled_action_status.hpp>
 

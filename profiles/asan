@@ -1,0 +1,2 @@
+[buildenv]
+ASAN=1

@@ -49,5 +49,5 @@ function(add_unit_test)
 
 endfunction()
 
-add_custom_target(run_all_jage_unit_tests)
+add_custom_target(run_all_jage_unit_tests ALL)
 add_subdirectory(jage)
