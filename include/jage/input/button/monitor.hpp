@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <utility>
 
-namespace jage::input::detail {
+namespace jage::input::button {
 
 template <class TButton> struct button_monitor_state {
   using button_type = TButton;
@@ -44,9 +44,9 @@ static constexpr auto invoke_callback_with_button_states =
 };
 
 template <class TDriver, std::size_t CallbackCapacity, class TButton>
-using button_monitor = ::jage::input::detail::monitor<
+using monitor = ::jage::input::detail::monitor<
     TDriver, CallbackCapacity, button_monitor_state<TButton>, TButton,
     button_monitor_update_button_states, monitor_button,
     invoke_callback_with_button_states, button::states<TButton>>;
 
-} // namespace jage::input::detail
+} // namespace jage::input::button
