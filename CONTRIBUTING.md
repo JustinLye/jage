@@ -6,11 +6,7 @@
 
 ##### Debian
 ```bash
-sudo apt install pkg-config
-```
-##### Fedora
-```bash
-sudo dnf install pkg-config
+scripts/bootstrap.sh
 ```
 #### Install Conan
 
@@ -36,17 +32,17 @@ source ~/conan/bin/activate
 
 #### Install Build Requirements
 ```bash
-conan install . -pr:a profiles/gcc-debug --build=missing
+conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
 ```
 
 #### Configure
 ```bash
-cmake --preset conan-debug
+cmake --preset conan-build-linux-gcc-debug
 ```
 
 #### Build
 ```bash
-cmake --build --preset conan-debug
+cmake --build build --target run_all_jage_unit_tests
 ```
 
 
