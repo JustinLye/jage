@@ -179,3 +179,19 @@ TEST(scheduled_action_with_action, should_invoke_the_action_again_after_reset) {
   scheduled_action.update(1ns);
   EXPECT_EQ(42, value);
 }
+
+TEST(schedule_action_with_action,
+     should_not_update_time_remaining_when_paused) {
+  std::uint8_t value{0};
+  auto scheduled_action = jage::scheduled_action{
+      10ns,
+      [&] { value = 42; },
+  };
+
+  scheduled_action.pause();
+  scheduled_action.update(20ns);
+  EXPECT_EQ(0, value);
+  scheduled_action.resume();
+  scheduled_action.update(10ns);
+  EXPECT_EQ(42, value);
+}
