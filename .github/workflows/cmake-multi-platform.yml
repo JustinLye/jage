@@ -43,66 +43,22 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.13'
-    - name: install conan
-      run: pip install --user conan
     - name: bootstrap
+      run: scripts/bootstrap.sh
+      env:
+        MATRIX_C_COMPILER: ${{ matrix.c_compiler }}
+        MATRIX_CPP_COMPILER: ${{ matrix.cpp_compiler }}
+        MATRIX_COMPILER_VERSION: ${{ matrix.compiler_version }}
+    - name: install conan
       run: |
-        sudo apt-get install -y \
-        ${{ matrix.c_compiler }}-${{ matrix.compiler_version}} \
-        ${{ matrix.cpp_compiler }}-${{ matrix.compiler_version}} \
-        libgl-dev \
-        libx11-dev \
-        libx11-xcb-dev \
-        libfontenc-dev \
-        libice-dev \
-        libsm-dev \
-        libxau-dev \
-        libxaw7-dev \
-        libxcomposite-dev \
-        libxcursor-dev \
-        libxdamage-dev \
-        libxdmcp-dev \
-        libxext-dev \
-        libxfixes-dev \
-        libxi-dev \
-        libxinerama-dev \
-        libxkbfile-dev \
-        libxmu-dev \
-        libxmuu-dev \
-        libxpm-dev \
-        libxrandr-dev \
-        libxrender-dev \
-        libxres-dev \
-        libxss-dev \
-        libxt-dev \
-        libxtst-dev \
-        libxv-dev \
-        libxxf86vm-dev \
-        libxcb-glx0-dev \
-        libxcb-render0-dev \
-        libxcb-render-util0-dev \
-        libxcb-xkb-dev \
-        libxcb-icccm4-dev \
-        libxcb-image0-dev \
-        libxcb-keysyms1-dev \
-        libxcb-randr0-dev \
-        libxcb-shape0-dev \
-        libxcb-sync-dev \
-        libxcb-xfixes0-dev \
-        libxcb-xinerama0-dev \
-        libxcb-dri3-dev \
-        uuid-dev \
-        libxcb-cursor-dev \
-        libxcb-dri2-0-dev \
-        libxcb-dri3-dev \
-        libxcb-present-dev \
-        libxcb-composite0-dev \
-        libxcb-ewmh-dev \
-        libxcb-res0-dev \
-        libxcb-util-dev
-        sudo apt-get update -y
+        pushd ~
+        python -m venv conan
+        source conan/bin/activate
+        pip install conan
     - name: configure conan
-      run: conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
+      run: |
+        source ~/conan/bin/activate
+        conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
     - name: configure cmake
       run: cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
     - name: unit-tests

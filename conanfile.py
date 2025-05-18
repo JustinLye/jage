@@ -33,7 +33,6 @@ class JAGERecipe(ConanFile):
 
     def layout(self):
         self.folders.build_folder_vars = ["self.build_prefix", "settings.os", "settings.compiler", "settings.build_type"]
-        print(dir(self.folders))
         cmake_layout(self, build_folder=".")
         
 
