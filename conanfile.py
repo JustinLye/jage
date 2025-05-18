@@ -1,7 +1,7 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-
-
+from conan.tools.env import VirtualBuildEnv
+from os import environ
 
 class JAGERecipe(ConanFile):
     name = "jage"
@@ -29,10 +29,26 @@ class JAGERecipe(ConanFile):
         "range-v3/0.12.0"
     )
 
-
+    def set_sanitizers_(self):
+        sanitizers = []
+        def try_setting(env_var:str):
+            if "1" == VirtualBuildEnv(self).vars().get(env_var, ""):
+                sanitizers.append(env_var.lower())
+        
+        for san_env_var in ["ASAN", "UBSAN", "TSAN", "LSAN"]:
+          try_setting(san_env_var)
+        
+        if len(sanitizers) > 0:
+            self.sanitizer = "-".join(sanitizers)
+            if "tsan" in self.sanitizer:
+                if "asan" in self.sanitizer:
+                    raise RuntimeError("address sanitizer cannot be combined with thread sanitizer.")
+                elif "lsan" in self.sanitizer:
+                    raise RuntimeError("leak sanitizer cannot be combined with thread sanitizer.")
 
     def layout(self):
-        self.folders.build_folder_vars = ["self.build_prefix", "settings.os", "settings.compiler", "settings.build_type"]
+        self.set_sanitizers_()
+        self.folders.build_folder_vars = ["self.build_prefix", "settings.os", "settings.compiler", "settings.build_type", "self.sanitizer"]
         cmake_layout(self, build_folder=".")
         
 

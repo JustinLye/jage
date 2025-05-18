@@ -26,6 +26,7 @@ jobs:
         os_flavor: [ubuntu-latest]
         build_type: [release, debug]
         c_compiler: [gcc, clang]
+        sanitizer: [none, asan, ubsan, tsan, lsan]
         include:
           - os_flavor: ubuntu-latest
             os: linux
@@ -58,11 +59,20 @@ jobs:
     - name: configure conan
       run: |
         source ~/conan/bin/activate
-        conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
+        if [ "${{ matrix.sanitizer }}" == "none" ]; then
+          conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
+        else
+          conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }} --build=missing
+        fi
     - name: configure cmake
-      run: cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
-    - name: unit-tests
-      run: cmake --build build --target run_all_jage_unit_tests
+      run: |
+        if [ "${{ matrix.sanitizer }}" == "none" ]; then
+          cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+        else
+          cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}
+        fi
+    - name: all
+      run: cmake --build build --target all
 
     
     # - name: Configure CMake

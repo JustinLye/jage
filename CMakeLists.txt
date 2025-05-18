@@ -15,6 +15,40 @@ else()
   add_compile_options(-Wall -Werror -Wnrvo -Wextra -Wpedantic)
 endif()
 
+if(DEFINED ENV{ASAN})
+  if(DEFINED ENV{TSAN})
+    message(
+      FATAL_ERROR
+        "Error! address sanitizer cannot be combined with thread sanitizer.")
+  endif()
+  message("Turning on address sanitizer")
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
+endif()
+
+if(DEFINED ENV{UBSAN})
+  message("Turning on undefined sanitizer")
+  add_compile_options(-fsanitize=undefined)
+  add_link_options(-fsanitize=undefined)
+endif()
+
+if(DEFINED ENV{LSAN})
+  if(DEFINED ENV{TSAN})
+    message(
+      FATAL_ERROR
+        "Error! leak sanitizer cannot be combined with thread sanitizer.")
+  endif()
+  message("Turning on leak sanitizer")
+  add_compile_options(-fsanitize=leak)
+  add_link_options(-fsanitize=leak)
+endif()
+
+if(DEFINED ENV{TSAN})
+  message("Turning on thread sanitizer")
+  add_compile_options(-fsanitize=thread)
+  add_link_options(-fsanitize=thread)
+endif()
+
 find_package(glad)
 find_package(glfw3)
 find_package(glm)
