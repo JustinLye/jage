@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace jage::input::detail {
+namespace jage::input::generic {
 template <class TDriver, std::size_t CallbackCapacity, class TState,
           class TMonitor, auto UpdateStateFunct, auto MonitorFunct,
           auto InvokeCallbackFunct, class TCallbackParam = TState>
@@ -45,8 +45,8 @@ public:
     }
   }
 
-  [[nodiscard]] auto
-  register_callback(auto &&callback_to_register) -> callback_registration {
+  [[nodiscard]] auto register_callback(auto &&callback_to_register)
+      -> callback_registration {
     for (auto &callback : callbacks_) {
       if (not callback.has_value()) {
         callback.emplace(
@@ -73,4 +73,4 @@ public:
   }
 };
 
-} // namespace jage::input::detail
+} // namespace jage::input::generic

@@ -3,7 +3,7 @@
 #include <jage/input/button/state.hpp>
 #include <jage/input/button/states.hpp>
 #include <jage/input/button/status.hpp>
-#include <jage/input/detail/monitor.hpp>
+#include <jage/input/generic/monitor.hpp>
 
 #include <bitset>
 #include <cstddef>
@@ -44,7 +44,7 @@ static constexpr auto invoke_callback_with_button_states =
 };
 
 template <class TDriver, std::size_t CallbackCapacity, class TButton>
-using monitor = ::jage::input::detail::monitor<
+using monitor = ::jage::input::generic::monitor<
     TDriver, CallbackCapacity, button_monitor_state<TButton>, TButton,
     button_monitor_update_button_states, monitor_button,
     invoke_callback_with_button_states, button::states<TButton>>;
