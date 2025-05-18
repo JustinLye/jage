@@ -3,3 +3,4 @@ vcpkg_installed
 .envrc
 CMakeUserPresets.json
 build-*
+scripts/install-all-conan-variants.sh
