@@ -28,18 +28,18 @@ function(add_unit_test)
     list(APPEND LINK_LIBS ${ARG_LINK_LIBS})
   endif()
 
-  set(EXECUTABLE_TARGET_NAME jage_unit_test_${ARG_TARGET_NAME})
+  set(EXECUTABLE_TARGET_NAME jage-unit-test-${ARG_TARGET_NAME})
   add_executable(${EXECUTABLE_TARGET_NAME} ${ARG_SOURCE_FILES})
   target_link_libraries(${EXECUTABLE_TARGET_NAME} ${LINK_LIBS})
 
-  set(RUN_TARGET_NAME run_${EXECUTABLE_TARGET_NAME})
+  set(RUN_TARGET_NAME run-${EXECUTABLE_TARGET_NAME})
   add_custom_target(
     ${RUN_TARGET_NAME}
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_TARGET_NAME}
             --gtest_color=yes
     DEPENDS ${EXECUTABLE_TARGET_NAME})
 
-  add_dependencies(run_all_jage_unit_tests ${RUN_TARGET_NAME})
+  add_dependencies(run-all-jage-unit-tests ${RUN_TARGET_NAME})
 
   if(DEFINED ARG_DEPENDANTS)
     foreach(DEPENDANT ${ARG_DEPENDANTS})
@@ -49,5 +49,5 @@ function(add_unit_test)
 
 endfunction()
 
-add_custom_target(run_all_jage_unit_tests ALL)
+add_custom_target(run-all-jage-unit-tests ALL)
 add_subdirectory(jage)
