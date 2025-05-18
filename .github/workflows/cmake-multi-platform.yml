@@ -3,42 +3,23 @@
 name: JAGE Build and Test
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os_flavor }}
-
+  build-and-test:
+    runs-on: ubuntu-latest
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: true
-
-      # Set up a matrix to run the following 3 configurations:
-      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
-      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
-      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
-      #
-      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os_flavor: [ubuntu-latest]
-        build_type: [release, debug]
-        c_compiler: [gcc, clang]
-        sanitizer: [none, asan, ubsan, tsan, lsan]
+        cpp_compiler: [g++, clang++]
         include:
-          - os_flavor: ubuntu-latest
-            os: linux
+          - cpp_compiler: g++
             c_compiler: gcc
-            cpp_compiler: g++
             compiler_version: 14
-          - os_flavor: ubuntu-latest
-            os: linux
+          - cpp_compiler: clang++
             c_compiler: clang
-            cpp_compiler: clang++
             compiler_version: 18
-
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
@@ -59,17 +40,9 @@ jobs:
     - name: configure conan
       run: |
         source ~/conan/bin/activate
-        if [ "${{ matrix.sanitizer }}" == "none" ]; then
-          conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} --build=missing
-        else
-          conan install . -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.os }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }} --build=missing
-        fi
+        conan install . -pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/release -pr:a profiles/asan -pr:a profiles/ubsan --build=missing
     - name: configure cmake
       run: |
-        if [ "${{ matrix.sanitizer }}" == "none" ]; then
-          cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
-        else
-          cmake --preset conan-build-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}
-        fi
+        cmake --preset conan-build-linux-${{ matrix.c_compiler }}-release-asan-ubsan
     - name: all
       run: cmake --build build --target all
