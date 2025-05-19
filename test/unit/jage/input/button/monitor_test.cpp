@@ -5,28 +5,28 @@
 #include <jage/input/mouse/buttons.hpp>
 #include <jage/input/mouse/monitor.hpp>
 
-#include <jage/test/fixtures/input/monitoring.hpp>
-#include <jage/test/mocks/input/driver.hpp>
+#include <jage/test/fixtures/input/button/monitoring.hpp>
+#include <jage/test/mocks/input/button/driver.hpp>
 
 #include <gtest/gtest.h>
 
 #include <stdexcept>
 
 using namespace testing;
-using keyboard_monitor_test_params =
-    std::pair<jage::input::keyboard::monitor<jage::test::mocks::input::driver<
-                  jage::input::keyboard::keys>>,
-              jage::input::keyboard::keys>;
+using keyboard_monitor_test_params = std::pair<
+    jage::input::keyboard::monitor<
+        jage::test::mocks::input::button::driver<jage::input::keyboard::keys>>,
+    jage::input::keyboard::keys>;
 
-using mouse_monitor_test_params =
-    std::pair<jage::input::mouse::monitor<jage::test::mocks::input::driver<
-                  jage::input::mouse::buttons>>,
-              jage::input::mouse::buttons>;
+using mouse_monitor_test_params = std::pair<
+    jage::input::mouse::monitor<
+        jage::test::mocks::input::button::driver<jage::input::mouse::buttons>>,
+    jage::input::mouse::buttons>;
 using test_types =
     Types<keyboard_monitor_test_params, mouse_monitor_test_params>;
 template <class TPair>
 struct monitoring
-    : public jage::test::fixtures::input::monitoring<
+    : public jage::test::fixtures::input::button::monitoring<
           typename TPair::first_type, typename TPair::second_type> {};
 
 TYPED_TEST_SUITE(monitoring, test_types);

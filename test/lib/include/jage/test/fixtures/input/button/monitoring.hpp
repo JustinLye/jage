@@ -2,17 +2,17 @@
 
 #include <jage/input/keyboard/monitor.hpp>
 
-#include <jage/test/mocks/input/callback.hpp>
-#include <jage/test/mocks/input/driver.hpp>
+#include <jage/test/mocks/input/button/callback.hpp>
+#include <jage/test/mocks/input/button/driver.hpp>
 
 #include <gtest/gtest.h>
 
-namespace jage::test::fixtures::input {
+namespace jage::test::fixtures::input::button {
 
 template <class TMonitor, class TButton> struct monitoring : testing::Test {
 protected:
-  mocks::input::callback<TButton> mock_callback{};
-  mocks::input::driver<TButton> mock_driver{};
+  mocks::input::button::callback<TButton> mock_callback{};
+  mocks::input::button::driver<TButton> mock_driver{};
   TMonitor monitor{mock_driver};
   using button_type = TButton;
   static constexpr auto null_callback = [](const auto &) -> void {};
@@ -41,4 +41,4 @@ protected:
   }
 };
 
-} // namespace jage::test::fixtures::input
+} // namespace jage::test::fixtures::input::button
