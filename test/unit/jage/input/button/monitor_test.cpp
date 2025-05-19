@@ -149,6 +149,26 @@ TYPED_TEST(monitoring, should_update_after_deregister) {
   EXPECT_EQ(2, callback1_call_count);
 }
 
+TYPED_TEST(monitoring, should_update_button_state) {
+  EXPECT_CALL(this->mock_driver, is_down(this->button0))
+      .Times(2)
+      .WillOnce(testing::Return(true))
+      .WillOnce(testing::Return(false));
+
+  this->monitor.monitor_input(this->button0);
+
+  auto local_state =
+      jage::input::button::states<typename TestFixture::button_type>{};
+
+  std::ignore = this->monitor.register_callback(
+      [&](const auto &state) -> void { local_state = state; });
+  this->monitor.poll();
+  EXPECT_EQ(jage::input::button::status::down,
+            local_state[this->button0].status);
+  this->monitor.poll();
+  EXPECT_EQ(jage::input::button::status::up, local_state[this->button0].status);
+}
+
 struct keyboard_monitoring_parameterized
     : public monitoring<keyboard_monitor_test_params>,
       public testing::WithParamInterface<std::underlying_type_t<

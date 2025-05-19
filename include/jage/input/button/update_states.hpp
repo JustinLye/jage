@@ -15,6 +15,8 @@ static constexpr auto update_states =
       if (const auto button = static_cast<typename TState::button_type>(index);
           driver.is_down(button)) {
         state.button_states[button].status = button::status::down;
+      } else {
+        state.button_states[button].status = button::status::up;
       }
     }
   }
