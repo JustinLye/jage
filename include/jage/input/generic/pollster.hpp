@@ -13,7 +13,10 @@ namespace jage::input::generic {
 template <class TDriver, std::size_t CallbackCapacity, class TState,
           auto UpdateStateFunct, auto InvokeCallbackFunct, class TCallbackParam>
 class pollster {
+public:
   using callback_t = std::optional<std::function<void(const TCallbackParam &)>>;
+
+private:
   std::reference_wrapper<TDriver> driver_;
   std::array<callback_t, CallbackCapacity> callbacks_{};
 

@@ -19,6 +19,7 @@ class monitor
     : public pollster<TDriver, CallbackCapacity, TState, UpdateStateFunct,
                       InvokeCallbackFunct, TCallbackParam> {
 public:
+  using monitor_target_t = TMonitor;
   explicit monitor(TDriver &driver)
       : pollster<TDriver, CallbackCapacity, TState, UpdateStateFunct,
                  InvokeCallbackFunct, TCallbackParam>{driver} {}
