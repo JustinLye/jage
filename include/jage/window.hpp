@@ -14,5 +14,6 @@ public:
   }
 
   constexpr auto poll() -> void { driver_.get().poll(); }
+  constexpr auto render() -> void { driver_.get().render(); }
 };
 } // namespace jage

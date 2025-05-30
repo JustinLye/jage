@@ -111,6 +111,10 @@ IncludeCategories:
     Priority:        30
   - Regex:           '^<jage/test/'
     Priority:        1
+  - Regex:           '^<glad/glad.h>'
+    Priority:        2
+  - Regex:           '^<GLFW/glfw3.h>'
+    Priority:        3
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false

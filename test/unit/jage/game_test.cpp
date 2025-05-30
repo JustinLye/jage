@@ -11,15 +11,16 @@ TEST_F(game_test,
        should_check_if_window_should_not_poll_if_window_should_close_on_loop) {
   EXPECT_CALL(window_driver, should_close()).WillOnce(testing::Return(true));
   EXPECT_CALL(window_driver, poll()).Times(0);
+  EXPECT_CALL(window_driver, render()).Times(0);
   game.loop();
 }
 
-TEST_F(game_test, should_poll_window_while_window_is_not_closed) {
-  EXPECT_CALL(window_driver, should_close())
-      .Times(2)
-      .WillOnce(testing::Return(false))
-      .WillOnce(testing::Return(true));
+TEST_F(game_test, should_render_and_poll_window_while_window_is_not_closed) {
+  testing::InSequence in_sequence{};
+  EXPECT_CALL(window_driver, should_close()).WillOnce(testing::Return(false));
+  EXPECT_CALL(window_driver, render()).Times(1);
   EXPECT_CALL(window_driver, poll()).Times(1);
+  EXPECT_CALL(window_driver, should_close()).WillOnce(testing::Return(true));
   game.loop();
 }
 
@@ -33,6 +34,7 @@ TEST_F(game_test, should_not_poll_input_controller_if_window_is_closed) {
       .Times(0);
   EXPECT_CALL(input_driver, cursor_position()).Times(0);
   EXPECT_CALL(window_driver, poll()).Times(0);
+  EXPECT_CALL(window_driver, render()).Times(0);
   auto &controller = game.input();
   controller.keyboard().monitor_input(jage::input::keyboard::keys::escape);
   controller.mouse().monitor_input(jage::input::mouse::buttons::middle_click);
@@ -45,6 +47,7 @@ TEST_F(game_test, should_not_poll_input_controller_if_window_is_closed) {
 
 TEST_F(game_test, should_poll_input_controller_if_window_is_not_closed) {
   EXPECT_CALL(window_driver, poll()).Times(testing::AnyNumber());
+  EXPECT_CALL(window_driver, render()).Times(testing::AnyNumber());
   EXPECT_CALL(window_driver, should_close())
       .Times(2)
       .WillOnce(testing::Return(false))

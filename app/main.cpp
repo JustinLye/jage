@@ -8,29 +8,45 @@
 #include <jage/input/keyboard/keys.hpp>
 #include <jage/input/mouse/buttons.hpp>
 
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-// debug
-#include <iostream>
+#include <GLFW/glfw3.h>
 
 namespace jage {
 class driver {
 
   GLFWwindow *window_{nullptr};
+  static constexpr auto frame_buffer_size_callback(GLFWwindow *, auto width,
+                                                   auto height) -> void {
+    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+  }
 
 public:
   driver() {
     std::ignore = glfwInit();
-    window_ = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    glfwMakeContextCurrent(window_);
+    const auto monitor = glfwGetPrimaryMonitor();
+    const auto mode = glfwGetVideoMode(monitor);
+
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+    window_ = glfwCreateWindow(mode->width, mode->height, "Hello World",
+                               monitor, nullptr);
     glfwSetInputMode(window_, GLFW_STICKY_KEYS, GLFW_TRUE);
     glfwSetInputMode(window_, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+
+    glfwMakeContextCurrent(window_);
+    std::ignore =
+        gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+    glfwSetFramebufferSizeCallback(window_, &frame_buffer_size_callback);
   }
 
   ~driver() { glfwTerminate(); }
 
   auto poll() -> void {
-    glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window_);
     glfwPollEvents();
   }
@@ -58,10 +74,9 @@ public:
     return glfwWindowShouldClose(window_);
   }
 
-  auto close() -> void {
-    std::cerr << "setting close" << std::endl;
-    glfwSetWindowShouldClose(window_, GLFW_TRUE);
-  }
+  auto close() -> void { glfwSetWindowShouldClose(window_, GLFW_TRUE); }
+
+  auto render() -> void { glClear(GL_COLOR_BUFFER_BIT); }
 };
 } // namespace jage
 

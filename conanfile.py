@@ -26,7 +26,8 @@ class JAGERecipe(ConanFile):
         "glfw/3.4",
         "glm/1.0.1",
         "gtest/1.15.0",
-        "range-v3/0.12.0"
+        "range-v3/0.12.0",
+        "assimp/5.4.3"
     )
 
     def set_sanitizers_(self):

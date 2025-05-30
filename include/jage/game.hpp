@@ -19,6 +19,7 @@ public:
     auto &input_controller = input_controller_.get();
     while (not window.should_close()) {
       input_controller.poll();
+      window.render();
       window.poll();
     }
   }
