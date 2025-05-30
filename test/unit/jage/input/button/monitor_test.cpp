@@ -13,21 +13,17 @@
 #include <stdexcept>
 
 using namespace testing;
-using keyboard_monitor_test_params = std::pair<
-    jage::input::keyboard::monitor<
-        jage::test::mocks::input::button::driver<jage::input::keyboard::keys>>,
-    jage::input::keyboard::keys>;
 
-using mouse_monitor_test_params = std::pair<
-    jage::input::mouse::monitor<
-        jage::test::mocks::input::button::driver<jage::input::mouse::buttons>>,
-    jage::input::mouse::buttons>;
-using test_types =
-    Types<keyboard_monitor_test_params, mouse_monitor_test_params>;
-template <class TPair>
+using keyboard_monitor = jage::input::keyboard::monitor<
+    jage::test::mocks::input::button::driver<jage::input::keyboard::keys>>;
+using mouse_button_monitor = jage::input::mouse::monitor<
+    jage::test::mocks::input::button::driver<jage::input::mouse::buttons>>;
+
+using test_types = Types<keyboard_monitor, mouse_button_monitor>;
+
+template <class TMonitor>
 struct monitoring
-    : public jage::test::fixtures::input::button::monitoring<
-          typename TPair::first_type, typename TPair::second_type> {};
+    : public jage::test::fixtures::input::button::monitoring<TMonitor> {};
 
 TYPED_TEST_SUITE(monitoring, test_types);
 
@@ -170,15 +166,13 @@ TYPED_TEST(monitoring, should_update_button_state) {
 }
 
 struct keyboard_monitoring_parameterized
-    : public monitoring<keyboard_monitor_test_params>,
-      public testing::WithParamInterface<std::underlying_type_t<
-          typename keyboard_monitor_test_params::second_type>> {};
+    : public monitoring<keyboard_monitor>,
+      public testing::WithParamInterface<
+          std::underlying_type_t<keyboard_monitor::monitor_target_t>> {};
 
 TEST_P(keyboard_monitoring_parameterized, should_query_monitor_any_key) {
 
-  const auto key =
-      static_cast<typename keyboard_monitor_test_params::second_type>(
-          GetParam());
+  const auto key = static_cast<keyboard_monitor::monitor_target_t>(GetParam());
   this->expect_call_to_is_down(key);
   this->monitor.monitor_input(key);
   std::ignore = this->monitor.register_callback(this->null_callback);
@@ -192,14 +186,14 @@ INSTANTIATE_TEST_SUITE_P(
               std::to_underlying(jage::input::keyboard::keys::END) + 1)));
 
 struct mouse_monitoring_parameterized
-    : public monitoring<mouse_monitor_test_params>,
-      public testing::WithParamInterface<std::underlying_type_t<
-          typename mouse_monitor_test_params::second_type>> {};
+    : public monitoring<mouse_button_monitor>,
+      public testing::WithParamInterface<
+          std::underlying_type_t<mouse_button_monitor::monitor_target_t>> {};
 
 TEST_P(mouse_monitoring_parameterized, should_query_monitor_any_key) {
 
   const auto key =
-      static_cast<typename mouse_monitor_test_params::second_type>(GetParam());
+      static_cast<mouse_button_monitor::monitor_target_t>(GetParam());
   this->expect_call_to_is_down(key);
   this->monitor.monitor_input(key);
   std::ignore = this->monitor.register_callback(this->null_callback);
