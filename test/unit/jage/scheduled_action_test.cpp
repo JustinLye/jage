@@ -19,40 +19,40 @@ GTEST(scheduled_action_status) {
   using jage::scheduled_action_status;
 
   SHOULD("Be active on construction") {
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Be paused after pause") {
     scheduled_action.pause();
-    EXPECT_EQ(scheduled_action_status::paused, scheduled_action.status());
+    EXPECT(scheduled_action_status::paused == scheduled_action.status());
   }
 
   SHOULD("Be active after resume") {
     scheduled_action.pause();
     scheduled_action.resume();
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Be canceled after cancel") {
     scheduled_action.cancel();
-    EXPECT_EQ(scheduled_action_status::canceled, scheduled_action.status());
+    EXPECT(scheduled_action_status::canceled == scheduled_action.status());
   }
 
   SHOULD("Not resume after cancel") {
     scheduled_action.cancel();
     scheduled_action.resume();
-    EXPECT_EQ(scheduled_action_status::canceled, scheduled_action.status());
+    EXPECT(scheduled_action_status::canceled == scheduled_action.status());
   }
 
   SHOULD("Not pause after cancel") {
     scheduled_action.cancel();
     scheduled_action.pause();
-    EXPECT_EQ(scheduled_action_status::canceled, scheduled_action.status());
+    EXPECT(scheduled_action_status::canceled == scheduled_action.status());
   }
 
   SHOULD("Complete after time expires") {
     scheduled_action.update(1ns);
-    EXPECT_EQ(scheduled_action_status::complete, scheduled_action.status());
+    EXPECT(scheduled_action_status::complete == scheduled_action.status());
   }
 }
 
@@ -61,78 +61,78 @@ GTEST(scheduled_action_with_time) {
 
   SHOULD("Stay active if not enough time has elapsed") {
     scheduled_action.update(1ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Complete after enough time has elapsed") {
     scheduled_action.update(1ns);
     scheduled_action.update(9ns);
-    EXPECT_EQ(scheduled_action_status::complete, scheduled_action.status());
+    EXPECT(scheduled_action_status::complete == scheduled_action.status());
   }
 
   SHOULD("Remain complete after cancel post time elapsed") {
     scheduled_action.update(10ns);
     scheduled_action.cancel();
-    EXPECT_EQ(scheduled_action_status::complete, scheduled_action.status());
+    EXPECT(scheduled_action_status::complete == scheduled_action.status());
   }
 
   SHOULD("Be complete after time expires") {
     scheduled_action.update(10ns);
-    EXPECT_TRUE(scheduled_action.is_complete());
+    EXPECT(scheduled_action.is_complete());
   }
 
   SHOULD("Not be complete before time expires") {
     scheduled_action.update(9ns);
-    EXPECT_FALSE(scheduled_action.is_complete());
+    EXPECT(not scheduled_action.is_complete());
   }
 
   SHOULD("Be complete after cancel") {
     scheduled_action.cancel();
-    EXPECT_TRUE(scheduled_action.is_complete());
+    EXPECT(scheduled_action.is_complete());
   }
 
   SHOULD("Not be complete after pause") {
     scheduled_action.pause();
-    EXPECT_FALSE(scheduled_action.is_complete());
+    EXPECT(not scheduled_action.is_complete());
   }
 
   SHOULD("Become active after reset while paused") {
     scheduled_action.pause();
     scheduled_action.reset(10ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Become active after reset while canceled") {
     scheduled_action.cancel();
     scheduled_action.reset(10ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Become active after reset while complete") {
     scheduled_action.update(10ns);
     scheduled_action.reset(10ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Reset elapsed time on reset") {
     scheduled_action.update(10ns);
     scheduled_action.reset(10ns);
     scheduled_action.update(9ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Stay active after extending time") {
     scheduled_action.update(9ns);
     scheduled_action.extend(2ns);
     scheduled_action.update(1ns);
-    EXPECT_EQ(scheduled_action_status::active, scheduled_action.status());
+    EXPECT(scheduled_action_status::active == scheduled_action.status());
   }
 
   SHOULD("Complete after additional time elapses") {
     scheduled_action.update(9ns);
     scheduled_action.extend(2ns);
     scheduled_action.update(3ns);
-    EXPECT_EQ(scheduled_action_status::complete, scheduled_action.status());
+    EXPECT(scheduled_action_status::complete == scheduled_action.status());
   }
 }
 
@@ -144,7 +144,7 @@ GTEST("scheduled_action_with_action") {
         [&] { value = 42; },
     };
     scheduled_action.update(9ns);
-    EXPECT_EQ(0, value);
+    EXPECT(0 == value);
   }
 
   SHOULD("Execute action after time expires") {
@@ -155,7 +155,7 @@ GTEST("scheduled_action_with_action") {
     };
 
     scheduled_action.update(10ns);
-    EXPECT_EQ(42, value);
+    EXPECT(42 == value);
   }
 
   SHOULD("Not invoke the action again") {
@@ -168,7 +168,7 @@ GTEST("scheduled_action_with_action") {
     scheduled_action.update(10ns);
     value = 0;
     scheduled_action.update(1ns);
-    EXPECT_EQ(0, value);
+    EXPECT(0 == value);
   }
 
   SHOULD("Invoke the action again after reset") {
@@ -182,9 +182,9 @@ GTEST("scheduled_action_with_action") {
     value = 0;
     scheduled_action.reset(10ns);
     scheduled_action.update(9ns);
-    EXPECT_EQ(0, value);
+    EXPECT(0 == value);
     scheduled_action.update(1ns);
-    EXPECT_EQ(42, value);
+    EXPECT(42 == value);
   }
 }
 
@@ -198,9 +198,9 @@ GTEST("schedule_action_with_action") {
 
     scheduled_action.pause();
     scheduled_action.update(20ns);
-    EXPECT_EQ(0, value);
+    EXPECT(0 == value);
     scheduled_action.resume();
     scheduled_action.update(10ns);
-    EXPECT_EQ(42, value);
+    EXPECT(42 == value);
   }
 }
