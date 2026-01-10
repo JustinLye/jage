@@ -20,6 +20,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
   g++-14 \
   gcc-14 \
   git \
+  libclang-rt-18-dev \
   libgl-dev \
   libx11-dev \
   libx11-xcb-dev \
