@@ -15,9 +15,12 @@ public:
       : window_{window}, input_controller_{input_controller} {}
 
   auto loop() -> void {
-    while (not window_.get().should_close()) {
-      input_controller_.get().poll();
-      window_.get().poll();
+    auto &window = window_.get();
+    auto &input_controller = input_controller_.get();
+    while (not window.should_close()) {
+      input_controller.poll();
+      window.render();
+      window.poll();
     }
   }
 

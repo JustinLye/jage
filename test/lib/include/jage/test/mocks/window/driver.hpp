@@ -6,5 +6,6 @@ namespace jage::test::mocks::window {
 struct driver {
   MOCK_METHOD(bool, should_close, (), (const));
   MOCK_METHOD(void, poll, ());
+  MOCK_METHOD(void, render, ());
 };
 } // namespace jage::test::mocks::window

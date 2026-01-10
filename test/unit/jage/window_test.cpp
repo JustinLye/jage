@@ -21,3 +21,8 @@ TEST_F(window_test, should_poll_driver) {
   EXPECT_CALL(driver, poll()).Times(1);
   window.poll();
 }
+
+TEST_F(window_test, should_call_render_on_the_driver) {
+  EXPECT_CALL(driver, render()).Times(1);
+  window.render();
+}

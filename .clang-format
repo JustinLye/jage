@@ -107,10 +107,14 @@ IncludeCategories:
     Priority:        0
   - Regex:           '^<(SFML/|imgui|spdlog/|docopt|boost/)'
     Priority:        20
-  - Regex:           '^<gtest/|gmock/'
+  - Regex:           '^<gtest/|gmock/|<GUnit'
     Priority:        30
   - Regex:           '^<jage/test/'
     Priority:        1
+  - Regex:           '^<glad/glad.h>'
+    Priority:        2
+  - Regex:           '^<GLFW/glfw3.h>'
+    Priority:        3
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false
