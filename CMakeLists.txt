@@ -5,18 +5,19 @@ list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/vendor")
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 message("COMPILER ${CMAKE_CXX_COMPILER_ID}")
 
+set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
 include(gunit)
-include(compiler_options)
-
 find_package(glad)
 find_package(glfw3)
 find_package(glm)
 find_package(range-v3)
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+
+include(compiler_options)
 
 add_library(jage_lib INTERFACE)
 target_include_directories(jage_lib INTERFACE include)
