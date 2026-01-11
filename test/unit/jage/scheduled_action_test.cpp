@@ -54,6 +54,11 @@ GTEST(scheduled_action_status) {
     scheduled_action.update(1ns);
     EXPECT(scheduled_action_status::complete == scheduled_action.status());
   }
+
+  SHOULD("Complete after 0 ns because default duration is 0 ns") {
+    scheduled_action.update(0ns);
+    EXPECT(scheduled_action_status::complete == scheduled_action.status());
+  }
 }
 
 GTEST(scheduled_action_with_time) {
