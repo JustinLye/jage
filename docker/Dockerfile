@@ -3,6 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG ACT_VERSION=0.2.61
 
 RUN groupadd -g $USER_GID $USERNAME || true \
   && useradd -m -u $USER_UID -g $USER_GID $USERNAME || true
@@ -25,7 +26,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
   clangd-18 \
   clang-tools-18 \
   cmake \
+  curl \
   direnv \
+  docker.io \
   g++-14 \
   gcc-14 \
   git \
@@ -90,7 +93,13 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
   pipx \
   && rm -rf /var/lib/apt/lists/*
 
+RUN usermod -aG docker $USERNAME
+
 ENV PATH="/root/.local/bin:${PATH}"
+
+RUN curl -sSL "https://github.com/nektos/act/releases/download/v${ACT_VERSION}/act_Linux_x86_64.tar.gz" \
+  | tar -xz -C "/usr/local/bin" act
+ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
 
 RUN ln -s /usr/bin/clangd-18 /usr/bin/clangd
 
@@ -104,3 +113,10 @@ RUN python3 -m venv .conan
 RUN eval "$(direnv hook bash)" >> ~/.bashrc
 RUN echo ". ./.conan/bin/activate" >> .envrc
 RUN direnv allow
+
+USER root
+COPY .devcontainer/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["sleep", "infinity"]
+

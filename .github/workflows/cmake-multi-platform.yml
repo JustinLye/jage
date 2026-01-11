@@ -93,6 +93,8 @@ jobs:
       fail-fast: true
       matrix:
         cpp_compiler: [g++, clang++]
+        build_type: [release, debug]
+        sanitizer: [none, asan, ubsan, tsan, lsan]
         include:
           - cpp_compiler: g++
             c_compiler: gcc
@@ -105,6 +107,16 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.13'
+    - name: set preset
+      shell: bash
+      run: |
+        if [[ "${{ matrix.sanitizer }}" == "none" ]]; then
+          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_ENV"
+          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }}" >> "$GITHUB_ENV"
+        else
+          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+        fi
     - name: cache conan
       uses: actions/cache@v4
       if: ${{ !env.ACT }}
@@ -126,12 +138,12 @@ jobs:
       shell: bash
       run: |
         source conan/bin/activate
-        conan install . -pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/release -pr:a profiles/asan -pr:a profiles/ubsan --build=missing
+        conan install . $JAGE_CI_PROFILES --build=missing
     - name: configure cmake
       shell: bash
       run: |
         source conan/bin/activate
-        cmake --preset conan-build-linux-${{ matrix.c_compiler }}-release-asan-ubsan
+        cmake --preset $JAGE_CI_PRESET
     - name: all
       shell: bash
       run: cmake --build build --target all

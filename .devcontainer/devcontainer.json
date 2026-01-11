@@ -8,7 +8,8 @@
     }
   },
   "remoteUser": "vscode",
-  "containerUser": "vscode",
+  "containerUser": "root",
+  "overrideCommand": false,
   "updateRemoteUserUID": true,
   "workspaceFolder": "/workspaces/jage",
   "features": {},
@@ -44,7 +45,8 @@
           "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
         },
         "cmake.options.statusBarVisibility": "visible",
-        "C_Cpp.default.intelliSenseMode": "linux-gcc-x86"
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
+        "dev.containers.showTerminal": "never"
       },
       "extensions": [
         "ms-vscode.cmake-tools",
@@ -60,6 +62,7 @@
     "source=jage-conan,target=/home/vscode/.conan2,type=volume",
     "source=jage-cache,target=/home/vscode/.cache,type=volume",
     "source=jage-local,target=/home/vscode/.local,type=volume",
-    "source=${localWorkspaceFolder}/journal,target=/home/vscode/journal,type=bind"
+    "source=${localWorkspaceFolder}/journal,target=/home/vscode/journal,type=bind",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ]
 }
