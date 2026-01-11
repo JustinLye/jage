@@ -6,6 +6,15 @@ ARG USER_GID=1000
 
 RUN groupadd -g $USER_GID $USERNAME || true \
   && useradd -m -u $USER_UID -g $USER_GID $USERNAME || true
+RUN mkdir -p /home/$USERNAME/.vscode-server/extensions \
+  && chown -R $USER_UID:$USER_GID /home/$USERNAME/.vscode-server /home/$USERNAME
+RUN mkdir -p /home/$USERNAME/.conan2 \
+  && chown -R $USER_UID:$USER_GID /home/$USERNAME/.conan2 /home/$USERNAME
+RUN mkdir -p /home/$USERNAME/.cache \
+  && chown -R $USER_UID:$USER_GID /home/$USERNAME/.cache /home/$USERNAME
+RUN mkdir -p /home/$USERNAME/.local \
+  && chown -R $USER_UID:$USER_GID /home/$USERNAME/.local /home/$USERNAME
+
 
 ENV DEBIAN_FRONTEND=noninteractive
 

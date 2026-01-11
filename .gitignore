@@ -5,3 +5,6 @@ CMakeUserPresets.json
 build-*
 scripts/install-all-conan-variants.sh
 .conan
+.cache/
+journal/*
+!journal/.gitkeep
