@@ -8,3 +8,4 @@ scripts/install-all-conan-variants.sh
 .cache/
 journal/*
 !journal/.gitkeep
+.vscode/launch.json

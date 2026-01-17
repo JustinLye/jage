@@ -58,4 +58,14 @@ GTEST(game_test) {
 
     game.loop();
   }
+
+  SHOULD("Continue polling when should close is false") {
+
+    EXPECT_CALL(window_driver, should_close())
+        .WillOnce(testing::Return(false))
+        .WillOnce(testing::Return(false))
+        .WillOnce(testing::Return(true));
+
+    game.loop();
+  }
 }

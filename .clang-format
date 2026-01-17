@@ -102,19 +102,21 @@ IfMacros:
 IncludeBlocks:   Regroup
 IncludeCategories:
   - Regex:           '^<jage/test'
-    Priority:        10
+    Priority:        40
+  - Regex:           '^<jage/.*/internal/'
+    Priority:        1
   - Regex:           '^<jage/'
     Priority:        0
   - Regex:           '^<(SFML/|imgui|spdlog/|docopt|boost/)'
-    Priority:        20
+    Priority:        100
   - Regex:           '^<gtest/|gmock/|<GUnit'
-    Priority:        30
+    Priority:        200
   - Regex:           '^<jage/test/'
-    Priority:        1
+    Priority:        10
   - Regex:           '^<glad/glad.h>'
-    Priority:        2
+    Priority:        20
   - Regex:           '^<GLFW/glfw3.h>'
-    Priority:        3
+    Priority:        30
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false
 IndentCaseBlocks: false
@@ -223,4 +225,3 @@ WhitespaceSensitiveMacros:
   - PP_STRINGIZE
   - STRINGIZE
 ...
-

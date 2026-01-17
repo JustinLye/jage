@@ -2,13 +2,8 @@
 
 #include <jage/input/generic/pollster.hpp>
 
-#include <array>
 #include <cstddef>
-#include <functional>
-#include <optional>
-#include <range/v3/all.hpp>
-#include <stdexcept>
-#include <utility>
+#include <ranges>
 
 namespace jage::input::generic {
 
