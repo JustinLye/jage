@@ -1,0 +1,2 @@
+add_unit_test(TARGET_NAME time-internal-concepts-real-number-time-source SOURCE_FILES real_number_time_source_test.cpp)
+add_unit_test(TARGET_NAME time-internal-concepts-real-number-duration SOURCE_FILES real_number_duration_test.cpp)
