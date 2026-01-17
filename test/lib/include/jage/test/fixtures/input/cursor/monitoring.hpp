@@ -25,7 +25,7 @@ protected:
         .WillRepeatedly(testing::Return(state));
   }
   auto expect_call_to_cursor_position() -> void {
-    EXPECT_CALL(driver, cursor_position).Times(0);
+    EXPECT_CALL(driver, cursor_position()).Times(0);
   }
   auto expect_call_to_callback(const std::uint8_t times = 1) -> void {
     EXPECT_CALL(callback, call(testing::_)).Times(times);

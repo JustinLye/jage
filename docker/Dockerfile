@@ -31,6 +31,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
   docker.io \
   g++-14 \
   gcc-14 \
+  gdb \
   git \
   libclang-rt-18-dev \
   libgl-dev \

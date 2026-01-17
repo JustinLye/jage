@@ -12,9 +12,9 @@
 
 namespace jage::test::fixtures {
 struct game_test : public testing::Test {
-  mocks::game::driver window_driver{};
+  testing::NiceMock<mocks::game::driver> window_driver{};
   jage::window<mocks::game::driver> window{window_driver};
-  mocks::input::controller::driver input_driver{};
+  testing::NiceMock<mocks::input::controller::driver> input_driver{};
   jage::input::controller<mocks::input::controller::driver> controller{
       input_driver};
 
