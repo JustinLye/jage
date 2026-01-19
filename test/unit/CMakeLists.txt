@@ -31,6 +31,7 @@ function(add_unit_test)
   set(EXECUTABLE_TARGET_NAME jage-unit-test-${ARG_TARGET_NAME})
   add_executable(${EXECUTABLE_TARGET_NAME} ${ARG_SOURCE_FILES})
   target_link_libraries(${EXECUTABLE_TARGET_NAME} ${LINK_LIBS})
+  target_enable_coverage(${EXECUTABLE_TARGET_NAME})
 
   set(RUN_TARGET_NAME run-${EXECUTABLE_TARGET_NAME})
   add_custom_target(

@@ -33,6 +33,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
   gcc-14 \
   gdb \
   git \
+  lcov \
   libclang-rt-18-dev \
   libgl-dev \
   libx11-dev \

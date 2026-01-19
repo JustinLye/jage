@@ -19,6 +19,7 @@ find_package(range-v3)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 include(compiler_options)
+include(coverage)
 
 add_library(jage_lib INTERFACE)
 target_include_directories(jage_lib INTERFACE include)
@@ -27,6 +28,7 @@ target_link_libraries(jage_lib INTERFACE jage::compiler_options
 add_library(jage::lib ALIAS jage_lib)
 
 add_subdirectory(test)
+add_coverage_target()
 add_subdirectory(app)
 
 file(CREATE_LINK "${CMAKE_BINARY_DIR}" "${CMAKE_SOURCE_DIR}/build" SYMBOLIC)
