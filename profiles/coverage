@@ -1,0 +1,2 @@
+[conf]
+tools.cmake.cmaketoolchain:extra_variables={"JAGE_ENABLE_TEST_COVERAGE":"ON"}

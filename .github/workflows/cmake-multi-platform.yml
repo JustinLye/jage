@@ -22,6 +22,7 @@ jobs:
           fetch-depth: 0
       - name: Detect Dockerfile changes
         id: dockerfile
+        if: ${{ !env.ACT }}
         shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
@@ -43,6 +44,11 @@ jobs:
         shell: bash
         run: |
           owner_lc="${GITHUB_REPOSITORY_OWNER,,}"
+          if [[ "${ACT}" == "true" ]]; then
+            echo "image=catthehacker/ubuntu:act-latest" >> "$GITHUB_OUTPUT"
+            echo "OWNER_LC=${owner_lc}" >> "$GITHUB_ENV"
+            exit 0
+          fi
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "image=ghcr.io/${owner_lc}/jage-ci:${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
           else
@@ -50,13 +56,14 @@ jobs:
           fi
           echo "OWNER_LC=${owner_lc}" >> "$GITHUB_ENV"
       - name: Log in to GHCR
+        if: ${{ !env.ACT }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image (PR)
-        if: ${{ github.event_name == 'pull_request' && steps.dockerfile.outputs.changed == 'true' }}
+        if: ${{ !env.ACT && github.event_name == 'pull_request' && steps.dockerfile.outputs.changed == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -65,7 +72,7 @@ jobs:
           tags: |
             ${{ steps.image.outputs.image }}
       - name: Build and push image (push)
-        if: ${{ github.event_name == 'push' && steps.dockerfile.outputs.changed == 'true' }}
+        if: ${{ !env.ACT && github.event_name == 'push' && steps.dockerfile.outputs.changed == 'true' }}
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -75,16 +82,79 @@ jobs:
             ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest
             ${{ steps.image.outputs.image }}
       - name: Tag latest image with commit sha
-        if: ${{ steps.dockerfile.outputs.changed == 'false' }}
+        if: ${{ !env.ACT && steps.dockerfile.outputs.changed == 'false' }}
         shell: bash
         run: |
           docker pull ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest
           docker tag ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest "${{ steps.image.outputs.image }}"
           docker push "${{ steps.image.outputs.image }}"
 
+  build-and-test-pr:
+    needs: build-ci-image
+    if: ${{ github.event_name == 'pull_request' && needs.build-ci-image.result == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-ci-image.outputs.image }}
+      options: --user root
+    strategy:
+      fail-fast: true
+      matrix:
+        cpp_compiler: [g++]
+        build_type: [debug]
+        sanitizer: [none]
+        include:
+          - cpp_compiler: g++
+            c_compiler: gcc
+            compiler_version: 14
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    - name: set preset
+      shell: bash
+      run: |
+        if [[ "${{ matrix.sanitizer }}" == "none" ]]; then
+          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_ENV"
+          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }}" >> "$GITHUB_ENV"
+        else
+          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+        fi
+    - name: cache conan
+      uses: actions/cache@v4
+      if: ${{ !env.ACT }}
+      with:
+        path: |
+          ~/.conan2
+          ~/.cache/pip
+        key: ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
+        restore-keys: |
+          ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-
+          ${{ runner.os }}-conan-
+    - name: install conan virtual environment
+      shell: bash
+      run: |
+        python3 -m venv conan
+        source conan/bin/activate
+        pip install conan
+    - name: configure conan
+      shell: bash
+      run: |
+        source conan/bin/activate
+        conan install . $JAGE_CI_PROFILES --build=missing
+    - name: configure cmake
+      shell: bash
+      run: |
+        source conan/bin/activate
+        cmake --preset $JAGE_CI_PRESET
+    - name: all
+      shell: bash
+      run: cmake --build build --target all
+
   build-and-test:
     needs: build-ci-image
-    if: ${{ needs.build-ci-image.result == 'success' }}
+    if: ${{ github.event_name == 'push' && needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
@@ -147,3 +217,74 @@ jobs:
     - name: all
       shell: bash
       run: cmake --build build --target all
+
+  test-coverage:
+    needs: build-ci-image
+    if: ${{ needs.build-ci-image.result == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-ci-image.outputs.image }}
+      options: --user root
+    strategy:
+      fail-fast: true
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    - name: cache conan
+      uses: actions/cache@v4
+      if: ${{ !env.ACT }}
+      with:
+        path: |
+          ~/.conan2
+          ~/.cache/pip
+        key: linux-conan-gcc-14-${{ hashFiles('conanfile.py', 'profiles/**') }}
+        restore-keys: |
+          linux-conan-gcc-14-
+          linux-conan-
+    - name: install conan virtual environment
+      shell: bash
+      run: |
+        python3 -m venv conan
+        source conan/bin/activate
+        pip install conan
+    - name: configure conan
+      shell: bash
+      run: |
+        source conan/bin/activate
+        conan install . -pr:a profiles/coverage -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
+    - name: configure cmake
+      shell: bash
+      run: |
+        source conan/bin/activate
+        cmake --preset conan-build-linux-gcc-debug
+    - name: coverage
+      shell: bash
+      run: |
+        cmake --build build --target coverage
+    - name: upload coverage artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: build/coverage-report
+        if-no-files-found: error
+    - name: upload coverage pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: build/coverage-report
+
+  deploy-coverage:
+    needs: test-coverage
+    if: ${{ github.event_name == 'push' && needs.test-coverage.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+    - name: deploy coverage to GitHub Pages
+      id: deploy
+      uses: actions/deploy-pages@v4
