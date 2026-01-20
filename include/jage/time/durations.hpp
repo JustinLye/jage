@@ -17,6 +17,10 @@ constexpr auto operator""_ms(long double value) -> milliseconds {
   return milliseconds{value};
 }
 
+constexpr auto operator""_ms(unsigned long long value) -> milliseconds {
+  return milliseconds{static_cast<long double>(value)};
+}
+
 constexpr auto operator""_us(long double value) -> microseconds {
   return microseconds{value};
 }

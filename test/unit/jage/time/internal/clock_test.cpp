@@ -8,6 +8,7 @@
 #include <GUnit.h>
 
 #include <chrono>
+#include <stdexcept>
 
 GTEST("clock: queries") {
   using time_source = jage::test::fakes::time::source<jage::time::nanoseconds>;
@@ -97,6 +98,10 @@ GTEST("clock: scale") {
   ASSERT_NEAR(16666666.666666666, clock.game_time().count(), 1e-4);
   ASSERT_NEAR(17000000.0, clock.real_time().count(), 1e-6);
 
+  SHOULD("reject negative time scale") {
+    EXPECT_THROW(clock.set_time_scale(-1.0), std::invalid_argument);
+  }
+
   clock.set_time_scale(0);
   current_time += 50000000_ns;
   ASSERT_NEAR(67000000.0, clock.real_time().count(), 1e-6);
@@ -168,4 +173,159 @@ GTEST("clock: scale") {
 
   current_time += 170'000'000_ns;
   SHOULD("tick at 1/10") { EXPECT_EQ(7UZ, clock.ticks()); }
+}
+
+GTEST("clock: snapshot") {
+
+  using time_source = jage::test::fakes::time::source<jage::time::nanoseconds>;
+  using jage::time::operator""_ns;
+  using jage::time::operator""_ms;
+  using jage::time::operator""_Hz;
+
+  auto clock = jage::time::internal::clock<time_source>{10000_Hz};
+
+  auto &current_time = time_source::current_time;
+  current_time = 0_ns;
+
+  SHOULD("should have zero calculated values") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(0_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(1.0, snapshot.time_scale);
+    EXPECT_EQ(0UZ, snapshot.ticks);
+    EXPECT_EQ(0_ns, snapshot.game_time);
+    EXPECT_EQ(0UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(0_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  SHOULD("update tick duration based on hertz") {
+    const auto local_clock = jage::time::internal::clock<
+        jage::test::fakes::time::source<jage::time::milliseconds>>{100_Hz};
+    EXPECT_EQ(10_ms, local_clock.snapshot().tick_duration);
+  }
+
+  current_time = 100'000_ns;
+
+  SHOULD("update snapshot with current time") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(100'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(1.0, snapshot.time_scale);
+    EXPECT_EQ(1UZ, snapshot.ticks);
+    EXPECT_EQ(100'000_ns, snapshot.game_time);
+    EXPECT_EQ(0UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(0_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  clock.set_time_scale(2.0);
+
+  SHOULD("update time scale") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(100'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(2.0, snapshot.time_scale);
+    EXPECT_EQ(1UZ, snapshot.ticks);
+    EXPECT_EQ(100'000_ns, snapshot.game_time);
+    EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  current_time += 50'000_ns;
+
+  SHOULD("use elapsed_time for accumulated_time") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(150'000_ns, snapshot.real_time);
+    EXPECT_EQ(2.0, snapshot.time_scale);
+    EXPECT_EQ(2UZ, snapshot.ticks);
+    EXPECT_EQ(200'000_ns, snapshot.game_time);
+    EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  current_time += 50'000_ns;
+
+  SHOULD("scale snapshot") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(200'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(2.0, snapshot.time_scale);
+    EXPECT_EQ(3UZ, snapshot.ticks);
+    EXPECT_EQ(300'000_ns, snapshot.game_time);
+    EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
+  }
+
+  clock.set_time_scale(0);
+
+  current_time += 100'000_ns;
+
+  SHOULD("freeze appropriate parts of snapshot") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(current_time, snapshot.real_time);
+    EXPECT_EQ(300'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(0.0, snapshot.time_scale);
+    EXPECT_EQ(3UZ, snapshot.ticks);
+    EXPECT_EQ(300'000_ns, snapshot.game_time);
+    EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(0_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  clock.set_time_scale(1);
+
+  SHOULD("unfreeze") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(current_time, snapshot.real_time);
+    EXPECT_EQ(300'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(1.0, snapshot.time_scale);
+    EXPECT_EQ(3UZ, snapshot.ticks);
+    EXPECT_EQ(300'000_ns, snapshot.game_time);
+    EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(300'000_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
+
+  current_time += 150'000_ns;
+
+  SHOULD("continue updating snapshot") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(current_time, snapshot.real_time);
+    EXPECT_EQ(450'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(1.0, snapshot.time_scale);
+    EXPECT_EQ(4UZ, snapshot.ticks);
+    EXPECT_EQ(400'000_ns, snapshot.game_time);
+    EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(300'000_ns, snapshot.elapsed_time);
+    EXPECT_EQ(50'000_ns, snapshot.accumulated_time);
+  }
+
+  clock.set_time_scale(0);
+  SHOULD("freeze accumulated time") {
+    const auto snapshot = clock.snapshot();
+
+    EXPECT_EQ(current_time, snapshot.real_time);
+    EXPECT_EQ(450'000_ns, snapshot.real_time);
+    EXPECT_EQ(100'000_ns, snapshot.tick_duration);
+    EXPECT_EQ(0.0, snapshot.time_scale);
+    EXPECT_EQ(4UZ, snapshot.ticks);
+    EXPECT_EQ(400'000_ns, snapshot.game_time);
+    EXPECT_EQ(4UZ, snapshot.elapsed_ticks);
+    EXPECT_EQ(0_ns, snapshot.elapsed_time);
+    EXPECT_EQ(0_ns, snapshot.accumulated_time);
+  }
 }
