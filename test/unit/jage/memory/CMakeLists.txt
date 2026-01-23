@@ -1,0 +1,1 @@
+add_unit_test(TARGET_NAME memory-cacheline-slot SOURCE_FILES cacheline_slot_test.cpp)
