@@ -194,7 +194,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(1.0, snapshot.time_scale);
     EXPECT_EQ(0UZ, snapshot.ticks);
-    EXPECT_EQ(0_ns, snapshot.game_time);
     EXPECT_EQ(0UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(0_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -215,7 +214,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(1.0, snapshot.time_scale);
     EXPECT_EQ(1UZ, snapshot.ticks);
-    EXPECT_EQ(100'000_ns, snapshot.game_time);
     EXPECT_EQ(0UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(0_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -230,7 +228,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(2.0, snapshot.time_scale);
     EXPECT_EQ(1UZ, snapshot.ticks);
-    EXPECT_EQ(100'000_ns, snapshot.game_time);
     EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -244,7 +241,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(150'000_ns, snapshot.real_time);
     EXPECT_EQ(2.0, snapshot.time_scale);
     EXPECT_EQ(2UZ, snapshot.ticks);
-    EXPECT_EQ(200'000_ns, snapshot.game_time);
     EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -259,7 +255,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(2.0, snapshot.time_scale);
     EXPECT_EQ(3UZ, snapshot.ticks);
-    EXPECT_EQ(300'000_ns, snapshot.game_time);
     EXPECT_EQ(1UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(200'000_ns, snapshot.elapsed_time);
   }
@@ -276,7 +271,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(0.0, snapshot.time_scale);
     EXPECT_EQ(3UZ, snapshot.ticks);
-    EXPECT_EQ(300'000_ns, snapshot.game_time);
     EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(0_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -292,7 +286,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(1.0, snapshot.time_scale);
     EXPECT_EQ(3UZ, snapshot.ticks);
-    EXPECT_EQ(300'000_ns, snapshot.game_time);
     EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(300'000_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);
@@ -308,7 +301,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(1.0, snapshot.time_scale);
     EXPECT_EQ(4UZ, snapshot.ticks);
-    EXPECT_EQ(400'000_ns, snapshot.game_time);
     EXPECT_EQ(3UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(300'000_ns, snapshot.elapsed_time);
     EXPECT_EQ(50'000_ns, snapshot.accumulated_time);
@@ -323,7 +315,6 @@ GTEST("clock: snapshot") {
     EXPECT_EQ(100'000_ns, snapshot.tick_duration);
     EXPECT_EQ(0.0, snapshot.time_scale);
     EXPECT_EQ(4UZ, snapshot.ticks);
-    EXPECT_EQ(400'000_ns, snapshot.game_time);
     EXPECT_EQ(4UZ, snapshot.elapsed_ticks);
     EXPECT_EQ(0_ns, snapshot.elapsed_time);
     EXPECT_EQ(0_ns, snapshot.accumulated_time);

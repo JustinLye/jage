@@ -10,7 +10,7 @@ template <class TDuration> struct source {
   using period = typename TDuration::period;
   using duration = TDuration;
   using time_point = std::chrono::time_point<source>;
-  static constexpr auto is_steady = false;
+  static constexpr auto is_steady = true;
 
   static TDuration current_time;
 
