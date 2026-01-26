@@ -1,8 +1,10 @@
 #pragma once
 
+#include <jage/memory/cacheline_size.hpp>
 #include <jage/time/hertz.hpp>
 
 #include <jage/time/internal/concepts/real_number_time_source.hpp>
+#include <jage/time/internal/events/snapshot.hpp>
 
 #include <cmath>
 #include <cstdint>
@@ -10,23 +12,18 @@
 
 namespace jage::time::internal {
 
-template <internal::concepts::real_number_time_source TTimeSource> class clock {
+template <internal::concepts::real_number_time_source TTimeSource>
+  requires(TTimeSource::is_steady)
+class clock {
   using duration_ = typename TTimeSource::duration;
+  using snapshot_ = events::snapshot<duration_>;
+  static_assert(memory::cacheline_size >= sizeof(snapshot_));
+  static_assert(alignof(snapshot_) == memory::cacheline_size);
+  static_assert(sizeof(snapshot_) % memory::cacheline_size == 0);
   duration_ elapsed_time_{};
   duration_ tick_duration_{};
   std::uint64_t elapsed_ticks_{};
   double time_scale_{1.0};
-
-  struct snapshot {
-    duration_ real_time{};
-    duration_ tick_duration{};
-    double time_scale{1.0};
-    duration_ elapsed_time{};
-    std::uint64_t elapsed_ticks{};
-    duration_ game_time{};
-    std::uint64_t ticks{};
-    duration_ accumulated_time{};
-  };
 
   [[nodiscard]] auto
   ticks(const duration_ current_time) const -> std::uint64_t {
@@ -36,12 +33,13 @@ template <internal::concepts::real_number_time_source TTimeSource> class clock {
   }
 
 public:
-  using duration = duration_;
+  using duration_type = duration_;
+  using snapshot_type = snapshot_;
 
   constexpr clock(const hertz &cycles)
-      : tick_duration_{static_cast<duration>(cycles)} {};
+      : tick_duration_{static_cast<duration_type>(cycles)} {};
 
-  [[nodiscard]] auto real_time() const -> duration {
+  [[nodiscard]] auto real_time() const -> duration_type {
     return TTimeSource::now().time_since_epoch();
   }
 
@@ -49,12 +47,12 @@ public:
     return ticks(real_time() * time_scale_);
   }
 
-  [[nodiscard]] auto game_time() const -> duration {
-    return duration{ticks() * tick_duration_.count()};
+  [[nodiscard]] auto game_time() const -> duration_type {
+    return duration_type{ticks() * tick_duration_.count()};
   }
 
   [[nodiscard]] constexpr auto
-  tick_duration() const noexcept -> const duration & {
+  tick_duration() const noexcept -> const duration_type & {
     return tick_duration_;
   }
 
@@ -69,7 +67,7 @@ public:
     time_scale_ = scale;
   }
 
-  [[nodiscard]] auto snapshot() const -> snapshot {
+  [[nodiscard]] auto snapshot() const -> snapshot_type {
     const auto current_real_time = real_time();
     const auto scaled_real_time = current_real_time * time_scale_;
     const auto accumulated_time = scaled_real_time - elapsed_time_;
@@ -82,7 +80,6 @@ public:
         .time_scale = time_scale_,
         .elapsed_time = elapsed_time_,
         .elapsed_ticks = elapsed_ticks_,
-        .game_time = duration{current_ticks * tick_duration_.count()},
         .ticks = current_ticks,
         .accumulated_time =
             accumulated_time - accumulated_ticks * tick_duration_,
