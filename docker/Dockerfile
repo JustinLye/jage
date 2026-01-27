@@ -120,7 +120,8 @@ RUN python3 -m venv .conan
 RUN eval "$(direnv hook bash)" >> ~/.bashrc
 RUN echo ". ./.conan/bin/activate" >> .envrc
 RUN direnv allow
-COPY conanfile.py profiles/ /tmp/jage/
+COPY conanfile.py /tmp/jage/
+COPY profiles/ /workspaces/profiles/
 RUN if [ "$CONAN_PREWARM" = "1" ]; then \
     conan install /tmp/jage ${CONAN_PREWARM_PROFILES} --build=missing; \
   fi
