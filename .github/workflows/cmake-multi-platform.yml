@@ -30,8 +30,8 @@ jobs:
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            if git diff --name-only "origin/${{ github.base_ref }}"..."${{ github.event.pull_request.head.sha }}" | grep -Eq '^(docker/Dockerfile|conanfile.py|profiles/)'; then
+            git fetch origin "${{ github.base_ref }}"
+            if git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -Eq '^(docker/Dockerfile|conanfile.py|profiles/)'; then
               echo "changed=true" >> "$GITHUB_OUTPUT"
             else
               echo "changed=false" >> "$GITHUB_OUTPUT"
