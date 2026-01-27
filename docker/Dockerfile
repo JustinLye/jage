@@ -4,6 +4,8 @@ ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
 ARG ACT_VERSION=0.2.61
+ARG CONAN_PREWARM=0
+ARG CONAN_PREWARM_PROFILES=""
 
 RUN groupadd -g $USER_GID $USERNAME || true \
   && useradd -m -u $USER_UID -g $USER_GID $USERNAME || true
@@ -15,9 +17,12 @@ RUN mkdir -p /home/$USERNAME/.cache \
   && chown -R $USER_UID:$USER_GID /home/$USERNAME/.cache /home/$USERNAME
 RUN mkdir -p /home/$USERNAME/.local \
   && chown -R $USER_UID:$USER_GID /home/$USERNAME/.local /home/$USERNAME
+RUN mkdir -p /opt/conan \
+  && chown -R $USER_UID:$USER_GID /opt/conan
 
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV CONAN_USER_HOME=/opt/conan
 
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
   ca-certificates \
@@ -115,10 +120,13 @@ RUN python3 -m venv .conan
 RUN eval "$(direnv hook bash)" >> ~/.bashrc
 RUN echo ". ./.conan/bin/activate" >> .envrc
 RUN direnv allow
+COPY conanfile.py profiles/ /tmp/jage/
+RUN if [ "$CONAN_PREWARM" = "1" ]; then \
+    conan install /tmp/jage ${CONAN_PREWARM_PROFILES} --build=missing; \
+  fi
 
 USER root
 COPY .devcontainer/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["sleep", "infinity"]
-

@@ -31,13 +31,13 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
             git fetch origin "${{ github.base_ref }}" --depth=1
-            if git diff --name-only "origin/${{ github.base_ref }}"..."${{ github.event.pull_request.head.sha }}" | grep -q '^docker/Dockerfile$'; then
+            if git diff --name-only "origin/${{ github.base_ref }}"..."${{ github.event.pull_request.head.sha }}" | grep -Eq '^(docker/Dockerfile|conanfile.py|profiles/)'; then
               echo "changed=true" >> "$GITHUB_OUTPUT"
             else
               echo "changed=false" >> "$GITHUB_OUTPUT"
             fi
           else
-            if git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -q '^docker/Dockerfile$'; then
+            if git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Eq '^(docker/Dockerfile|conanfile.py|profiles/)'; then
               echo "changed=true" >> "$GITHUB_OUTPUT"
             else
               echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -72,6 +72,9 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          build-args: |
+            CONAN_PREWARM=1
+            CONAN_PREWARM_PROFILES=-pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug -pr:a profiles/ubsan
           push: true
           tags: |
             ${{ steps.image.outputs.image }}
@@ -81,6 +84,9 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
+          build-args: |
+            CONAN_PREWARM=1
+            CONAN_PREWARM_PROFILES=-pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug
           push: true
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest
@@ -97,13 +103,11 @@ jobs:
     needs: build-ci-image
     if: ${{ github.event_name == 'pull_request' && needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
       options: --user root
     env:
+      CONAN_USER_HOME: /opt/conan
       PIP_CACHE_DIR: /root/.cache/pip
     strategy:
       fail-fast: true
@@ -135,7 +139,7 @@ jobs:
       if: ${{ !env.ACT }}
       with:
         path: |
-          /github/home/.conan2
+          /opt/conan
           /root/.cache/pip
         key: ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
         restore-keys: |
@@ -147,26 +151,11 @@ jobs:
         python3 -m venv conan
         source conan/bin/activate
         pip install conan
-    - name: configure conan remotes
-      if: ${{ !env.ACT }}
-      shell: bash
-      run: |
-        source conan/bin/activate
-        owner_lc="${GITHUB_REPOSITORY_OWNER,,}"
-        conan remote add ghcr "https://ghcr.io/v2/${owner_lc}/conan" --force
-        conan remote login ghcr "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
-        conan remote list
     - name: configure conan
       shell: bash
       run: |
         source conan/bin/activate
         conan install . $JAGE_CI_PROFILES --build=missing
-    - name: upload conan packages
-      if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) }}
-      shell: bash
-      run: |
-        source conan/bin/activate
-        conan upload "*" -r=ghcr --all --confirm
     - name: configure cmake
       shell: bash
       run: |
@@ -180,13 +169,11 @@ jobs:
     needs: build-ci-image
     if: ${{ github.event_name == 'schedule' && needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
       options: --user root
     env:
+      CONAN_USER_HOME: /opt/conan
       PIP_CACHE_DIR: /root/.cache/pip
     strategy:
       fail-fast: true
@@ -221,7 +208,7 @@ jobs:
       if: ${{ !env.ACT }}
       with:
         path: |
-          /github/home/.conan2
+          /opt/conan
           /root/.cache/pip
         key: ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
         restore-keys: |
@@ -233,26 +220,11 @@ jobs:
         python3 -m venv conan
         source conan/bin/activate
         pip install conan
-    - name: configure conan remotes
-      if: ${{ !env.ACT }}
-      shell: bash
-      run: |
-        source conan/bin/activate
-        owner_lc="${GITHUB_REPOSITORY_OWNER,,}"
-        conan remote add ghcr "https://ghcr.io/v2/${owner_lc}/conan" --force
-        conan remote login ghcr "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
-        conan remote list
     - name: configure conan
       shell: bash
       run: |
         source conan/bin/activate
         conan install . $JAGE_CI_PROFILES --build=missing
-    - name: upload conan packages
-      if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false) }}
-      shell: bash
-      run: |
-        source conan/bin/activate
-        conan upload "*" -r=ghcr --all --confirm
     - name: configure cmake
       shell: bash
       run: |
@@ -266,13 +238,11 @@ jobs:
     needs: build-ci-image
     if: ${{ github.event_name == 'schedule' && needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
       options: --user root
     env:
+      CONAN_USER_HOME: /opt/conan
       PIP_CACHE_DIR: /root/.cache/pip
     strategy:
       fail-fast: true
@@ -286,7 +256,7 @@ jobs:
       if: ${{ !env.ACT }}
       with:
         path: |
-          /github/home/.conan2
+          /opt/conan
           /root/.cache/pip
         key: linux-conan-gcc-14-${{ hashFiles('conanfile.py', 'profiles/**') }}
         restore-keys: |
@@ -298,15 +268,6 @@ jobs:
         python3 -m venv conan
         source conan/bin/activate
         pip install conan
-    - name: configure conan remotes
-      if: ${{ !env.ACT }}
-      shell: bash
-      run: |
-        source conan/bin/activate
-        owner_lc="${GITHUB_REPOSITORY_OWNER,,}"
-        conan remote add ghcr "https://ghcr.io/v2/${owner_lc}/conan" --force
-        conan remote login ghcr "${{ github.actor }}" -p "${{ secrets.GITHUB_TOKEN }}"
-        conan remote list
     - name: configure conan
       shell: bash
       run: |
