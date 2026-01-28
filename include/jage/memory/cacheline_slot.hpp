@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cstddef>
+#include <type_traits>
 #include <utility>
 
 namespace jage::memory {
@@ -20,7 +21,26 @@ public:
 };
 
 template <class TUnderlyingValue>
-  requires(sizeof(TUnderlyingValue) < cacheline_size)
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+          std::is_arithmetic_v<TUnderlyingValue>
+class alignas(cacheline_size) cacheline_slot<TUnderlyingValue> final {
+  TUnderlyingValue value_;
+  [[no_unique_address]] std::array<std::byte,
+                                   cacheline_size - (sizeof(TUnderlyingValue) %
+                                                     cacheline_size)> padding_;
+
+public:
+  cacheline_slot(auto &&...args)
+      : value_{std::forward<decltype(args)>(args)...} {}
+
+  operator TUnderlyingValue() const { return value_; }
+
+  operator TUnderlyingValue() { return value_; }
+};
+
+template <class TUnderlyingValue>
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+          (not std::is_arithmetic_v<TUnderlyingValue>)
 class alignas(cacheline_size) cacheline_slot<TUnderlyingValue> final
     : public TUnderlyingValue {
   [[no_unique_address]] std::array<
@@ -41,11 +61,23 @@ public:
 };
 
 template <class TUnderlyingValue>
-  requires(sizeof(TUnderlyingValue) < cacheline_size)
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+              std::is_arithmetic_v<TUnderlyingValue>
 cacheline_slot(TUnderlyingValue &&) -> cacheline_slot<TUnderlyingValue>;
 
 template <class TUnderlyingValue>
-  requires(sizeof(TUnderlyingValue) < cacheline_size)
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+              std::is_arithmetic_v<TUnderlyingValue>
+cacheline_slot(TUnderlyingValue &) -> cacheline_slot<TUnderlyingValue>;
+
+template <class TUnderlyingValue>
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+              (not std::is_arithmetic_v<TUnderlyingValue>)
+cacheline_slot(TUnderlyingValue &&) -> cacheline_slot<TUnderlyingValue>;
+
+template <class TUnderlyingValue>
+  requires(sizeof(TUnderlyingValue) < cacheline_size) and
+              (not std::is_arithmetic_v<TUnderlyingValue>)
 cacheline_slot(TUnderlyingValue &) -> cacheline_slot<TUnderlyingValue>;
 
 template <class TUnderlyingValue>

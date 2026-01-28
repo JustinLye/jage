@@ -249,3 +249,16 @@ GTEST("memory cacheline slot") {
     }
   }
 }
+
+GTEST("primative types") {
+  SHOULD("behave like primative type") {
+    {
+      auto slot = cacheline_slot<int>{42};
+      EXPECT_EQ(42, slot);
+    }
+    {
+      auto slot = cacheline_slot{std::numeric_limits<std::uint64_t>::max()};
+      EXPECT_EQ(std::numeric_limits<std::uint64_t>::max(), slot);
+    }
+  }
+}
