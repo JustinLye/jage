@@ -13,6 +13,9 @@
   "updateRemoteUserUID": true,
   "workspaceFolder": "/workspaces/jage",
   "features": {},
+  "runArgs": [
+    "--security-opt=seccomp=${localWorkspaceFolder}/.devcontainer/seccomp-personality.json"
+  ],
   "customizations": {
     "vscode": {
       "settings": {
