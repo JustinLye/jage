@@ -34,11 +34,18 @@ function(add_unit_test)
   target_enable_coverage(${EXECUTABLE_TARGET_NAME})
 
   set(RUN_TARGET_NAME run-${EXECUTABLE_TARGET_NAME})
-  add_custom_target(
-    ${RUN_TARGET_NAME}
+  set(RUN_TARGET_STAMP_FILEPATH "${CMAKE_CURRENT_BINARY_DIR}/${RUN_TARGET_NAME}.stamp")
+  add_custom_command(
+    OUTPUT "${RUN_TARGET_STAMP_FILEPATH}"
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${EXECUTABLE_TARGET_NAME}
             --gtest_color=yes
-    DEPENDS ${EXECUTABLE_TARGET_NAME})
+    COMMAND ${CMAKE_COMMAND} -E touch ${RUN_TARGET_STAMP_FILEPATH}
+    DEPENDS ${EXECUTABLE_TARGET_NAME}
+    VERBATIM)
+
+  add_custom_target(
+    ${RUN_TARGET_NAME}
+    DEPENDS ${RUN_TARGET_STAMP_FILEPATH})
 
   add_dependencies(run-all-jage-unit-tests ${RUN_TARGET_NAME})
 

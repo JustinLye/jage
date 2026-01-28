@@ -16,19 +16,30 @@ template <class T> struct atomic {
     return instance;
   }
 
-  MOCK_METHOD(std::uint8_t, mock_load, (std::memory_order), (const noexcept));
-  MOCK_METHOD(void, mock_store, (std::uint8_t, std::memory_order), (noexcept));
+  MOCK_METHOD(std::uint64_t, mock_load, (std::memory_order), (const noexcept));
+  MOCK_METHOD(void, mock_store, (std::uint64_t, std::memory_order), (noexcept));
+  MOCK_METHOD(bool, mock_compare_exchange_weak,
+              (std::uint64_t &, std::uint64_t, std::memory_order,
+               std::memory_order));
 
   atomic() = default;
-  atomic(std::uint8_t) {}
+  atomic(std::uint64_t) {}
   [[nodiscard]] static auto
-  load(std::memory_order order) noexcept -> std::uint8_t {
+  load(std::memory_order order) noexcept -> std::uint64_t {
     return get_instance()->mock_load(order);
   }
 
-  static auto store(std::uint8_t desired,
+  static auto store(std::uint64_t desired,
                     std::memory_order order) noexcept -> void {
     get_instance()->mock_store(desired, order);
+  }
+
+  [[nodiscard]] static auto
+  compare_exchange_weak(std::uint64_t &expected, std::uint64_t desired,
+                        std::memory_order success,
+                        std::memory_order failure) -> bool {
+    return get_instance()->mock_compare_exchange_weak(expected, desired,
+                                                      success, failure);
   }
 };
 
