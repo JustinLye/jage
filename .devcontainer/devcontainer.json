@@ -16,6 +16,7 @@
   "runArgs": [
     "--security-opt=seccomp=${localWorkspaceFolder}/.devcontainer/seccomp-personality.json"
   ],
+  "postCreateCommand": "python3 -m venv .conan && ./.conan/bin/python -m pip install black && direnv reload",
   "customizations": {
     "vscode": {
       "settings": {
@@ -49,11 +50,18 @@
         },
         "cmake.options.statusBarVisibility": "visible",
         "C_Cpp.default.intelliSenseMode": "linux-gcc-x86",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter"
+        },
         "dev.containers.showTerminal": "never"
+        ,
+        "python.defaultInterpreterPath": "${workspaceFolder}/.conan/bin/python"
       },
       "extensions": [
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
+        "ms-python.black-formatter",
+        "ms-python.python",
         "llvm-vs-code-extensions.vscode-clangd",
         "xaver.clang-format",
         "openai.chatgpt"
