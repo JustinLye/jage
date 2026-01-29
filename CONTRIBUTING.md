@@ -63,3 +63,15 @@ devcontainer exec --workspace-folder /path/to/jage -- bash
 ```
 
 Once inside the container shell, run the same Conan/CMake commands from the command line section.
+
+## Scripts
+
+### prune_gone_branches.py
+
+Deletes local git branches whose upstream has been removed from the remote. It will prompt before deleting the currently checked out branch unless `--respond-yes` is provided.
+
+Example:
+
+```bash
+scripts/prune_gone_branches.py
+```
