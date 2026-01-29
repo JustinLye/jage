@@ -111,7 +111,6 @@ USER $USERNAME
 WORKDIR /workspaces
 
 RUN pipx install conan
-RUN python3 -m venv .conan
 RUN eval "$(direnv hook bash)" >> ~/.bashrc
 RUN echo ". ./.conan/bin/activate" >> .envrc
 RUN direnv allow
@@ -121,4 +120,3 @@ COPY .devcontainer/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["sleep", "infinity"]
-
