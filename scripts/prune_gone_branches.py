@@ -4,11 +4,11 @@ import subprocess
 import sys
 
 
-def run(cmd, capture=False) -> subprocess.CompletedProcess:
+def run(cmd: list[str], capture: bool = False) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, check=True, text=True, capture_output=capture)
 
 
-def get_current_branch():
+def get_current_branch() -> str | None:
     result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"],
         text=True,
@@ -30,7 +30,7 @@ def get_gone_branches() -> list[str]:
         ],
         capture=True,
     )
-    branches = []
+    branches: list[str] = []
     for line in result.stdout.splitlines():
         if not line.strip():
             continue
@@ -40,7 +40,7 @@ def get_gone_branches() -> list[str]:
     return branches
 
 
-def prompt_delete_checked_out(branch) -> bool:
+def prompt_delete_checked_out(branch: str) -> bool:
     prompt = (
         f"the {branch} branch has been deleted from the remote, but is checked out locally. "
         "Would you like to delete the branch? (y/n) "
@@ -54,7 +54,7 @@ def prompt_delete_checked_out(branch) -> bool:
         print("Please answer y or n.")
 
 
-def delete_branch(branch):
+def delete_branch(branch: str) -> None:
     run(["git", "branch", "-D", branch])
     print(f"Deleted {branch}")
 
