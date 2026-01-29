@@ -55,13 +55,15 @@
         },
         "dev.containers.showTerminal": "never"
         ,
-        "python.defaultInterpreterPath": "${workspaceFolder}/.conan/bin/python"
+        "python.defaultInterpreterPath": "${workspaceFolder}/.conan/bin/python",
+        "python.analysis.typeCheckingMode": "strict"
       },
       "extensions": [
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
         "ms-python.black-formatter",
         "ms-python.python",
+        "ms-python.vscode-pylance",
         "llvm-vs-code-extensions.vscode-clangd",
         "xaver.clang-format",
         "openai.chatgpt"
