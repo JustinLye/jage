@@ -1,14 +1,28 @@
-# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
-# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: JAGE Build and Test
 
 on:
   pull_request:
     branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "LICENSE"
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "LICENSE"
   workflow_dispatch:
   schedule:
     # 03:00 UTC = 21:00 US Central (UTC-6 standard; UTC-5 daylight)
     - cron: "0 3 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build-ci-image:
@@ -66,24 +80,24 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image (PR)
-        if: ${{ !env.ACT && github.event_name == 'pull_request' && steps.dockerfile.outputs.changed == 'true' }}
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: true
-          tags: |
-            ${{ steps.image.outputs.image }}
-      - name: Build and push image (push)
+      - name: Build and push image (with latest tag)
         if: ${{ !env.ACT && github.event_name == 'push' && steps.dockerfile.outputs.changed == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile
           push: true
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest
+            ${{ steps.image.outputs.image }}
+      - name: Build and push image (PR only)
+        if: ${{ !env.ACT && github.event_name == 'pull_request' && steps.dockerfile.outputs.changed == 'true' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
             ${{ steps.image.outputs.image }}
       - name: Tag latest image with commit sha
         if: ${{ !env.ACT && steps.dockerfile.outputs.changed == 'false' }}
@@ -93,134 +107,105 @@ jobs:
           docker tag ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest "${{ steps.image.outputs.image }}"
           docker push "${{ steps.image.outputs.image }}"
 
-  build-and-test-pr:
-    needs: build-ci-image
-    if: ${{ github.event_name == 'pull_request' && needs.build-ci-image.result == 'success' }}
+  # Determine build matrix based on event type
+  setup-matrix:
     runs-on: ubuntu-latest
-    container:
-      image: ${{ needs.build-ci-image.outputs.image }}
-      options: --user root
-    strategy:
-      fail-fast: true
-      matrix:
-        cpp_compiler: [g++]
-        build_type: [debug]
-        sanitizer: [asan,ubsan]
-        include:
-          - cpp_compiler: g++
-            c_compiler: gcc
-            compiler_version: 14
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: set preset
-      shell: bash
-      run: |
-        if [[ "${{ matrix.sanitizer }}" == "none" ]]; then
-          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_ENV"
-          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }}" >> "$GITHUB_ENV"
-        else
-          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
-          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
-        fi
-    - name: cache conan
-      uses: actions/cache@v4
-      if: ${{ !env.ACT }}
-      with:
-        path: |
-          ~/.conan2
-          ~/.cache/pip
-        key: ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
-        restore-keys: |
-          ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-
-          ${{ runner.os }}-conan-
-    - name: install conan virtual environment
-      shell: bash
-      run: |
-        python3 -m venv conan
-        source conan/bin/activate
-        pip install conan
-    - name: configure conan
-      shell: bash
-      run: |
-        source conan/bin/activate
-        conan install . $JAGE_CI_PROFILES --build=missing
-    - name: configure cmake
-      shell: bash
-      run: |
-        source conan/bin/activate
-        cmake --preset $JAGE_CI_PRESET
-    - name: all
-      shell: bash
-      run: cmake --build build --target all
+      - name: Set matrix based on event type
+        id: set-matrix
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # PR: minimal matrix for fast feedback
+            echo 'matrix={"include":[
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14}
+            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Push to main: medium matrix
+            echo 'matrix={"include":[
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"none","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"release","sanitizer":"none","compiler_version":14},
+              {"c_compiler":"clang","build_type":"debug","sanitizer":"asan","compiler_version":18},
+              {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
+            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
+          else
+            # Schedule/manual: full matrix (trimmed - no lsan, sanitizers only on debug)
+            echo 'matrix={"include":[
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"none","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"debug","sanitizer":"tsan","compiler_version":14},
+              {"c_compiler":"gcc","build_type":"release","sanitizer":"none","compiler_version":14},
+              {"c_compiler":"clang","build_type":"debug","sanitizer":"none","compiler_version":18},
+              {"c_compiler":"clang","build_type":"debug","sanitizer":"asan","compiler_version":18},
+              {"c_compiler":"clang","build_type":"debug","sanitizer":"ubsan","compiler_version":18},
+              {"c_compiler":"clang","build_type":"debug","sanitizer":"tsan","compiler_version":18},
+              {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
+            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
+          fi
 
   build-and-test:
-    needs: build-ci-image
-    if: ${{ github.event_name == 'schedule' && needs.build-ci-image.result == 'success' }}
+    needs: [build-ci-image, setup-matrix]
+    if: ${{ needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
       options: --user root
     strategy:
-      fail-fast: true
-      matrix:
-        cpp_compiler: [g++, clang++]
-        build_type: [release, debug]
-        sanitizer: [none, asan, ubsan, tsan, lsan]
-        include:
-          - cpp_compiler: g++
-            c_compiler: gcc
-            compiler_version: 14
-          - cpp_compiler: clang++
-            c_compiler: clang
-            compiler_version: 18
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: set preset
-      shell: bash
-      run: |
-        if [[ "${{ matrix.sanitizer }}" == "none" ]]; then
-          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_ENV"
-          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }}" >> "$GITHUB_ENV"
-        else
-          echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
-          echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
-        fi
-    - name: cache conan
-      uses: actions/cache@v4
-      if: ${{ !env.ACT }}
-      with:
-        path: |
-          ~/.conan2
-          ~/.cache/pip
-        key: ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
-        restore-keys: |
-          ${{ runner.os }}-conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-
-          ${{ runner.os }}-conan-
-    - name: install conan virtual environment
-      shell: bash
-      run: |
-        python3 -m venv conan
-        source conan/bin/activate
-        pip install conan
-    - name: configure conan
-      shell: bash
-      run: |
-        source conan/bin/activate
-        conan install . $JAGE_CI_PROFILES --build=missing
-    - name: configure cmake
-      shell: bash
-      run: |
-        source conan/bin/activate
-        cmake --preset $JAGE_CI_PRESET
-    - name: all
-      shell: bash
-      run: cmake --build build --target all
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Set preset and profiles
+        shell: bash
+        run: |
+          if [[ "${{ matrix.sanitizer }}" == "none" ]]; then
+            echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}" >> "$GITHUB_ENV"
+            echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }}" >> "$GITHUB_ENV"
+          else
+            echo "JAGE_CI_PRESET=conan-build-linux-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+            echo "JAGE_CI_PROFILES=-pr:a profiles/linux -pr:a profiles/${{ matrix.c_compiler }} -pr:a profiles/${{ matrix.build_type }} -pr:a profiles/${{ matrix.sanitizer }}" >> "$GITHUB_ENV"
+          fi
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        if: ${{ !env.ACT }}
+        with:
+          path: |
+            ~/.conan2
+            ~/.cache/pip
+          key: conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
+          restore-keys: |
+            conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ matrix.build_type }}-${{ matrix.sanitizer }}-
+            conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-${{ matrix.build_type }}-
+            conan-${{ matrix.c_compiler }}-${{ matrix.compiler_version }}-
+            conan-
+      - name: Install Conan
+        shell: bash
+        run: |
+          python3 -m venv conan
+          source conan/bin/activate
+          pip install conan
+      - name: Configure Conan
+        shell: bash
+        run: |
+          source conan/bin/activate
+          conan install . $JAGE_CI_PROFILES --build=missing
+      - name: Configure CMake
+        shell: bash
+        run: |
+          source conan/bin/activate
+          cmake --preset $JAGE_CI_PRESET
+      - name: Build and test
+        shell: bash
+        run: cmake --build build --target all
 
   test-coverage:
     needs: build-ci-image
@@ -229,54 +214,52 @@ jobs:
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
       options: --user root
-    strategy:
-      fail-fast: true
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: cache conan
-      uses: actions/cache@v4
-      if: ${{ !env.ACT }}
-      with:
-        path: |
-          ~/.conan2
-          ~/.cache/pip
-        key: linux-conan-gcc-14-${{ hashFiles('conanfile.py', 'profiles/**') }}
-        restore-keys: |
-          linux-conan-gcc-14-
-          linux-conan-
-    - name: install conan virtual environment
-      shell: bash
-      run: |
-        python3 -m venv conan
-        source conan/bin/activate
-        pip install conan
-    - name: configure conan
-      shell: bash
-      run: |
-        source conan/bin/activate
-        conan install . -pr:a profiles/coverage -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
-    - name: configure cmake
-      shell: bash
-      run: |
-        source conan/bin/activate
-        cmake --preset conan-build-linux-gcc-debug
-    - name: coverage
-      shell: bash
-      run: |
-        cmake --build build --target coverage
-    - name: upload coverage artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: build/coverage-report
-        if-no-files-found: error
-    - name: upload coverage pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: build/coverage-report
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        if: ${{ !env.ACT }}
+        with:
+          path: |
+            ~/.conan2
+            ~/.cache/pip
+          key: conan-gcc-14-coverage-${{ hashFiles('conanfile.py', 'profiles/**') }}
+          restore-keys: |
+            conan-gcc-14-coverage-
+            conan-gcc-14-
+            conan-
+      - name: Install Conan
+        shell: bash
+        run: |
+          python3 -m venv conan
+          source conan/bin/activate
+          pip install conan
+      - name: Configure Conan
+        shell: bash
+        run: |
+          source conan/bin/activate
+          conan install . -pr:a profiles/coverage -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
+      - name: Configure CMake
+        shell: bash
+        run: |
+          source conan/bin/activate
+          cmake --preset conan-build-linux-gcc-debug
+      - name: Build and run coverage
+        shell: bash
+        run: cmake --build build --target coverage
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/coverage-report
+          if-no-files-found: error
+      - name: Upload coverage pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/coverage-report
 
   deploy-coverage:
     needs: test-coverage
@@ -289,6 +272,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-    - name: deploy coverage to GitHub Pages
-      id: deploy
-      uses: actions/deploy-pages@v4
+      - name: Deploy coverage to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
