@@ -2,6 +2,72 @@
 
 JAGE is primarily a sandbox to experiment with C++ and other software, with a focus on foundational game engine building blocks. The core library is header-only and is exercised by a minimal GLFW demo app.
 
+## Philosophy
+
+JAGE is a **learning-focused, personal growth project**—not a race to ship features. The goal is to explore game engine architecture, modern C++, and systems programming fundamentals through deliberate practice.
+
+**Core Values:**
+- **Quality over speed** - No deadlines, no shortcuts
+- **Test-driven development** - 100% test coverage, zero tolerance
+- **Start simple, extend without rewriting** - Build small, composable foundations
+- **Learning by doing** - Understand the "why," not just the "what"
+
+## Design Principles
+
+Every component in JAGE follows these principles:
+
+**SOLID Architecture:**
+- **Single Responsibility** - Each class/function does one thing well
+- **Open-Closed** - Extend behavior without modifying existing code
+- **Dependency Inversion** - Depend on abstractions, not concretions
+
+**Swappable I/O:**
+- Mock, simulated, and real hardware inputs must be indistinguishable
+- Template-based composition (e.g., `jage::game<TWindow, TInputController>`)
+- Enables testing, recording, replay without changing core logic
+
+**Extensibility First:**
+- Simple cores that scale up without rewrites
+- Design for future features (e.g., recording, diagnostics) from day one
+- Avoid premature optimization, but consider architectural implications
+
+**Multi-Platform by Design:**
+- Supports Linux, Windows, macOS (planned)
+- Multiple compilers: GCC, Clang, MSVC (planned)
+- No platform-specific hacks without proper abstraction
+
+## Current Roadmap
+
+JAGE is in active development. Current and planned subsystems:
+
+**Implemented:**
+- ✅ Game loop and window abstraction
+- ✅ Input monitoring (keyboard, mouse, cursor)
+- ✅ Time utilities (clock, snapshots, scaling)
+- ✅ Concurrency primitives (double buffer, SPSC queue)
+- ✅ Memory utilities (cacheline alignment)
+
+**In Design:**
+- 🔄 Input event bus (low-latency, async, producer→bus→queues→consumers)
+- 🔄 Event normalization pipeline (raw → normalized → action mapping)
+
+**Planned:**
+- 📋 State registry for input queries
+- 📋 Recording and replay infrastructure
+- 📋 Joystick/gamepad support
+- 📋 Entity-component system (ECS)
+- 📋 Rendering abstraction (OpenGL, Vulkan)
+
+## Why Header-Only?
+
+JAGE's library is header-only to:
+1. **Simplify integration** - Drop headers into any project, no linking
+2. **Enable full optimization** - Compiler sees all code, can inline aggressively
+3. **Reduce build complexity** - No static/dynamic library decisions
+4. **Force good design** - Headers expose interfaces clearly
+
+Trade-offs: Longer compile times, but for a learning project, the benefits outweigh the costs.
+
 ## Features
 - Game loop and window abstraction (`jage::game`, `jage::window`) driven by a user-provided driver.
 - Input system with keyboard, mouse, and cursor monitors; fixed-capacity callbacks; per-button state tracking.
