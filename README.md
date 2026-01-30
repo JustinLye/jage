@@ -95,7 +95,7 @@ devcontainer exec --workspace-folder /path/to/jage -- bash
 ```
 Then run the usual `conan install` and CMake commands from inside the container shell.
 
-### Build (Conan + CMake)
+### CLI Build (Conan + CMake)
 Prereqs: CMake 3.28+, Conan v2, a C++23 compiler, and Python.
 
 ```bash
