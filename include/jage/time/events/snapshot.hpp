@@ -6,6 +6,7 @@
 
 namespace jage::time::events {
 template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
+  using duration = TDuration;
   TDuration real_time{};
   TDuration tick_duration{};
   double time_scale{1.0};
