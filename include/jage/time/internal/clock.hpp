@@ -1,10 +1,10 @@
 #pragma once
 
 #include <jage/memory/cacheline_size.hpp>
+#include <jage/time/events/snapshot.hpp>
 #include <jage/time/hertz.hpp>
 
 #include <jage/time/internal/concepts/real_number_time_source.hpp>
-#include <jage/time/internal/events/snapshot.hpp>
 
 #include <cmath>
 #include <cstdint>

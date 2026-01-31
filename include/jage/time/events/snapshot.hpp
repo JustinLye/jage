@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace jage::time::internal::events {
+namespace jage::time::events {
 template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   TDuration real_time{};
   TDuration tick_duration{};
@@ -14,4 +14,4 @@ template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   std::uint64_t frame{};
   TDuration accumulated_time{};
 };
-} // namespace jage::time::internal::events
+} // namespace jage::time::events
