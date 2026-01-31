@@ -152,6 +152,56 @@ cmake --build build --target coverage
 
 The coverage report is generated in `build/coverage-report/` as HTML. Coverage uses `lcov` with `gcov-14` and filters out `/usr/*` and `*/test/*` paths.
 
+### Assertion Strategy: static_assert vs Runtime Assertions
+
+**Critical Distinction:** Use different assertion types based on what you're validating.
+
+**Use `static_assert` for test scaffolding validation:**
+- Verifying test helper types are constructed correctly
+- Checking preconditions about the test setup itself
+- If these fail, the **test is broken** (not the code under test)
+- Compilation should stop - the test needs to be fixed first
+
+```cpp
+GTEST("concept test example") {
+  struct test_type {
+    int value{};
+  };
+  static_assert(std::is_trivially_copyable_v<test_type>);  // ✓ Test setup check
+
+  SHOULD("verify behavior") {
+    EXPECT_TRUE(some_concept<test_type>);  // ✓ Behavior check (see below)
+  }
+}
+```
+
+**Use runtime assertions (`EXPECT_*`, `ASSERT_*`) for behavior under test:**
+- Verifying the actual code/concept/component behavior
+- Checking expected outcomes and properties
+- If these fail, the **implementation is broken** (not the test)
+- All tests should run to completion, showing ALL failures in one run
+
+```cpp
+EXPECT_TRUE(snapshot_concept<valid_type>);     // ✓ Shows if concept accepts valid types
+EXPECT_FALSE(snapshot_concept<invalid_type>);  // ✓ Shows if concept rejects invalid types
+```
+
+**Why this matters:**
+
+Using `static_assert` on behavior checks creates a **fix-one-recompile cycle**:
+1. Change concept implementation
+2. Compilation fails on first `static_assert`
+3. Can't see if other tests pass/fail
+4. Fix, recompile, repeat
+
+Using runtime assertions enables **see-all-failures-at-once**:
+1. Change concept implementation
+2. All tests compile and run
+3. Test output shows "3 of 6 tests passing"
+4. Fix all issues in one iteration
+
+**Development efficiency:** Runtime assertions for behavior testing reduces iteration time significantly by providing complete feedback in a single test run.
+
 ## Code Structure
 
 ### Header-Only Library
