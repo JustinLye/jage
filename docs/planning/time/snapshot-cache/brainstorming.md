@@ -210,3 +210,384 @@ Actually, that doesn't work, because `ring_buffer` would still need access to `q
 Hmmm. I don't really want to add `operator[]` and `at` to `queue`. Maybe, `ring_buffer` will need its' own implementation, or perhaps a base class with common functionality can be created and `queue` and `ring_buffer` are derived from that and expose whatever interface makes since for a `queue` or `ring_buffer`.
 
 Okay, this should provide us some momentum. Please share your thoughts.
+
+---
+
+# Claude's Architectural Response (2026-01-30)
+
+## The Core Problem: Queue is the Wrong Abstraction
+
+`★ Insight ─────────────────────────────────────`
+**A queue is FIFO—you consume from the head and discard.** But your snapshot cache needs:
+1. Write to tail (producer pushes new snapshots)
+2. **Read from anywhere** (find by timestamp/index)
+3. **Never consume** (queries don't remove snapshots)
+
+This is a **circular buffer with indexed reads**, not a queue.
+`─────────────────────────────────────────────────`
+
+**Why the queue approach feels awkward:**
+- You're pre-filling to avoid contention → fighting the abstraction
+- You want `operator[]` → queues don't expose indexed access
+- You're doing `pop()` then `push()` → simulating circular overwrite, not queue semantics
+
+**My Challenge:** Don't extend `queue`. Create a dedicated `ring_buffer` designed for SPMC with random read access.
+
+---
+
+## SPMC Lock-Free: Harder Than It Seems
+
+Your current `jage::containers::queue` is **SPSC** (single producer, single consumer). SPMC requires different synchronization guarantees.
+
+**The Key Questions:**
+1. **Do readers need strongly consistent snapshots?**
+   - If a reader is searching the buffer and the writer overwrites an entry mid-search, what happens?
+   - For time snapshots, I suspect **eventual consistency is acceptable**—getting a snapshot that's a few microseconds stale is fine.
+
+2. **Do you need read-your-writes guarantees?**
+   - After the producer writes a snapshot, when must readers see it?
+   - For diagnostics/replay, you probably need "reasonably soon" (within microseconds), not "immediately."
+
+**For SPMC, you have options:**
+
+### **Option A: Atomic Index + Memory Ordering (Recommended)**
+- Producer updates an atomic `write_index` after writing
+- Readers read `write_index` to determine valid range
+- Use `std::memory_order::release` on write, `std::memory_order::acquire` on read
+- **Trade-off:** Readers may see slightly stale data during buffer updates
+
+### **Option B: Sequence Lock (Seqlock) Pattern**
+- Producer increments a sequence number before and after writing
+- Readers check sequence: if odd (write in progress) or changed during read, retry
+- **Trade-off:** More complex, but gives stronger consistency guarantees
+
+### **Option C: Double Buffer Per Slot (Your Idea)**
+- Wrap each snapshot in `double_buffer<snapshot>`
+- **Trade-off:** Doubles memory usage (~60-70 bytes × 2 × capacity). For 120 snapshots, that's ~8-16KB extra—probably acceptable, but feels wasteful.
+
+**My Recommendation:** **Option A** for simplicity. Eventual consistency is fine for time snapshots.
+
+---
+
+## Proposed Design: Dedicated Ring Buffer
+
+Instead of extending `queue`, let's design a purpose-built `ring_buffer` for SPMC:
+
+```cpp
+namespace jage::containers {
+
+template<class T, std::size_t Capacity>
+class ring_buffer {
+    static_assert(Capacity > 0, "Capacity must be positive");
+    static_assert(std::is_trivially_copyable_v<T>,
+                  "T must be trivially copyable for lock-free SPMC");
+
+    // Cacheline-aligned storage
+    alignas(memory::cacheline_size) std::array<T, Capacity> buffer_{};
+
+    // Atomic write index (only producer updates this)
+    alignas(memory::cacheline_size) std::atomic<std::size_t> write_index_{0};
+
+public:
+    // Producer API (single writer)
+    auto push(T value) -> void {
+        auto index = write_index_.load(std::memory_order::relaxed);
+        buffer_[index % Capacity] = value;
+
+        // Release semantics: ensure write to buffer_ is visible before index update
+        write_index_.store(index + 1, std::memory_order::release);
+    }
+
+    // Consumer API (multiple readers)
+    [[nodiscard]] auto operator[](std::size_t index) const -> T {
+        // Acquire semantics: ensure we see the latest buffer_ writes
+        auto current_write = write_index_.load(std::memory_order::acquire);
+
+        // Calculate actual buffer position
+        return buffer_[index % Capacity];
+    }
+
+    [[nodiscard]] auto at(std::size_t index) const -> std::optional<T> {
+        auto current_write = write_index_.load(std::memory_order::acquire);
+        auto oldest_valid = (current_write >= Capacity) ? (current_write - Capacity) : 0;
+
+        // Check if index is in valid range
+        if (index < oldest_valid || index >= current_write) {
+            return std::nullopt;
+        }
+
+        return buffer_[index % Capacity];
+    }
+
+    // Accessors
+    [[nodiscard]] static constexpr auto capacity() -> std::size_t {
+        return Capacity;
+    }
+
+    [[nodiscard]] auto size() const -> std::size_t {
+        auto current_write = write_index_.load(std::memory_order::acquire);
+        return std::min(current_write, Capacity);
+    }
+
+    // Get valid index range for iteration
+    [[nodiscard]] auto valid_range() const -> std::pair<std::size_t, std::size_t> {
+        auto current_write = write_index_.load(std::memory_order::acquire);
+        auto oldest = (current_write >= Capacity) ? (current_write - Capacity) : 0;
+        return {oldest, current_write};
+    }
+};
+
+} // namespace jage::containers
+```
+
+---
+
+## Why This Design Works for SPMC
+
+`★ Insight ─────────────────────────────────────`
+**Lock-free SPMC relies on atomic ordering, not locks:**
+1. **Producer** uses `release` semantics—guarantees buffer writes complete before index update
+2. **Consumers** use `acquire` semantics—guarantees they see buffer writes after reading index
+3. **Cacheline alignment** prevents false sharing between write_index and buffer
+`─────────────────────────────────────────────────`
+
+**Trade-offs:**
+- ✅ No locks, no contention
+- ✅ Readers never block the writer
+- ✅ Simple, cache-efficient (contiguous storage)
+- ⚠️ Readers may see stale snapshots during writes (acceptable for time data)
+- ⚠️ Requires `T` to be trivially copyable (fine for `snapshot`)
+
+---
+
+## Snapshot Cache Implementation
+
+With this `ring_buffer`, your `snapshot_cache` becomes clean:
+
+```cpp
+namespace jage::time {
+
+template<std::size_t Size>
+class snapshot_cache {
+    containers::ring_buffer<events::snapshot, Size> buffer_;
+
+public:
+    // Producer API (called by clock on main thread)
+    auto push(events::snapshot snapshot) -> void {
+        buffer_.push(snapshot);
+    }
+
+    // Consumer API: Find by frame index
+    [[nodiscard]] auto find(std::uint64_t frame_index) const
+        -> std::pair<events::snapshot, accuracy>
+    {
+        auto [oldest, newest] = buffer_.valid_range();
+
+        // Out of range: return boundary
+        if (frame_index < oldest) {
+            return {buffer_[oldest], accuracy::estimate};
+        }
+        if (frame_index >= newest) {
+            return {buffer_[newest - 1], accuracy::estimate};
+        }
+
+        // Exact match
+        return {buffer_[frame_index], accuracy::exact};
+    }
+
+    // Consumer API: Find by real-timestamp
+    template<concepts::duration Duration>
+    [[nodiscard]] auto find(const Duration& timestamp) const
+        -> std::pair<events::snapshot, accuracy>
+    {
+        auto [oldest, newest] = buffer_.valid_range();
+
+        // Linear search (backward from newest for recency)
+        for (auto i = newest; i > oldest; --i) {
+            auto snapshot = buffer_[i - 1];
+            if (snapshot.real_time() <= timestamp) {
+                // Found: latest snapshot not exceeding timestamp
+                auto is_exact = (snapshot.real_time() == timestamp);
+                return {snapshot, is_exact ? accuracy::exact : accuracy::estimate};
+            }
+        }
+
+        // Timestamp predates all snapshots
+        return {buffer_[oldest], accuracy::estimate};
+    }
+};
+
+} // namespace jage::time
+```
+
+---
+
+## Addressing Specific Questions
+
+### **1. Do we need atomic reads for `find()`?**
+
+**Answer:** With the `memory_order::acquire` on `write_index_`, you get sufficient guarantees:
+- Readers see a consistent snapshot (no torn reads)
+- Readers may see slightly stale data (writer overwrites during search)
+
+For time snapshots, this is acceptable. If you need stronger guarantees, use **Option C** (double buffer per slot), but I don't think it's necessary.
+
+---
+
+### **2. Should we extend `queue` or create `ring_buffer`?**
+
+**Answer:** **Create a dedicated `ring_buffer`.**
+
+**Why not extend queue:**
+- Different access patterns (FIFO vs random read)
+- Different synchronization (SPSC vs SPMC)
+- Extending queue pollutes its interface (`operator[]` on a queue is confusing)
+- Inheritance for code reuse is often a smell—prefer composition or separate implementations
+
+**Why not a base class:**
+- `queue` and `ring_buffer` have little shared code beyond "array + atomic index"
+- Premature abstraction adds complexity without clear benefit
+- If you later find duplication, **refactor then**, not now
+
+---
+
+### **3. Linear search performance concerns?**
+
+For **60-120 snapshots** (1-2 seconds at 60 FPS):
+- Linear search is ~60-120 comparisons (nanoseconds on modern CPUs)
+- Cache-friendly (contiguous array, prefetcher loves this)
+- Searching backward from newest improves average case (recent timestamps more likely)
+
+**Optimization options later (with data):**
+- Binary search (if timestamps are monotonic—they should be!)
+- Bloom filter for "not present" queries
+- Small hash table (index % small_prime) for common lookups
+
+**Don't optimize now.** Get diagnostics first.
+
+---
+
+### **4. Moving `internal::events::snapshot` to `events::snapshot`?**
+
+**Yes, do it.** `internal` suggests "don't touch," but if snapshot cache (a public API) returns `snapshot`, it's part of your public interface. Either:
+- Move to `jage::time::events::snapshot` (clear namespace)
+- Or `jage::time::snapshot` if "event" is implied by context
+
+---
+
+## Challenge: Is `std::array` the Right Size?
+
+You mentioned wanting a fixed-size ring. **How big should it be?**
+
+**Some size guidelines:**
+- **60 snapshots** = 1 second at 60 FPS (~4KB if snapshot is 60 bytes)
+- **120 snapshots** = 2 seconds (~8KB)
+- **600 snapshots** = 10 seconds (~40KB)
+
+**Question for you:** What's your expected query latency?
+- If input events arrive within 1 frame (~16ms at 60 FPS), 60 snapshots is plenty
+- If you're replaying recorded input from 10 seconds ago, you need a deeper cache
+
+**My suggestion:** Start with `120` as a template parameter default. Add diagnostics to measure:
+- Cache hit rate (exact vs estimate)
+- Query timestamp age distribution
+- Oldest snapshot ever queried
+
+Then tune based on data.
+
+---
+
+## Future Diagnostic Ideas (Low Priority)
+
+**Metrics to Track (Later):**
+1. **Cache hit rate**: Percentage of queries returning `accuracy::exact` vs `accuracy::estimate`
+2. **Query age distribution**: Histogram of (current_time - queried_timestamp)
+   - Tells you how far back in time queries typically go
+   - Helps determine optimal cache size
+3. **Oldest snapshot queried**: Track max age of any queried snapshot
+   - If you never query beyond 1 second, you're over-provisioned
+4. **Overwrite frequency**: How often does the cache wrap around?
+   - High frequency + low hit rate = cache too small
+5. **Search depth**: For timestamp queries, how many iterations in the linear search?
+   - Avg/max/p95 search depth helps decide if binary search is worth it
+
+**Instrumentation Strategy:**
+```cpp
+template<std::size_t Size>
+class snapshot_cache {
+    containers::ring_buffer<events::snapshot, Size> buffer_;
+
+    // Optional diagnostics (compile-time enabled)
+    #ifdef JAGE_ENABLE_SNAPSHOT_CACHE_DIAGNOSTICS
+    mutable std::atomic<std::size_t> exact_hits_{0};
+    mutable std::atomic<std::size_t> estimate_hits_{0};
+    mutable std::atomic<std::size_t> total_search_iterations_{0};
+    #endif
+
+public:
+    // ... existing methods ...
+
+    #ifdef JAGE_ENABLE_SNAPSHOT_CACHE_DIAGNOSTICS
+    auto diagnostics() const -> snapshot_cache_stats {
+        return {
+            .exact_hits = exact_hits_.load(),
+            .estimate_hits = estimate_hits_.load(),
+            .hit_rate = static_cast<double>(exact_hits_) / (exact_hits_ + estimate_hits_),
+            .avg_search_depth = static_cast<double>(total_search_iterations_) / (exact_hits_ + estimate_hits_)
+        };
+    }
+    #endif
+};
+```
+
+**Binary Search Optimization (If Data Shows Need):**
+Since snapshots are monotonically increasing by timestamp, you can binary search:
+```cpp
+template<concepts::duration Duration>
+[[nodiscard]] auto find_binary(const Duration& timestamp) const
+    -> std::pair<events::snapshot, accuracy>
+{
+    auto [oldest, newest] = buffer_.valid_range();
+
+    // Binary search for latest snapshot <= timestamp
+    auto left = oldest;
+    auto right = newest;
+
+    while (left < right) {
+        auto mid = left + (right - left) / 2;
+        auto snapshot = buffer_[mid];
+
+        if (snapshot.real_time() <= timestamp) {
+            left = mid + 1;  // Look in right half
+        } else {
+            right = mid;     // Look in left half
+        }
+    }
+
+    // left-1 is the latest snapshot not exceeding timestamp
+    if (left == oldest) {
+        return {buffer_[oldest], accuracy::estimate};  // Too old
+    }
+
+    auto result = buffer_[left - 1];
+    auto is_exact = (result.real_time() == timestamp);
+    return {result, is_exact ? accuracy::exact : accuracy::estimate};
+}
+```
+O(log N) vs O(N), but only matters if N > ~100 and profiling shows it's a bottleneck.
+
+---
+
+## Next Steps (Recommended Implementation Order)
+
+1. **Create `jage::containers::ring_buffer`** with the SPMC design above
+2. **Implement `snapshot_cache`** using the ring buffer
+3. **Write tests** for:
+   - Single producer pushing snapshots
+   - Multiple consumers querying concurrently (spawn threads)
+   - Out-of-range queries return boundaries with `accuracy::estimate`
+   - Frame index and timestamp lookups both work
+4. **Add diagnostics** (later) to measure cache efficiency
+
+**A question for you:**
+Does the producer (clock) need to know when the cache is full, or should it always overwrite the oldest? I assume overwrite, but confirming.
