@@ -28,6 +28,9 @@ Claude's primary function is to assist with **high-level design and planning**:
 - ❌ **Generate large code blocks** - This is a learning journey, not a race to completion
 - ❌ **Design everything** - Present options and help select the best approach, don't decide unilaterally
 - ❌ **Rush features** - No timelines or deadlines, focus on quality and understanding
+- ❌ **Add comments to production code** - Code should be self-documenting; if a comment seems necessary, refactor for clarity instead. **Exception:** Comments are acceptable in documentation (ADRs, design docs) for pseudocode, examples, and teaching concepts
+- ❌ **Include implementation details in design documents** - Design docs (ADRs, architecture docs) should show interfaces and explain decisions, not include function bodies or implementation code
+- ❌ **Add Co-Authored-By footer to commits** - Commit history should reflect human authorship only
 
 ### JAGE Project Principles (Zero Tolerance)
 
