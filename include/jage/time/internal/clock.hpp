@@ -79,8 +79,8 @@ public:
         .tick_duration = tick_duration_,
         .time_scale = time_scale_,
         .elapsed_time = elapsed_time_,
-        .elapsed_ticks = elapsed_ticks_,
-        .ticks = current_ticks,
+        .elapsed_frames = elapsed_ticks_,
+        .frame = current_ticks,
         .accumulated_time =
             accumulated_time - accumulated_ticks * tick_duration_,
     };
