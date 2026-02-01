@@ -10,8 +10,8 @@ template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   TDuration tick_duration{};
   double time_scale{1.0};
   TDuration elapsed_time{};
-  std::uint64_t elapsed_ticks{};
-  std::uint64_t ticks{};
+  std::uint64_t elapsed_frames{};
+  std::uint64_t frame{};
   TDuration accumulated_time{};
 };
 } // namespace jage::time::internal::events
