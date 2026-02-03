@@ -33,10 +33,7 @@ GTEST("queue: initialization") {
   }
 }
 
-template <class T>
-using atomic =
-    jage::test::fakes::concurrency::atomic<T, std::memory_order::acquire,
-                                           std::memory_order::release>;
+using jage::test::fakes::concurrency::atomic;
 
 GTEST("queue: happy path") {
   auto sut = queue<foo, 3UZ, atomic>{};
