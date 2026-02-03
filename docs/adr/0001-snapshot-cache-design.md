@@ -1,6 +1,6 @@
 # ADR-0001: Snapshot Cache Design
 
-**Status:** Accepted (Implementation Pending)
+**Status:** Accepted (Amended by ADR-0002)
 **Date:** 2026-01-31
 **Authors:** Justin Lye, Claude (Sonnet 4.5)
 
