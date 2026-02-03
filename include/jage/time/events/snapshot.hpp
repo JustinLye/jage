@@ -14,5 +14,6 @@ template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   std::uint64_t elapsed_frames{};
   std::uint64_t frame{};
   TDuration accumulated_time{};
+  auto operator<=>(const snapshot &) const = default;
 };
 } // namespace jage::time::events
