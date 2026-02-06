@@ -43,4 +43,9 @@ if(DEFINED ENV{TSAN})
   target_link_options(jage_compiler_options INTERFACE -fsanitize=thread)
 endif()
 
+if(DEFINED ENV{JAGE_ENABLE_SANITY_CHECKS})
+  message("Turning on sanity checks")
+  target_compile_definitions(jage_compiler_options INTERFACE -DJAGE_ENABLE_SANITY_CHECKS=1)
+endif()
+
 add_library(jage::compiler_options ALIAS jage_compiler_options)

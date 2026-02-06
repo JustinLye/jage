@@ -55,13 +55,24 @@ class JAGERecipe(ConanFile):
 
     def layout(self):
         self.set_sanitizers_()
-        self.folders.build_folder_vars = [
-            "self.build_prefix",
-            "settings.os",
-            "settings.compiler",
-            "settings.build_type",
-            "self.sanitizer",
-        ]
+        if "1" == VirtualBuildEnv(self).vars().get("JAGE_ENABLE_SANITY_CHECKS", ""):
+            self.sanity_checks = "sanity-checks"
+            self.folders.build_folder_vars = [
+                "self.build_prefix",
+                "settings.os",
+                "settings.compiler",
+                "settings.build_type",
+                "self.sanitizer",
+                "self.sanity_checks",
+            ]
+        else:
+            self.folders.build_folder_vars = [
+                "self.build_prefix",
+                "settings.os",
+                "settings.compiler",
+                "settings.build_type",
+                "self.sanitizer",
+            ]
         cmake_layout(self, build_folder=".")
 
     def generate(self):
