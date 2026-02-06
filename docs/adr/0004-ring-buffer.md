@@ -100,13 +100,13 @@ template <typename TEvent, std::size_t Capacity>
 class ring_buffer {
 public:
     // Producer interface — called by input_event_bus
-    void publish(const TEvent& event);
+    void push(const TEvent& event);
 
     // Consumer interface — called by game systems
     [[nodiscard]] auto write_head() const -> std::size_t;
-    [[nodiscard]] auto read(std::size_t monotonic_index) const -> TEvent;
+    [[nodiscard]] auto read(std::size_t index) const -> TEvent;
 
-    static constexpr std::size_t capacity = Capacity;
+    [[nodiscard]] static constexpr auto capacity() -> std::size_t;
 
 private:
     std::array<concurrency::double_buffer<TEvent>, Capacity> slots_{};
@@ -114,6 +114,20 @@ private:
 };
 
 } // namespace jage::containers::spmc
+```
+
+**CRITICAL: Caller Responsibility for Index Bounds**
+
+The `read(index)` method does **not** apply modulo or bounds-check the index. The caller is responsible for ensuring `index < capacity()` by applying modulo before calling `read()`.
+
+**Correct usage:**
+```cpp
+event = ring.read(monotonic_index % ring.capacity());  // ✓ Caller applies modulo
+```
+
+**Incorrect usage (undefined behavior):**
+```cpp
+event = ring.read(monotonic_index);  // ✗ UB if monotonic_index >= capacity
 ```
 
 ### Read Head Ownership
@@ -235,7 +249,7 @@ The scan cost is provably negligible. Separate rings add complexity (N rings, up
 - Linked chain: each slot stores a back-pointer to the previous slot of the same type
 
 **Rejected because:**
-- Adds write-path complexity to every `publish` call to maintain the index
+- Adds write-path complexity to every `push` call to maintain the index
 - The cost being optimized (scan) is ~200 ns/frame — not worth the added write-path work
 - Noted as a viable future extension: the linked-chain pattern could be added without changing the ring's external interface, if profiling ever shows scan cost is measurable
 
@@ -273,12 +287,12 @@ The scan cost is provably negligible. Separate rings add complexity (N rings, up
 
 ### Positive
 
-1. **No back-pressure on writer:** `publish` is a single `double_buffer` write plus one atomic store. Never blocks regardless of consumer state.
+1. **No back-pressure on writer:** `push` is a single `double_buffer` write plus one atomic store. Never blocks regardless of consumer state.
 2. **Isolated overflow:** A slow consumer loses only its own events. Other consumers are completely unaffected.
 3. **Lock-free:** Publish path: one `double_buffer` write, one atomic store (release). Consumer path: one atomic load (acquire), N `double_buffer` reads. No mutexes anywhere.
 4. **Reuses tested primitives:** `double_buffer` per slot and cacheline alignment patterns already proven by `snapshot_cache` and `spsc::queue`.
 5. **Negligible memory footprint:** ~48 KB at 256 capacity. Not a meaningful memory concern on any gaming hardware.
-6. **Minimal ring interface:** Ring exposes only `publish`, `write_head`, and `read`. All drain logic, lap detection, and missed-event handling is consumer-side — each system decides its own policy.
+6. **Minimal ring interface:** Ring exposes only `push`, `write_head`, and `read`. All drain logic, lap detection, and missed-event handling is consumer-side — each system decides its own policy.
 
 ### Negative
 
@@ -304,7 +318,7 @@ If a diagnostics system needs to observe how far behind each consumer is, read h
 If profiling ever shows scan cost is measurable (current analysis says it won't be), a per-type linked chain could be added inside slots:
 - Each slot stores a back-pointer to the previous slot of the same event type
 - Consumers follow the chain for O(k) access where k = events of the target type
-- Additive change — does not alter `publish`, `write_head`, or `read`
+- Additive change — does not alter `push`, `write_head`, or `read`
 
 ### Drain Utility
 
@@ -344,3 +358,4 @@ Coalescing belongs at:
 | Date       | Author       | Changes                                      |
 |------------|--------------|----------------------------------------------|
 | 2026-02-04 | Justin Lye   | Initial ADR from design discussion           |
+| 2026-02-05 | Justin Lye   | Updated to match implementation: `push()` method name, `capacity()` function, clarified caller responsibility for index modulo |
