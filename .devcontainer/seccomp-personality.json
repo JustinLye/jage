@@ -1554,31 +1554,6 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ]
-    },
-    {
-      "name": "clone3",
-      "action": "SCMP_ACT_ALLOW",
-      "args": []
-    },
-    {
-      "name": "close_range",
-      "action": "SCMP_ACT_ALLOW",
-      "args": []
-    },
-    {
-      "name": "openat2",
-      "action": "SCMP_ACT_ALLOW",
-      "args": []
-    },
-    {
-      "name": "faccessat2",
-      "action": "SCMP_ACT_ALLOW",
-      "args": []
-    },
-    {
-      "name": "rseq",
-      "action": "SCMP_ACT_ALLOW",
-      "args": []
     }
   ]
 }
