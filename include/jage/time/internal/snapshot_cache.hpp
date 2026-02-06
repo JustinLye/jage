@@ -10,7 +10,6 @@
 #include <array>
 #include <atomic>
 #include <cstdint>
-#include <tuple>
 #include <utility>
 
 namespace jage::time::internal {
