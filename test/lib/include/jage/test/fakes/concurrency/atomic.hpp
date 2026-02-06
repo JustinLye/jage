@@ -1,8 +1,10 @@
 #pragma once
 
 #include <atomic>
+#include <concepts>
 
 namespace jage::test::fakes::concurrency {
+
 template <class TValue> struct atomic {
   TValue value{};
   [[nodiscard]] auto load(const std::memory_order) const -> TValue {
@@ -20,6 +22,14 @@ template <class TValue> struct atomic {
     }
     expected = value;
     return false;
+  }
+
+  operator TValue() const { return value; }
+
+  auto operator++() -> TValue
+    requires(std::integral<TValue>)
+  {
+    return ++value;
   }
 };
 } // namespace jage::test::fakes::concurrency
