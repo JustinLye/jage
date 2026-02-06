@@ -1,0 +1,2 @@
+[buildenv]
+JAGE_ENABLE_SANITY_CHECKS=1
