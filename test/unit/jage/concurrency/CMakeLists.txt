@@ -1,1 +1,2 @@
 add_unit_test(TARGET_NAME concurrency-double-buffer SOURCE_FILES double_buffer_test.cpp)
+add_subdirectory(internal)
