@@ -1,0 +1,1 @@
+add_unit_test(TARGET_NAME containers-spmc-internal-ring-buffer SOURCE_FILES ring_buffer_test.cpp)
