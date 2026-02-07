@@ -1,0 +1,3 @@
+include(../linux)
+include(../gcc)
+include(../debug)
