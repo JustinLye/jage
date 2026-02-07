@@ -207,6 +207,79 @@ jobs:
         shell: bash
         run: cmake --build build --target all
 
+  setup-matrix-windows:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set Windows matrix based on event type
+        id: set-matrix
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # PR: minimal matrix for fast feedback
+            echo 'matrix={"include":[
+              {"build_type":"debug","extra_profile":"none"}
+            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
+          else
+            # Push/schedule/manual: full matrix
+            echo 'matrix={"include":[
+              {"build_type":"debug","extra_profile":"none"},
+              {"build_type":"debug","extra_profile":"asan"},
+              {"build_type":"debug","extra_profile":"sanity-checks"},
+              {"build_type":"release","extra_profile":"none"}
+            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-test-windows:
+    needs: setup-matrix-windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup-matrix-windows.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Set preset and profiles
+        shell: pwsh
+        run: |
+          $profiles = "-pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/${{ matrix.build_type }} -s compiler.version=194 -c tools.microsoft.msbuild:vs_version=17"
+          $preset = "conan-build-windows-msvc-${{ matrix.build_type }}"
+          if ("${{ matrix.extra_profile }}" -ne "none") {
+            $profiles += " -pr:a profiles/${{ matrix.extra_profile }}"
+            $preset += "-${{ matrix.extra_profile }}"
+          }
+          echo "JAGE_CI_PROFILES=$profiles" >> $env:GITHUB_ENV
+          echo "JAGE_CI_PRESET=$preset" >> $env:GITHUB_ENV
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-windows-msvc-${{ matrix.build_type }}-${{ matrix.extra_profile }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
+          restore-keys: |
+            conan-windows-msvc-${{ matrix.build_type }}-${{ matrix.extra_profile }}-
+            conan-windows-msvc-${{ matrix.build_type }}-
+            conan-windows-msvc-
+      - name: Install Conan
+        shell: pwsh
+        run: |
+          python -m venv .conan
+          .\.conan\Scripts\Activate.ps1
+          pip install conan
+      - name: Configure Conan
+        shell: pwsh
+        run: |
+          .\.conan\Scripts\Activate.ps1
+          Invoke-Expression "conan install . $env:JAGE_CI_PROFILES --build=missing"
+      - name: Configure CMake
+        shell: cmd
+        run: call build-windows-msvc-debug\generators\conanbuild.bat && cmake --preset %JAGE_CI_PRESET%
+      - name: Build and test
+        shell: cmd
+        run: call build-windows-msvc-debug\generators\conanbuild.bat && cmake --build build --target all
+
   test-coverage:
     needs: build-ci-image
     if: ${{ github.event_name == 'schedule' && needs.build-ci-image.result == 'success' }}

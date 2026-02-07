@@ -14,7 +14,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
       # C4324: structure was padded due to alignment specifier. Intentional for
       # cacheline-aligned types (e.g. snapshot, cacheline_slot) that use
       # alignas(cacheline_size) to prevent false sharing.
-      /wd4324)
+      /wd4324
+      /EHsc)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   target_compile_options(jage_compiler_options INTERFACE -Wall -Werror -Wextra
                                                          -Wpedantic)
