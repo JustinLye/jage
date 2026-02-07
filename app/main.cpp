@@ -5,7 +5,7 @@
 // for driver
 #include <jage/input/button/states.hpp>
 #include <jage/input/cursor/state.hpp>
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 #include <jage/input/mouse/buttons.hpp>
 
 #include <glad/glad.h>
@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 
 namespace jage {
+
 class driver {
 
   GLFWwindow *window_{nullptr};
@@ -57,9 +58,9 @@ public:
                               static_cast<int>(std::to_underlying(button)));
   }
 
-  [[nodiscard]] auto is_down(const input::keyboard::keys key) const -> bool {
+  [[nodiscard]] auto is_down(const input::keyboard::key key) const -> bool {
     switch (key) {
-    case input::keyboard::keys::escape:
+    case input::keyboard::key::escape:
       return GLFW_PRESS == glfwGetKey(window_, GLFW_KEY_ESCAPE);
     default:
       return false;
@@ -85,12 +86,12 @@ auto main(int, char *[]) -> int {
 
   jage::input::controller input_controller{driver};
   auto &keyboard = input_controller.keyboard();
-  keyboard.monitor_input(jage::input::keyboard::keys::escape);
+  keyboard.monitor_input(jage::input::keyboard::key::escape);
   std::ignore = keyboard.register_callback(
-      [&](const jage::input::button::states<jage::input::keyboard::keys> states)
+      [&](const jage::input::button::states<jage::input::keyboard::key> states)
           -> void {
         if (jage::input::button::status::down ==
-            states[jage::input::keyboard::keys::escape].status) {
+            states[jage::input::keyboard::key::escape].status) {
           driver.close();
         }
       });

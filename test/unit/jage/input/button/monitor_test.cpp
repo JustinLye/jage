@@ -1,6 +1,6 @@
 #include <jage/input/button/states.hpp>
 #include <jage/input/button/status.hpp>
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 #include <jage/input/keyboard/monitor.hpp>
 #include <jage/input/mouse/buttons.hpp>
 #include <jage/input/mouse/monitor.hpp>
@@ -15,7 +15,7 @@
 using namespace testing;
 
 using keyboard_monitor = jage::input::keyboard::monitor<
-    jage::test::mocks::input::button::driver<jage::input::keyboard::keys>>;
+    jage::test::mocks::input::button::driver<jage::input::keyboard::key>>;
 using mouse_button_monitor = jage::input::mouse::monitor<
     jage::test::mocks::input::button::driver<jage::input::mouse::buttons>>;
 
@@ -181,9 +181,9 @@ TEST_P(keyboard_monitoring_parameterized, should_query_monitor_any_key) {
 
 INSTANTIATE_TEST_SUITE_P(
     all_keyboard_keys, keyboard_monitoring_parameterized,
-    Range(std::to_underlying(jage::input::keyboard::keys::BEGIN),
-          static_cast<std::underlying_type_t<jage::input::keyboard::keys>>(
-              std::to_underlying(jage::input::keyboard::keys::END) + 1)));
+    Range(std::to_underlying(jage::input::keyboard::key::BEGIN),
+          static_cast<std::underlying_type_t<jage::input::keyboard::key>>(
+              std::to_underlying(jage::input::keyboard::key::END) + 1)));
 
 struct mouse_monitoring_parameterized
     : public monitoring<mouse_button_monitor>,

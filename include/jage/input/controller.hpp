@@ -1,7 +1,7 @@
 #pragma once
 
 #include <jage/input/cursor/monitor.hpp>
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 #include <jage/input/keyboard/monitor.hpp>
 #include <jage/input/mouse/buttons.hpp>
 #include <jage/input/mouse/monitor.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <jage/input/button/states.hpp>
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 
 #include <gmock/gmock.h>
 
