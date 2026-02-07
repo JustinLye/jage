@@ -2,6 +2,7 @@
 
 #include <jage/memory/cacheline_size.hpp>
 
+#include <compare> // IWYU pragma: keep
 #include <cstdint>
 
 namespace jage::time::events {

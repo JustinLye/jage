@@ -33,7 +33,7 @@ Every component in JAGE follows these principles:
 
 **Multi-Platform by Design:**
 - Supports Linux, Windows, macOS (planned)
-- Multiple compilers: GCC, Clang, MSVC (planned)
+- Multiple compilers: GCC, Clang, MSVC
 - No platform-specific hacks without proper abstraction
 
 ## Current Roadmap
@@ -98,6 +98,9 @@ Then run the usual `conan install` and CMake commands from inside the container 
 ### CLI Build (Conan + CMake)
 Prereqs: CMake 3.28+, Conan v2, a C++23 compiler, and Python.
 
+On Windows, install [Visual Studio 2026 Build Tools](https://visualstudio.microsoft.com/downloads/) (or full Visual Studio 2026) with the "Desktop development with C++" workload. CMake and Ninja are included with the build tools — launch a "Developer PowerShell for VS 2026" to get them on your PATH.
+
+#### Linux (GCC)
 ```bash
 python3 -m venv conan
 source conan/bin/activate
@@ -113,6 +116,23 @@ Run the demo app:
 ./build/jage
 ```
 
+#### Windows (MSVC)
+```powershell
+python -m venv .conan
+.\.conan\Scripts\activate.bat
+pip install conan
+conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug --build=missing
+build-windows-msvc-debug\generators\conanbuild.bat
+cmake --preset conan-build-windows-msvc-debug
+cmake --build build --target jage
+```
+
+Run the demo app:
+
+```powershell
+.\build\jage.exe
+```
+
 ## Tests
 Preferred: run these inside the Dev Container so your environment matches CI.
 
@@ -121,7 +141,7 @@ cmake --build build --target run-all-jage-unit-tests
 ```
 
 ## Coverage
-Preferred: run coverage inside the Dev Container to avoid toolchain mismatches.
+Coverage requires `lcov` and `gcov` and is only available on Linux. Preferred: run coverage inside the Dev Container to avoid toolchain mismatches.
 
 ```bash
 conan install . -pr:a profiles/coverage -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
@@ -139,15 +159,21 @@ a preset.
 Command line:
 
 ```bash
+# Linux
 cmake --list-presets
 cmake --preset conan-build-linux-gcc-debug
+cmake --build build
+
+# Windows
+cmake --list-presets
+cmake --preset conan-build-windows-msvc-debug
 cmake --build build
 ```
 
 VS Code (CMake Tools):
-1. Run “CMake: Select Configure Preset”.
+1. Run "CMake: Select Configure Preset".
 2. Pick a `conan-build-*` preset.
-3. Run “CMake: Configure” then “CMake: Build”.
+3. Run "CMake: Configure" then "CMake: Build".
 
 If no presets show up, it usually means `conan install` hasn’t been run for
 that profile yet.
@@ -156,7 +182,7 @@ that profile yet.
 - `include/`: header-only library code
 - `app/`: GLFW demo app entry point
 - `test/`: unit tests and test helpers
-- `cmake/`: compiler options, coverage helpers, and GUnit fetch
+- `cmake/`: compiler options and coverage helpers
 - `profiles/`: Conan profiles for toolchains and sanitizers
 - `docker/`: devcontainer image
 
@@ -168,7 +194,7 @@ Core build uses:
 - range-v3
 
 Testing uses:
-- GUnit (GoogleTest/GoogleMock)
+- GoogleTest/GoogleMock
 
 Conan recipe lists:
 - glad

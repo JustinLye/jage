@@ -1,0 +1,8 @@
+[settings]
+compiler=msvc
+compiler.version=195
+compiler.cppstd=23
+compiler.runtime=dynamic
+
+[conf]
+tools.microsoft.msbuild:vs_version=18

@@ -1,7 +1,21 @@
 add_library(jage_compiler_options INTERFACE)
 string(REPLACE "-fmodules-ts" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  target_compile_options(
+    jage_compiler_options
+    INTERFACE
+      /W4
+      /WX
+      # C5030: unrecognized attribute. MSVC does not support [[gnu::*]] attributes
+      # used for optimization hints (e.g. [[gnu::pure]]). GCC/Clang still validate
+      # attribute names, so typos are caught on those compilers.
+      /wd5030
+      # C4324: structure was padded due to alignment specifier. Intentional for
+      # cacheline-aligned types (e.g. snapshot, cacheline_slot) that use
+      # alignas(cacheline_size) to prevent false sharing.
+      /wd4324)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   target_compile_options(jage_compiler_options INTERFACE -Wall -Werror -Wextra
                                                          -Wpedantic)
 else()
@@ -16,31 +30,46 @@ if(DEFINED ENV{ASAN})
         "Error! address sanitizer cannot be combined with thread sanitizer.")
   endif()
   message("Turning on address sanitizer")
-  target_compile_options(jage_compiler_options INTERFACE -fsanitize=address)
-  target_link_options(jage_compiler_options INTERFACE -fsanitize=address)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(jage_compiler_options INTERFACE /fsanitize=address)
+  else()
+    target_compile_options(jage_compiler_options INTERFACE -fsanitize=address)
+    target_link_options(jage_compiler_options INTERFACE -fsanitize=address)
+  endif()
 endif()
 
 if(DEFINED ENV{UBSAN})
-  message("Turning on undefined sanitizer")
-  target_compile_options(jage_compiler_options INTERFACE -fsanitize=undefined)
-  target_link_options(jage_compiler_options INTERFACE -fsanitize=undefined)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    message(WARNING "UBSan not supported on MSVC, skipping")
+  else()
+    message("Turning on undefined sanitizer")
+    target_compile_options(jage_compiler_options INTERFACE -fsanitize=undefined)
+    target_link_options(jage_compiler_options INTERFACE -fsanitize=undefined)
+  endif()
 endif()
 
 if(DEFINED ENV{LSAN})
-  if(DEFINED ENV{TSAN})
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    message(WARNING "LeakSan not supported on MSVC, skipping")
+  elseif(DEFINED ENV{TSAN})
     message(
       FATAL_ERROR
         "Error! leak sanitizer cannot be combined with thread sanitizer.")
+  else()
+    message("Turning on leak sanitizer")
+    target_compile_options(jage_compiler_options INTERFACE -fsanitize=leak)
+    target_link_options(jage_compiler_options INTERFACE -fsanitize=leak)
   endif()
-  message("Turning on leak sanitizer")
-  target_compile_options(jage_compiler_options INTERFACE -fsanitize=leak)
-  target_link_options(jage_compiler_options INTERFACE -fsanitize=leak)
 endif()
 
 if(DEFINED ENV{TSAN})
-  message("Turning on thread sanitizer")
-  target_compile_options(jage_compiler_options INTERFACE -fsanitize=thread)
-  target_link_options(jage_compiler_options INTERFACE -fsanitize=thread)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    message(WARNING "ThreadSan not supported on MSVC, skipping")
+  else()
+    message("Turning on thread sanitizer")
+    target_compile_options(jage_compiler_options INTERFACE -fsanitize=thread)
+    target_link_options(jage_compiler_options INTERFACE -fsanitize=thread)
+  endif()
 endif()
 
 if(DEFINED ENV{JAGE_ENABLE_SANITY_CHECKS})
