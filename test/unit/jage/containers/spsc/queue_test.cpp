@@ -3,7 +3,8 @@
 #include <jage/test/fakes/concurrency/atomic.hpp>
 #include <jage/test/mocks/concurrency/atomic.hpp>
 
-#include <GUnit.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <atomic>
 #include <concepts>
@@ -19,23 +20,21 @@ struct bar {
 
 using jage::containers::spsc::queue;
 
-GTEST("queue: initialization") {
+TEST(queue_initialization, Return_capacity) {
   auto sut = queue<foo, 10UZ>{};
-  SHOULD("return capacity") {
-    static_assert(10UZ == sut.capacity());
-    auto alt_sut = queue<foo, 100UZ>{};
-    static_assert(100UZ == alt_sut.capacity());
-  }
-  SHOULD("have value_type") {
-    EXPECT_TRUE((std::same_as<queue<foo, 10UZ>::value_type, foo>));
-    EXPECT_TRUE(
-        (std::same_as<queue<std::int32_t, 10UZ>::value_type, std::int32_t>));
-  }
+  static_assert(10UZ == sut.capacity());
+  auto alt_sut = queue<foo, 100UZ>{};
+  static_assert(100UZ == alt_sut.capacity());
 }
 
-using jage::test::fakes::concurrency::atomic;
+TEST(queue_initialization, Have_value_type) {
+  EXPECT_TRUE((std::same_as<queue<foo, 10UZ>::value_type, foo>));
+  EXPECT_TRUE(
+      (std::same_as<queue<std::int32_t, 10UZ>::value_type, std::int32_t>));
+}
 
-GTEST("queue: happy path") {
+TEST(queue_happy_path, Push_and_pop_operations) {
+  using jage::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
 
   ASSERT_TRUE(std::empty(sut));
@@ -45,106 +44,62 @@ GTEST("queue: happy path") {
       .value = 42,
   });
 
-  SHOULD("put first value in the front of the queue") {
-    EXPECT_EQ(42, sut.front().value);
-  }
-
-  SHOULD("not be empty after queuing an item") {
-    EXPECT_FALSE(std::empty(sut));
-  }
-
-  SHOULD("have size of one after queuing an item") {
-    EXPECT_EQ(1UZ, std::size(sut));
-  }
+  EXPECT_EQ(42, sut.front().value);
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(1UZ, std::size(sut));
 
   sut.push(foo{
       .value = 101,
   });
 
-  SHOULD("have same front value after pushing another item") {
-    EXPECT_EQ(42, sut.front().value);
-  }
-
-  SHOULD("not be empty after queuing a second item") {
-    EXPECT_FALSE(std::empty(sut));
-  }
-
-  SHOULD("have size of two after adding second item") {
-    EXPECT_EQ(2UZ, std::size(sut));
-  }
+  EXPECT_EQ(42, sut.front().value);
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(2UZ, std::size(sut));
 
   sut.push(foo{
       .value = 202,
   });
 
-  SHOULD("have same front value after pushing another item") {
-    EXPECT_EQ(42, sut.front().value);
-  }
-
-  SHOULD("not be empty after queuing a second item") {
-    EXPECT_FALSE(std::empty(sut));
-  }
-
-  SHOULD("have size of two after adding second item") {
-    EXPECT_EQ(3UZ, std::size(sut));
-  }
+  EXPECT_EQ(42, sut.front().value);
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(3UZ, std::size(sut));
 
   sut.pop();
 
-  SHOULD("update front value after popping an item") {
-    EXPECT_EQ(101, sut.front().value);
-  }
-
-  SHOULD("not be empty after pop with item still in queue") {
-    EXPECT_FALSE(std::empty(sut));
-  }
-
-  SHOULD("have correct size after popping item from queue") {
-    EXPECT_EQ(2UZ, std::size(sut));
-  }
+  EXPECT_EQ(101, sut.front().value);
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(2UZ, std::size(sut));
 
   sut.pop();
 
-  SHOULD("update front value after popping an item") {
-    EXPECT_EQ(202, sut.front().value);
-  }
-
-  SHOULD("not be empty after pop with item still in queue") {
-    EXPECT_FALSE(std::empty(sut));
-  }
-
-  SHOULD("have correct size after popping item from queue") {
-    EXPECT_EQ(1UZ, std::size(sut));
-  }
+  EXPECT_EQ(202, sut.front().value);
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(1UZ, std::size(sut));
 
   sut.pop();
 
-  SHOULD("be empty after popping last item from the queue") {
-    EXPECT_TRUE(std::empty(sut));
-  }
-
-  SHOULD("have size of zero after popping last item from the queue") {
-    EXPECT_EQ(0UZ, std::size(sut));
-  }
+  EXPECT_TRUE(std::empty(sut));
+  EXPECT_EQ(0UZ, std::size(sut));
 }
 
-GTEST("queue: empty queue") {
+TEST(queue_empty_queue,
+     Return_default_constructed_element_when_front_is_called_on_empty_queue) {
+  using jage::test::fakes::concurrency::atomic;
   auto sut = queue<bar, 3UZ, atomic>{};
-
-  SHOULD("return default constructed element when front is called on empty "
-         "queue") {
-    EXPECT_EQ(bar{}.value, sut.front().value);
-  }
-
-  ASSERT_TRUE(std::empty(sut));
-  SHOULD("not move head after pop on empty queue") {
-    sut.pop();
-    EXPECT_TRUE(std::empty(sut));
-    EXPECT_EQ(0UZ, std::size(sut));
-  }
+  EXPECT_EQ(bar{}.value, sut.front().value);
 }
 
-GTEST("queue: full queue") {
+TEST(queue_empty_queue, Not_move_head_after_pop_on_empty_queue) {
+  using jage::test::fakes::concurrency::atomic;
+  auto sut = queue<bar, 3UZ, atomic>{};
+  ASSERT_TRUE(std::empty(sut));
+  sut.pop();
+  EXPECT_TRUE(std::empty(sut));
+  EXPECT_EQ(0UZ, std::size(sut));
+}
+
+TEST(queue_full_queue, Roll_over_operations) {
+  using jage::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
   sut.push(foo{
       .value = 1,
@@ -159,54 +114,46 @@ GTEST("queue: full queue") {
 
   sut.push(foo{.value = 4});
 
-  SHOULD("roll over after filling and emptying queue") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(1UZ, std::size(sut));
-    EXPECT_EQ(4UZ, sut.front().value);
-  }
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(1UZ, std::size(sut));
+  EXPECT_EQ(4UZ, sut.front().value);
 
   sut.push(foo{
       .value = 5,
   });
-  SHOULD("roll over after filling, emptying, and adding an single item to "
-         "the queue") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(2UZ, std::size(sut));
-    EXPECT_EQ(4UZ, sut.front().value);
-  }
+
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(2UZ, std::size(sut));
+  EXPECT_EQ(4UZ, sut.front().value);
 
   sut.push(foo{
       .value = 6,
   });
 
-  SHOULD("roll over after filling, emptying, and adding multiple items to the "
-         "queue") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(3UZ, std::size(sut));
-    EXPECT_EQ(4UZ, sut.front().value);
-  }
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(3UZ, std::size(sut));
+  EXPECT_EQ(4UZ, sut.front().value);
 
   sut.pop();
-  SHOULD("move to next value in queue after pop") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(2UZ, std::size(sut));
-    EXPECT_EQ(5UZ, sut.front().value);
-  }
+
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(2UZ, std::size(sut));
+  EXPECT_EQ(5UZ, sut.front().value);
 
   sut.pop();
-  SHOULD("move to next value in queue after pop") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(1UZ, std::size(sut));
-    EXPECT_EQ(6UZ, sut.front().value);
-  }
+
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(1UZ, std::size(sut));
+  EXPECT_EQ(6UZ, sut.front().value);
+
   sut.pop();
-  SHOULD("move to next value in queue after pop") {
-    EXPECT_TRUE(std::empty(sut));
-    EXPECT_EQ(0UZ, std::size(sut));
-  }
+
+  EXPECT_TRUE(std::empty(sut));
+  EXPECT_EQ(0UZ, std::size(sut));
 }
 
-GTEST("queue: roll over and head index can be exchange on first-try") {
+TEST(queue_roll_over, Head_index_can_be_exchanged_on_first_try) {
+  using jage::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
   sut.push(foo{
       .value = 1,
@@ -225,24 +172,20 @@ GTEST("queue: roll over and head index can be exchange on first-try") {
       .value = 4,
   });
 
-  SHOULD("still be non-empty had have correct size") {
-    EXPECT_FALSE(std::empty(sut));
-    EXPECT_EQ(3UZ, std::size(sut));
-  }
+  EXPECT_FALSE(std::empty(sut));
+  EXPECT_EQ(3UZ, std::size(sut));
 
-  SHOULD("overwrite oldest") {
-    EXPECT_EQ(2, sut.front().value);
-    sut.pop();
-    EXPECT_EQ(3, sut.front().value);
-    sut.pop();
-    EXPECT_EQ(4, sut.front().value);
-    sut.pop();
-    EXPECT_TRUE(std::empty(sut));
-    EXPECT_EQ(0UZ, std::size(sut));
-  }
+  EXPECT_EQ(2, sut.front().value);
+  sut.pop();
+  EXPECT_EQ(3, sut.front().value);
+  sut.pop();
+  EXPECT_EQ(4, sut.front().value);
+  sut.pop();
+  EXPECT_TRUE(std::empty(sut));
+  EXPECT_EQ(0UZ, std::size(sut));
 }
 
-GTEST("queue: size never exceeds capacity (racy load order)") {
+TEST(queue_size_limits, Never_exceeds_capacity_with_racy_load_order) {
   using ::testing::InSequence;
   using ::testing::Return;
 
@@ -252,18 +195,16 @@ GTEST("queue: size never exceeds capacity (racy load order)") {
       *jage::test::mocks::concurrency::atomic<std::uint64_t>::get_instance();
   auto sut = queue<foo, 3UZ, jage::test::mocks::concurrency::atomic>{};
 
-  SHOULD("not report size larger than capacity") {
-    EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
-        .WillOnce(Return(0UZ));
-    EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
-        .WillOnce(Return(5UZ));
-    EXPECT_LE(std::size(sut), sut.capacity());
-  }
+  EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
+      .WillOnce(Return(0UZ));
+  EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
+      .WillOnce(Return(5UZ));
+  EXPECT_LE(std::size(sut), sut.capacity());
 
   jage::test::mocks::concurrency::atomic<std::uint64_t>::instance.reset();
 }
 
-GTEST("queue: roll-over corner cases") {
+TEST(queue_roll_over_corner_cases, Compare_and_swap_loop_edge_cases) {
   using ::testing::DoAll;
   using ::testing::Eq;
   using ::testing::Return;
@@ -297,8 +238,7 @@ GTEST("queue: roll-over corner cases") {
       .value = 30,
   });
 
-  SHOULD("Stop compare-and-stop loop when exchange fails, but loaded head "
-         "value is now equal to the desired value (single pop occurred)") {
+  {
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
         .WillOnce(Return(3UZ));
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
@@ -317,9 +257,7 @@ GTEST("queue: roll-over corner cases") {
     EXPECT_EQ(20, sut.front().value);
   }
 
-  SHOULD(
-      "Stop compare-and-stop loop when exchange fails, but loaded head "
-      "value is now greater than equal the desired value (two pops occurred)") {
+  {
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
         .WillOnce(Return(3UZ));
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
@@ -339,8 +277,7 @@ GTEST("queue: roll-over corner cases") {
     EXPECT_EQ(30, sut.front().value);
   }
 
-  SHOULD("Stop compare-and-stop loop when exchange fails, but the queue has "
-         "been cleared from underneath us") {
+  {
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
         .WillOnce(Return(3UZ));
     EXPECT_CALL(mock, mock_load(std::memory_order::acquire))

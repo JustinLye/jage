@@ -2,12 +2,10 @@
 #include <jage/time/durations.hpp>
 #include <jage/time/hertz.hpp>
 
-#include <GUnit.h>
+#include <gtest/gtest.h>
 
-GTEST("time clock") {
-  using jage::time::operator""_Hz;
+using jage::time::operator""_Hz;
 
-  SHOULD("be able to construct clock") {
-    EXPECT_NO_THROW(jage::time::clock<jage::time::nanoseconds>{60_Hz});
-  }
+TEST(time_clock, Be_able_to_construct_clock) {
+  EXPECT_NO_THROW(jage::time::clock<jage::time::nanoseconds>{60_Hz});
 }

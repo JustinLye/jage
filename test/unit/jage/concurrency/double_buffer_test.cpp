@@ -4,7 +4,8 @@
 
 #include <jage/test/mocks/concurrency/atomic.hpp>
 
-#include <GUnit.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -44,30 +45,31 @@ static_assert(sizeof(double_buffer<twice_the_cache_line, std::atomic>) %
                   cacheline_size ==
               0);
 
-GTEST("concurrency double buffer") {
+TEST(concurrency_double_buffer, Have_default_constructed_value_when_initialized) {
   auto &mock = *atomic<std::uint8_t>::get_instance();
-
   auto buffer = double_buffer<unaligned, atomic>{};
   static_assert(sizeof(buffer) % cacheline_size == 0);
 
-  SHOULD("have default constructed value when initialized") {
-    EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
-        .WillOnce(testing::Return(0U));
-    const auto payload = buffer.read();
+  EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
+      .WillOnce(testing::Return(0U));
+  const auto payload = buffer.read();
 
-    EXPECT_EQ(42UZ, payload.value);
-  }
+  EXPECT_EQ(42UZ, payload.value);
+  atomic<std::uint8_t>::instance.reset();
+}
 
-  SHOULD("update inactive buffer") {
-    testing::InSequence sequence{};
-    EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
-        .WillOnce(testing::Return(0U));
-    EXPECT_CALL(mock, mock_store(1U, std::memory_order::release)).Times(1);
-    EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
-        .WillOnce(testing::Return(1U));
-    buffer.write(unaligned{.value = 99UZ});
-    const auto payload = buffer.read();
-    EXPECT_EQ(99UZ, payload.value);
-  }
+TEST(concurrency_double_buffer, Update_inactive_buffer) {
+  auto &mock = *atomic<std::uint8_t>::get_instance();
+  auto buffer = double_buffer<unaligned, atomic>{};
+
+  testing::InSequence sequence{};
+  EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
+      .WillOnce(testing::Return(0U));
+  EXPECT_CALL(mock, mock_store(1U, std::memory_order::release)).Times(1);
+  EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
+      .WillOnce(testing::Return(1U));
+  buffer.write(unaligned{.value = 99UZ});
+  const auto payload = buffer.read();
+  EXPECT_EQ(99UZ, payload.value);
   atomic<std::uint8_t>::instance.reset();
 }

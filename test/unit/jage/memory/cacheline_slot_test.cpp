@@ -3,7 +3,7 @@
 
 #include <jage/test/construction_tracker.hpp>
 
-#include <GUnit.h>
+#include <gtest/gtest.h>
 
 #include <array>
 #include <cstddef>
@@ -97,168 +97,166 @@ using equal_to_cacheline_size = std::array<std::byte, cacheline_size>;
 using two_times_cacheline_size = std::array<std::byte, cacheline_size * 2UZ>;
 using jage::test::construction_tracker;
 
-GTEST("memory cacheline slot") {
+TEST(memory_cacheline_slot, Pad_to_fit_on_cacheline) {
+  EXPECT_EQ(cacheline_size, sizeof(cacheline_slot<unaligned>));
+  EXPECT_EQ(cacheline_size * 2UZ,
+            sizeof(cacheline_slot<two_times_cacheline_size>));
+}
 
-  SHOULD("pad to fit on cacheline") {
-    EXPECT_EQ(cacheline_size, sizeof(cacheline_slot<unaligned>));
-    EXPECT_EQ(cacheline_size * 2UZ,
-              sizeof(cacheline_slot<two_times_cacheline_size>));
+TEST(
+    memory_cacheline_slot,
+    Pad_to_additional_cacheline_when_size_of_type_is_greater_than_cacheline_size) {
+  EXPECT_EQ(cacheline_size * 2UZ,
+            sizeof(cacheline_slot<one_byte_over_cacheline_size>));
+}
+
+TEST(memory_cacheline_slot, Act_like_underlying_value) {
+  auto value = cacheline_slot<unaligned>{unaligned{.bits = 1, .payload = 2}};
+  EXPECT_EQ(1, value.bits);
+  EXPECT_EQ(2, value.payload);
+
+  auto test = [&](const unaligned &f) {
+    EXPECT_EQ(1, f.bits);
+    EXPECT_EQ(2, f.payload);
+  };
+  test(value);
+}
+
+TEST(memory_cacheline_slot,
+     Handle_padding_correctly_when_payload_is_size_of_cacheline) {
+  EXPECT_EQ(cacheline_size, sizeof(cacheline_slot<equal_to_cacheline_size>));
+}
+
+TEST(memory_cacheline_slot, Align_correctly) {
+  EXPECT_EQ(alignof(cacheline_slot<unaligned>), cacheline_size);
+  EXPECT_EQ(alignof(cacheline_slot<one_byte_over_cacheline_size>),
+            cacheline_size);
+  EXPECT_EQ(alignof(cacheline_slot<equal_to_cacheline_size>), cacheline_size);
+  EXPECT_EQ(alignof(cacheline_slot<two_times_cacheline_size>), cacheline_size);
+}
+
+TEST(memory_cacheline_slot, Forward_constructor_arguments) {
+  auto tracker = construction_tracker{};
+  {
+    cacheline_slot<construction_tracker> slot{tracker};
+    EXPECT_EQ(construction_tracker::construction_type::copy,
+              slot.construction_method());
   }
-
-  SHOULD("pad to additional cacheline when size of type is greater than "
-         "cacheline size") {
-    EXPECT_EQ(cacheline_size * 2UZ,
-              sizeof(cacheline_slot<one_byte_over_cacheline_size>));
+  {
+    cacheline_slot<construction_tracker> slot{std::move(tracker)};
+    EXPECT_EQ(construction_tracker::construction_type::move,
+              slot.construction_method());
   }
-
-  SHOULD("act like underlying value") {
-    auto value = cacheline_slot<unaligned>{unaligned{.bits = 1, .payload = 2}};
-    EXPECT_EQ(1, value.bits);
-    EXPECT_EQ(2, value.payload);
-
-    auto test = [&](const unaligned &f) {
-      EXPECT_EQ(1, f.bits);
-      EXPECT_EQ(2, f.payload);
+  {
+    move_only foo{};
+    foo.value = 1888;
+    cacheline_slot<move_only<>> slot{std::move(foo)};
+    EXPECT_EQ(1888, slot.value);
+    EXPECT_EQ(42, foo.value);
+  }
+  {
+    move_only<cacheline_size> foo{};
+    foo.value = 1984;
+    cacheline_slot<move_only<cacheline_size>> slot{std::move(foo)};
+    EXPECT_EQ(1984, slot.value);
+    EXPECT_EQ(42, foo.value);
+  }
+  {
+    const auto slot =
+        cacheline_slot<blood_pressure>{std::uint16_t{120}, std::uint16_t{80}};
+    EXPECT_EQ("120 / 80", static_cast<std::string>(slot));
+  }
+  {
+    const padded_value<std::uint16_t, cacheline_size + 1UZ> foo{
+        .value = 4615,
+        .padding = {},
     };
-    test(value);
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(4615, slot.value);
   }
 
-  SHOULD("handle padding correctly when payload is size of cacheline") {
-    EXPECT_EQ(cacheline_size, sizeof(cacheline_slot<equal_to_cacheline_size>));
-  }
-
-  SHOULD("align correctly") {
-    EXPECT_EQ(alignof(cacheline_slot<unaligned>), cacheline_size);
-    EXPECT_EQ(alignof(cacheline_slot<one_byte_over_cacheline_size>),
-              cacheline_size);
-    EXPECT_EQ(alignof(cacheline_slot<equal_to_cacheline_size>), cacheline_size);
-    EXPECT_EQ(alignof(cacheline_slot<two_times_cacheline_size>),
-              cacheline_size);
-  }
-
-  SHOULD("forward constructor arguments") {
-    auto tracker = construction_tracker{};
-    {
-      cacheline_slot<construction_tracker> slot{tracker};
-      EXPECT_EQ(construction_tracker::construction_type::copy,
-                slot.construction_method());
-    }
-    {
-      cacheline_slot<construction_tracker> slot{std::move(tracker)};
-      EXPECT_EQ(construction_tracker::construction_type::move,
-                slot.construction_method());
-    }
-    {
-      move_only foo{};
-      foo.value = 1888;
-      cacheline_slot<move_only<>> slot{std::move(foo)};
-      EXPECT_EQ(1888, slot.value);
-      EXPECT_EQ(42, foo.value);
-    }
-    {
-      move_only<cacheline_size> foo{};
-      foo.value = 1984;
-      cacheline_slot<move_only<cacheline_size>> slot{std::move(foo)};
-      EXPECT_EQ(1984, slot.value);
-      EXPECT_EQ(42, foo.value);
-    }
-    {
-      const auto slot = cacheline_slot<blood_pressure>{120, 80};
-      EXPECT_EQ("120 / 80", static_cast<std::string>(slot));
-    }
-    {
-      const padded_value<std::uint16_t, cacheline_size + 1UZ> foo{
-          .value = 4615,
-          .padding = {},
-      };
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(4615, slot.value);
-    }
-
-    {
-      move_only<cacheline_size + 1UZ> foo{};
-      foo.value = 1605;
-      auto slot = cacheline_slot{std::move(foo)};
-      EXPECT_EQ(1605UZ, slot.value);
-      EXPECT_EQ(42UZ, foo.value);
-    }
-  }
-
-  SHOULD("have deduction guides for constructing with the underlying type") {
-    {
-      move_only foo{};
-      foo.value = 1999;
-      auto slot = cacheline_slot{std::move(foo)};
-      EXPECT_EQ(1999, slot.value);
-      EXPECT_EQ(42, foo.value);
-    }
-    {
-      padded_value<std::uint8_t, sizeof(std::uint8_t)> foo{};
-      foo.value = 255;
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(255, slot.value);
-    }
-    {
-      const padded_value<std::uint8_t, sizeof(std::uint8_t)> foo{.value = 254};
-      const auto slot = cacheline_slot{foo};
-      EXPECT_EQ(254, slot.value);
-    }
-    {
-      const auto tracker = construction_tracker{};
-      auto slot = cacheline_slot{tracker};
-      EXPECT_EQ(construction_tracker::construction_type::copy,
-                slot.construction_method());
-    }
-
-    {
-      const padded_value<std::uint16_t, cacheline_size> foo{.value = 65535,
-                                                            .padding = {}};
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(65535, slot.value);
-    }
-    {
-      padded_value<std::uint16_t, cacheline_size> foo{};
-      foo.value = 9;
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(9, slot.value);
-    }
-    {
-      padded_value<std::uint16_t, cacheline_size> foo{};
-      foo.value = 10;
-      auto slot = cacheline_slot{std::move(foo)};
-      EXPECT_EQ(10, slot.value);
-    }
-
-    {
-      const padded_value<std::uint16_t, cacheline_size + 1UZ> foo{
-          .value = 77, .padding = {}};
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(77, slot.value);
-    }
-    {
-      padded_value<std::uint16_t, cacheline_size + 1UZ> foo{};
-      foo.value = 22;
-      auto slot = cacheline_slot{foo};
-      EXPECT_EQ(22, slot.value);
-    }
-    {
-      padded_value<std::uint16_t, cacheline_size + 1UZ> foo{};
-      foo.value = 111;
-      auto slot = cacheline_slot{std::move(foo)};
-      EXPECT_EQ(111, slot.value);
-    }
+  {
+    move_only<cacheline_size + 1UZ> foo{};
+    foo.value = 1605;
+    auto slot = cacheline_slot{std::move(foo)};
+    EXPECT_EQ(1605UZ, slot.value);
+    EXPECT_EQ(42UZ, foo.value);
   }
 }
 
-GTEST("primative types") {
-  SHOULD("behave like primative type") {
-    {
-      auto slot = cacheline_slot<int>{42};
-      EXPECT_EQ(42, slot);
-    }
-    {
-      auto slot = cacheline_slot{std::numeric_limits<std::uint64_t>::max()};
-      EXPECT_EQ(std::numeric_limits<std::uint64_t>::max(), slot);
-    }
+TEST(memory_cacheline_slot,
+     Have_deduction_guides_for_constructing_with_the_underlying_type) {
+  {
+    move_only foo{};
+    foo.value = 1999;
+    auto slot = cacheline_slot{std::move(foo)};
+    EXPECT_EQ(1999, slot.value);
+    EXPECT_EQ(42, foo.value);
+  }
+  {
+    padded_value<std::uint8_t, sizeof(std::uint8_t)> foo{};
+    foo.value = 255;
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(255, slot.value);
+  }
+  {
+    const padded_value<std::uint8_t, sizeof(std::uint8_t)> foo{.value = 254};
+    const auto slot = cacheline_slot{foo};
+    EXPECT_EQ(254, slot.value);
+  }
+  {
+    const auto tracker = construction_tracker{};
+    auto slot = cacheline_slot{tracker};
+    EXPECT_EQ(construction_tracker::construction_type::copy,
+              slot.construction_method());
+  }
+
+  {
+    const padded_value<std::uint16_t, cacheline_size> foo{.value = 65535,
+                                                          .padding = {}};
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(65535, slot.value);
+  }
+  {
+    padded_value<std::uint16_t, cacheline_size> foo{};
+    foo.value = 9;
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(9, slot.value);
+  }
+  {
+    padded_value<std::uint16_t, cacheline_size> foo{};
+    foo.value = 10;
+    auto slot = cacheline_slot{std::move(foo)};
+    EXPECT_EQ(10, slot.value);
+  }
+
+  {
+    const padded_value<std::uint16_t, cacheline_size + 1UZ> foo{.value = 77,
+                                                                .padding = {}};
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(77, slot.value);
+  }
+  {
+    padded_value<std::uint16_t, cacheline_size + 1UZ> foo{};
+    foo.value = 22;
+    auto slot = cacheline_slot{foo};
+    EXPECT_EQ(22, slot.value);
+  }
+  {
+    padded_value<std::uint16_t, cacheline_size + 1UZ> foo{};
+    foo.value = 111;
+    auto slot = cacheline_slot{std::move(foo)};
+    EXPECT_EQ(111, slot.value);
+  }
+}
+
+TEST(primitive_types, Behave_like_primitive_type) {
+  {
+    auto slot = cacheline_slot<int>{42};
+    EXPECT_EQ(42, slot);
+  }
+  {
+    auto slot = cacheline_slot{std::numeric_limits<std::uint64_t>::max()};
+    EXPECT_EQ(std::numeric_limits<std::uint64_t>::max(), slot);
   }
 }
