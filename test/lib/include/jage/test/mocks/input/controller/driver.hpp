@@ -1,6 +1,6 @@
 #pragma once
 
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 #include <jage/input/mouse/buttons.hpp>
 
 #include <jage/test/mocks/input/button/driver.hpp>
@@ -10,12 +10,12 @@
 
 namespace jage::test::mocks::input::controller {
 struct driver : cursor::driver {
-  MOCK_METHOD(bool, keyboard_is_down, (const jage::input::keyboard::keys),
+  MOCK_METHOD(bool, keyboard_is_down, (const jage::input::keyboard::key),
               (const));
   MOCK_METHOD(bool, mouse_is_down, (const jage::input::mouse::buttons),
               (const));
 
-  auto is_down(const jage::input::keyboard::keys &key) const -> bool {
+  auto is_down(const jage::input::keyboard::key &key) const -> bool {
     return keyboard_is_down(key);
   }
 

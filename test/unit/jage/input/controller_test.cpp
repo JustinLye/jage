@@ -1,6 +1,6 @@
 
 #include <jage/input/controller.hpp>
-#include <jage/input/keyboard/keys.hpp>
+#include <jage/input/keyboard/key.hpp>
 #include <jage/input/mouse/buttons.hpp>
 
 #include <jage/test/fixtures/input/input_controller.hpp>
@@ -15,9 +15,9 @@ namespace mouse = jage::input::mouse;
 
 TEST_F(input_controller, Check_keyboard_button_down) {
   std::ignore = controller.keyboard().register_callback(null_callback);
-  controller.keyboard().monitor_input(keyboard::keys::a);
+  controller.keyboard().monitor_input(keyboard::key::a);
 
-  EXPECT_CALL(driver, keyboard_is_down(keyboard::keys::a))
+  EXPECT_CALL(driver, keyboard_is_down(keyboard::key::a))
       .WillOnce(testing::Return(true));
   controller.poll();
 }

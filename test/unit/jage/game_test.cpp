@@ -27,7 +27,7 @@ TEST_F(game_test, Render_and_poll_while_window_is_not_closed) {
 TEST_F(game_test, Not_poll_input_controller_if_window_is_closed) {
   EXPECT_CALL(window_driver, should_close()).WillOnce(testing::Return(true));
   auto &input_controller = game.input();
-  input_controller.keyboard().monitor_input(keyboard::keys::escape);
+  input_controller.keyboard().monitor_input(keyboard::key::escape);
   input_controller.mouse().monitor_input(mouse::buttons::middle_click);
   std::ignore = input_controller.cursor().register_callback(null_callback);
   std::ignore = input_controller.mouse().register_callback(null_callback);
@@ -42,12 +42,12 @@ TEST_F(game_test, Poll_input_controller_if_window_is_not_closed) {
   EXPECT_CALL(window_driver, should_close())
       .WillOnce(testing::Return(false))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(input_driver, keyboard_is_down(keyboard::keys::escape)).Times(1);
+  EXPECT_CALL(input_driver, keyboard_is_down(keyboard::key::escape)).Times(1);
   EXPECT_CALL(input_driver, mouse_is_down(mouse::buttons::middle_click))
       .Times(1);
   EXPECT_CALL(input_driver, cursor_position()).Times(1);
   auto &input_controller = game.input();
-  input_controller.keyboard().monitor_input(keyboard::keys::escape);
+  input_controller.keyboard().monitor_input(keyboard::key::escape);
   input_controller.mouse().monitor_input(mouse::buttons::middle_click);
   std::ignore = input_controller.cursor().register_callback(null_callback);
   std::ignore = input_controller.mouse().register_callback(null_callback);

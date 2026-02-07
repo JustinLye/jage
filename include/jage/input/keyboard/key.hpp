@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace jage::input::keyboard {
-enum class keys : std::uint8_t {
+enum class key : std::uint8_t {
   spacebar,
   a,
   escape,
