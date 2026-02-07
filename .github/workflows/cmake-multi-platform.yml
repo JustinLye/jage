@@ -237,8 +237,6 @@ jobs:
           key: conan-windows-msvc-${{ matrix.build_type }}-${{ matrix.extra_profile }}-${{ hashFiles('conanfile.py', 'profiles/**') }}
           restore-keys: |
             conan-windows-msvc-${{ matrix.build_type }}-${{ matrix.extra_profile }}-
-            conan-windows-msvc-${{ matrix.build_type }}-
-            conan-windows-msvc-
       - name: Install Conan
         shell: pwsh
         run: |
