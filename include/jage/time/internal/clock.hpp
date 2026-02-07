@@ -25,10 +25,11 @@ class clock {
   std::uint64_t elapsed_ticks_{};
   double time_scale_{1.0};
 
-  [[nodiscard]] auto
-  ticks(const duration_ current_time) const -> std::uint64_t {
+  [[nodiscard]] auto ticks(const duration_ current_time) const
+      -> std::uint64_t {
     const auto accumulated_time = current_time - elapsed_time_;
-    return std::floor(accumulated_time.count() / tick_duration_.count()) +
+    return static_cast<std::uint64_t>(
+               std::floor(accumulated_time.count() / tick_duration_.count())) +
            elapsed_ticks_;
   }
 
@@ -51,8 +52,8 @@ public:
     return duration_type{ticks() * tick_duration_.count()};
   }
 
-  [[nodiscard]] constexpr auto
-  tick_duration() const noexcept -> const duration_type & {
+  [[nodiscard]] constexpr auto tick_duration() const noexcept
+      -> const duration_type & {
     return tick_duration_;
   }
 

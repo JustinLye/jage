@@ -200,16 +200,13 @@ No behavior changes.
 ### Test Organization
 - Mirror library structure: `test/unit/jage/<subsystem>/`
 - One test file per header (usually)
-- Use GUnit's BDD syntax for readability:
+- Use standard GoogleTest syntax:
   ```cpp
-  "should return true when button is pressed"_test = [] {
-      // Given
+  TEST(button_state, Return_true_when_button_is_pressed) {
       button_state state;
-      // When
       state.press();
-      // Then
-      expect(state.is_pressed());
-  };
+      EXPECT_TRUE(state.is_pressed());
+  }
   ```
 
 ### Running Tests
@@ -246,30 +243,52 @@ Open `build/coverage-report/index.html` to see detailed coverage report.
 
 JAGE must build on multiple platforms and compilers:
 - Linux (GCC, Clang)
-- Windows (MSVC, Clang) - planned
+- Windows (MSVC)
 - macOS (Clang) - planned
 
 **Before submitting a PR:**
-1. Test with both GCC and Clang:
+1. Test with multiple compilers:
    ```bash
-   # GCC
+   # Linux - GCC
    conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
    cmake --preset conan-build-linux-gcc-debug && cmake --build build
 
-   # Clang
+   # Linux - Clang
    conan install . -pr:a profiles/linux -pr:a profiles/clang -pr:a profiles/debug --build=missing
    cmake --preset conan-build-linux-clang-debug && cmake --build build
+   ```
+   ```powershell
+   # Windows - MSVC
+   conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug --build=missing
+   cmake --preset conan-build-windows-msvc-debug; cmake --build build
    ```
 
 2. Test with sanitizers:
    ```bash
-   # Address sanitizer
+   # Address sanitizer (Linux)
    conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug -pr:a profiles/asan --build=missing
    cmake --preset conan-build-linux-gcc-debug-asan && cmake --build build
 
-   # UndefinedBehavior sanitizer
+   # UndefinedBehavior sanitizer (Linux only)
    conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug -pr:a profiles/ubsan --build=missing
    cmake --preset conan-build-linux-gcc-debug-ubsan && cmake --build build
+   ```
+   ```powershell
+   # Address sanitizer (Windows)
+   conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug -pr:a profiles/asan --build=missing
+   cmake --preset conan-build-windows-msvc-debug-asan; cmake --build build
+   ```
+
+3. Test with sanity checks:
+   ```bash
+   # Linux
+   conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug -pr:a profiles/sanity-checks --build=missing
+   cmake --preset conan-build-linux-gcc-debug-sanity-checks && cmake --build build
+   ```
+   ```powershell
+   # Windows
+   conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug -pr:a profiles/sanity-checks --build=missing
+   cmake --preset conan-build-windows-msvc-debug-sanity-checks; cmake --build build
    ```
 
 ## Questions or Stuck?
@@ -289,17 +308,18 @@ This document describes how to set up and build the project using either the nat
 ## Command line (CMake + Conan)
 
 Prerequisites:
-- CMake
+- CMake 3.28+
 - Conan (v2)
-- A C/C++ compiler toolchain
-- Python (for Conan install if needed)
+- Python
+- **Linux:** GCC 14+ or Clang with C++23 support
+- **Windows:** [Visual Studio 2026 Build Tools](https://visualstudio.microsoft.com/downloads/) (or full Visual Studio 2026) with the "Desktop development with C++" workload. CMake and Ninja are included — launch a "Developer PowerShell for VS 2026" to get them on your PATH.
 
-Example setup and build on Linux:
+### Linux (GCC)
 
 ```bash
 # Install Conan in a virtualenv
-python3 -m venv conan
-source conan/bin/activate
+python3 -m venv .conan
+source .conan/bin/activate
 pip install conan
 
 # Install dependencies
@@ -307,6 +327,24 @@ conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --b
 
 # Configure
 cmake --preset conan-build-linux-gcc-debug
+
+# Build
+cmake --build build --target run-all-jage-unit-tests
+```
+
+### Windows (MSVC)
+
+```powershell
+# Install Conan in a virtualenv
+python -m venv .conan
+.\.conan\Scripts\activate
+pip install conan
+
+# Install dependencies
+conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug --build=missing
+
+# Configure
+cmake --preset conan-build-windows-msvc-debug
 
 # Build
 cmake --build build --target run-all-jage-unit-tests

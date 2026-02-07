@@ -3,13 +3,12 @@
     "C_Cpp.intelliSenseEngine": "disabled",
     "C_Cpp.errorSquiggles": "disabled",
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-    "clangd.path": "/usr/bin/clangd",
+    "clangd.path": "clangd",
     "clangd.arguments": [
         "--background-index",
         "--compile-commands-dir=${workspaceFolder}/build",
         "--header-insertion=never",
         "-j=8",
-        "--malloc-trim",
         "--pch-storage=memory",
         "--clang-tidy",
         "--enable-config"
