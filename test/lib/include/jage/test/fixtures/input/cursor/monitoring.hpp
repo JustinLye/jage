@@ -18,11 +18,12 @@ protected:
   mocks::input::cursor::driver driver{};
   mocks::input::cursor::callback callback{};
   ::jage::input::cursor::monitor<mocks::input::cursor::driver> monitor{driver};
-  auto expect_call_to_cursor_position(const ::jage::input::cursor::state &state,
-                                      const std::uint8_t times = 1) -> void {
+  auto expect_call_to_cursor_position(
+      const ::jage::input::cursor::state &return_state,
+      const std::uint8_t times = 1) -> void {
     EXPECT_CALL(driver, cursor_position())
         .Times(times)
-        .WillRepeatedly(testing::Return(state));
+        .WillRepeatedly(testing::Return(return_state));
   }
   auto expect_call_to_cursor_position() -> void {
     EXPECT_CALL(driver, cursor_position()).Times(0);

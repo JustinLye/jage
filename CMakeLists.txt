@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(JAGE CXX)
 
-list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/vendor")
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,11 +10,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 message("COMPILER ${CMAKE_CXX_COMPILER_ID}")
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR OFF)
-include(gunit)
 find_package(glad)
 find_package(glfw3)
 find_package(glm)
 find_package(range-v3)
+find_package(gtest)
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 include(compiler_options)

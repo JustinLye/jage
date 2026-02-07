@@ -1,20 +1,18 @@
 #include <jage/time/internal/concepts/real_number_time_source.hpp>
 
-#include <GUnit.h>
+#include <gtest/gtest.h>
 
 #include <chrono>
 #include <cstdint>
 
-GTEST("time internal real number duration") {
+TEST(time_internal_real_number_duration,
+     Fit_concept_if_duration_representation_is_real_number) {
+  EXPECT_TRUE((jage::time::internal::concepts::real_number_duration<
+               std::chrono::duration<float, std::milli>>));
+}
 
-  SHOULD("fit concept if duration representation is real number") {
-    EXPECT(jage::time::internal::concepts::real_number_duration<
-           std::chrono::duration<float, std::milli>>);
-  }
-
-  SHOULD("not fit concept if duration representation is not a real "
-         "number") {
-    EXPECT(not jage::time::internal::concepts::real_number_duration<
-           std::chrono::duration<std::uint64_t, std::milli>>);
-  }
+TEST(time_internal_real_number_duration,
+     Not_fit_concept_if_duration_representation_is_not_a_real_number) {
+  EXPECT_FALSE((jage::time::internal::concepts::real_number_duration<
+                std::chrono::duration<std::uint64_t, std::milli>>));
 }
