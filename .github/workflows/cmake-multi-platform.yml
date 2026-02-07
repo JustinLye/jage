@@ -117,37 +117,19 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # PR: minimal matrix for fast feedback
-            echo 'matrix={"include":[
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14}
-            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            # Push to main: medium matrix
-            echo 'matrix={"include":[
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"none","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"release","sanitizer":"none","compiler_version":14},
-              {"c_compiler":"clang","build_type":"debug","sanitizer":"asan","compiler_version":18},
-              {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
-            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
-          else
-            # Schedule/manual: full matrix (trimmed - no lsan, sanitizers only on debug)
-            echo 'matrix={"include":[
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"none","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"debug","sanitizer":"tsan","compiler_version":14},
-              {"c_compiler":"gcc","build_type":"release","sanitizer":"none","compiler_version":14},
-              {"c_compiler":"clang","build_type":"debug","sanitizer":"none","compiler_version":18},
-              {"c_compiler":"clang","build_type":"debug","sanitizer":"asan","compiler_version":18},
-              {"c_compiler":"clang","build_type":"debug","sanitizer":"ubsan","compiler_version":18},
-              {"c_compiler":"clang","build_type":"debug","sanitizer":"tsan","compiler_version":18},
-              {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
-            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
-          fi
+          # Full matrix for all events (PR, push, schedule, manual)
+          echo 'matrix={"include":[
+            {"c_compiler":"gcc","build_type":"debug","sanitizer":"none","compiler_version":14},
+            {"c_compiler":"gcc","build_type":"debug","sanitizer":"asan","compiler_version":14},
+            {"c_compiler":"gcc","build_type":"debug","sanitizer":"ubsan","compiler_version":14},
+            {"c_compiler":"gcc","build_type":"debug","sanitizer":"tsan","compiler_version":14},
+            {"c_compiler":"gcc","build_type":"release","sanitizer":"none","compiler_version":14},
+            {"c_compiler":"clang","build_type":"debug","sanitizer":"none","compiler_version":18},
+            {"c_compiler":"clang","build_type":"debug","sanitizer":"asan","compiler_version":18},
+            {"c_compiler":"clang","build_type":"debug","sanitizer":"ubsan","compiler_version":18},
+            {"c_compiler":"clang","build_type":"debug","sanitizer":"tsan","compiler_version":18},
+            {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
+          ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
 
   build-and-test:
     needs: [build-ci-image, setup-matrix]
@@ -216,20 +198,13 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # PR: minimal matrix for fast feedback
-            echo 'matrix={"include":[
-              {"build_type":"debug","extra_profile":"none"}
-            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
-          else
-            # Push/schedule/manual: full matrix
-            echo 'matrix={"include":[
-              {"build_type":"debug","extra_profile":"none"},
-              {"build_type":"debug","extra_profile":"asan"},
-              {"build_type":"debug","extra_profile":"sanity-checks"},
-              {"build_type":"release","extra_profile":"none"}
-            ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
-          fi
+          # Full matrix for all events (PR, push, schedule, manual)
+          echo 'matrix={"include":[
+            {"build_type":"debug","extra_profile":"none"},
+            {"build_type":"debug","extra_profile":"asan-msvc"},
+            {"build_type":"debug","extra_profile":"sanity-checks"},
+            {"build_type":"release","extra_profile":"none"}
+          ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
 
   build-and-test-windows:
     needs: setup-matrix-windows
@@ -246,13 +221,15 @@ jobs:
         shell: pwsh
         run: |
           $profiles = "-pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/${{ matrix.build_type }} -s compiler.version=194 -c tools.microsoft.msbuild:vs_version=17"
-          $preset = "conan-build-windows-msvc-${{ matrix.build_type }}"
+          $build_dir = "build-windows-msvc-${{ matrix.build_type }}"
           if ("${{ matrix.extra_profile }}" -ne "none") {
             $profiles += " -pr:a profiles/${{ matrix.extra_profile }}"
-            $preset += "-${{ matrix.extra_profile }}"
+            $build_dir += "-${{ matrix.extra_profile }}"
           }
+          $preset = "conan-$build_dir"
           echo "JAGE_CI_PROFILES=$profiles" >> $env:GITHUB_ENV
           echo "JAGE_CI_PRESET=$preset" >> $env:GITHUB_ENV
+          echo "JAGE_CI_BUILD_DIR=$build_dir" >> $env:GITHUB_ENV
       - name: Cache Conan packages
         uses: actions/cache@v4
         with:
@@ -275,10 +252,10 @@ jobs:
           Invoke-Expression "conan install . $env:JAGE_CI_PROFILES --build=missing"
       - name: Configure CMake
         shell: cmd
-        run: call build-windows-msvc-debug\generators\conanbuild.bat && cmake --preset %JAGE_CI_PRESET%
+        run: call "%JAGE_CI_BUILD_DIR%\generators\conanbuild.bat" && cmake --preset %JAGE_CI_PRESET%
       - name: Build and test
         shell: cmd
-        run: call build-windows-msvc-debug\generators\conanbuild.bat && cmake --build build --target all
+        run: call "%JAGE_CI_BUILD_DIR%\generators\conanbuild.bat" && cmake --build build --target all
 
   test-coverage:
     needs: build-ci-image

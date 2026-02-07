@@ -1,0 +1,7 @@
+[buildenv]
+ASAN=1
+
+[conf]
+tools.build:cxxflags=["/fsanitize=address"]
+tools.build:sharedlinkflags=["/fsanitize=address"]
+tools.build:exelinkflags=["/fsanitize=address"]

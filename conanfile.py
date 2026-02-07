@@ -36,7 +36,12 @@ class JAGERecipe(ConanFile):
 
         def try_setting(env_var: str):
             if "1" == VirtualBuildEnv(self).vars().get(env_var, ""):
-                sanitizers.append(env_var.lower())
+                if "ASAN" == env_var and "msvc" == self.settings.get_safe(
+                    "compiler"
+                ):
+                    sanitizers.append("asan-msvc")
+                else:
+                    sanitizers.append(env_var.lower())
 
         for san_env_var in ["ASAN", "UBSAN", "TSAN", "LSAN"]:
             try_setting(san_env_var)
