@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include <array>
+#include <utility>
 #include <vector>
 
 namespace jage::input::adapters {
@@ -23,7 +24,7 @@ template <class TPlatform> class glfw {
   };
 
   static constexpr auto get_physical_key =
-      [](const int scancode) -> keyboard::scancode {
+      [] [[nodiscard]] (const int scancode) -> keyboard::scancode {
     if (0 > scancode) [[unlikely]] {
       return keyboard::scancode::unidentified;
     } else if (static_cast<std::size_t>(scancode) >= std::size(physical_keys_))
@@ -34,18 +35,36 @@ template <class TPlatform> class glfw {
     }
   };
 
+  static constexpr auto get_modifier =
+      [] [[nodiscard]] (
+          const auto mods) -> std::bitset<keyboard::modifier_count> {
+    auto modifier = std::bitset<keyboard::modifier_count>{};
+    if (mods != 0) [[unlikely]] {
+      if (mods & GLFW_MOD_SHIFT) {
+        modifier.flip(std::to_underlying(keyboard::modifier::left_shift));
+        modifier.flip(std::to_underlying(keyboard::modifier::right_shift));
+      }
+      if (mods & GLFW_MOD_ALT) {
+        modifier.flip(std::to_underlying(keyboard::modifier::left_alt));
+        modifier.flip(std::to_underlying(keyboard::modifier::right_alt));
+      }
+    }
+    return modifier;
+  };
+
   static constexpr auto key_callback =
       [](typename TPlatform::window_handler_pointer_type window, int key,
-         int scancode, int action, int) -> void {
+         int scancode, int action, int mods) -> void {
     auto &context = *static_cast<typename TPlatform::context_type *>(
         TPlatform::get_window_user_pointer(window));
+
     context.push(typename TPlatform::context_type::event_type{
         keyboard::event<typename TPlatform::context_type::duration_type>{
             .timestamp = typename TPlatform::context_type::duration_type{},
             .key = logical_keys_[key],
             .scancode = get_physical_key(scancode),
             .action = actions_[static_cast<std::size_t>(action)],
-            .modifiers = 0,
+            .modifiers = get_modifier(mods),
         }});
   };
 
