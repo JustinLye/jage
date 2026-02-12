@@ -16,6 +16,11 @@ template <class TPlatform> class glfw {
 
   static std::array<keyboard::key, GLFW_KEY_LAST + 1> logical_keys_;
   static std::vector<keyboard::scancode> physical_keys_;
+  static constexpr std::array<keyboard::action, GLFW_REPEAT + 1> actions_ = {
+      keyboard::action::release,
+      keyboard::action::press,
+      keyboard::action::repeat,
+  };
 
   static constexpr auto get_physical_key =
       [](const int scancode) -> keyboard::scancode {
@@ -31,7 +36,7 @@ template <class TPlatform> class glfw {
 
   static constexpr auto key_callback =
       [](typename TPlatform::window_handler_pointer_type window, int key,
-         int scancode, int, int) -> void {
+         int scancode, int action, int) -> void {
     auto &context = *static_cast<typename TPlatform::context_type *>(
         TPlatform::get_window_user_pointer(window));
     context.push(typename TPlatform::context_type::event_type{
@@ -39,7 +44,7 @@ template <class TPlatform> class glfw {
             .timestamp = typename TPlatform::context_type::duration_type{},
             .key = logical_keys_[key],
             .scancode = get_physical_key(scancode),
-            .action = keyboard::action::press,
+            .action = actions_[static_cast<std::size_t>(action)],
             .modifiers = 0,
         }});
   };

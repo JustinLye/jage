@@ -241,6 +241,40 @@ TEST_F(glfw_adapter, should_set_keyboard_callback) {
   EXPECT_FALSE(std::empty(context.buffer));
 }
 
+TEST_F(glfw_adapter,
+       should_return_unidentified_for_key_that_is_not_identified) {
+  std::ignore = adapter_type{nullptr, platform};
+  platform.trigger_key_callback(337, 0x05, GLFW_PRESS, 0);
+  ASSERT_FALSE(std::empty(context.buffer));
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+  const auto event = std::get<keyboard_event>(context.buffer.front());
+  EXPECT_EQ(keyboard::key::unidentified, event.key);
+  EXPECT_EQ(keyboard::scancode::unidentified, event.scancode);
+}
+
+TEST_F(glfw_adapter, should_map_action_appropriately) {
+  std::ignore = adapter_type{nullptr, platform};
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_RELEASE, 0);
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS, 0);
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_REPEAT, 0);
+  ASSERT_EQ(3, std::size(context.buffer));
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+  {
+    const auto event = std::get<keyboard_event>(context.buffer.front());
+    EXPECT_EQ(keyboard::action::release, event.action);
+  }
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.at(1)));
+  {
+    const auto event = std::get<keyboard_event>(context.buffer.at(1));
+    EXPECT_EQ(keyboard::action::press, event.action);
+  }
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.back()));
+  {
+    const auto event = std::get<keyboard_event>(context.buffer.back());
+    EXPECT_EQ(keyboard::action::repeat, event.action);
+  }
+}
+
 class glfw_adapter_key_map : public testing::TestWithParam<key_param> {
 protected:
   context_type context;
