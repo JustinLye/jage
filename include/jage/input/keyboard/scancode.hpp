@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace jage::input::keyboard {
-enum class scan_code : std::uint16_t {
+enum class scancode : std::uint16_t {
   unidentified = 0,
   a = 0x04,
   b = 0x05,

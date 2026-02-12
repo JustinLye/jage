@@ -3,7 +3,7 @@
 #include <jage/input/keyboard/action.hpp>
 #include <jage/input/keyboard/event.hpp>
 #include <jage/input/keyboard/key.hpp>
-#include <jage/input/keyboard/scan_code.hpp>
+#include <jage/input/keyboard/scancode.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -15,15 +15,15 @@ namespace jage::input::adapters {
 template <class TPlatform> class glfw {
 
   static std::array<keyboard::key, GLFW_KEY_LAST + 1> logical_keys_;
-  static std::vector<keyboard::scan_code> physical_keys_;
+  static std::vector<keyboard::scancode> physical_keys_;
 
   static constexpr auto get_physical_key =
-      [](const int scancode) -> keyboard::scan_code {
+      [](const int scancode) -> keyboard::scancode {
     if (0 > scancode) [[unlikely]] {
-      return keyboard::scan_code::unidentified;
+      return keyboard::scancode::unidentified;
     } else if (static_cast<std::size_t>(scancode) >= std::size(physical_keys_))
         [[unlikely]] {
-      return keyboard::scan_code::unidentified;
+      return keyboard::scancode::unidentified;
     } else [[likely]] {
       return physical_keys_[static_cast<std::size_t>(scancode)];
     }
@@ -38,7 +38,7 @@ template <class TPlatform> class glfw {
         keyboard::event<typename TPlatform::context_type::duration_type>{
             .timestamp = typename TPlatform::context_type::duration_type{},
             .key = logical_keys_[key],
-            .scan_code = get_physical_key(scancode),
+            .scancode = get_physical_key(scancode),
             .action = keyboard::action::press,
             .modifiers = 0,
         }});
@@ -47,138 +47,138 @@ template <class TPlatform> class glfw {
   static constexpr auto load_physical_scancodes =
       [](const TPlatform &platform) -> void {
     auto bind = [&](const auto glfw_key,
-                    const keyboard::scan_code scancode) -> void {
+                    const keyboard::scancode scancode) -> void {
       if (const auto os_scancode = platform.get_key_scancode(glfw_key);
           os_scancode != -1) {
         if (static_cast<std::size_t>(os_scancode) >=
             std::size(physical_keys_)) {
           physical_keys_.resize(static_cast<std::size_t>(os_scancode) + 1UZ,
-                                keyboard::scan_code::unidentified);
+                                keyboard::scancode::unidentified);
         }
         physical_keys_[os_scancode] = scancode;
       }
     };
 
-    bind(GLFW_KEY_SPACE, keyboard::scan_code::spacebar);
-    bind(GLFW_KEY_APOSTROPHE, keyboard::scan_code::apostrophe);
-    bind(GLFW_KEY_COMMA, keyboard::scan_code::comma);
-    bind(GLFW_KEY_MINUS, keyboard::scan_code::minus);
-    bind(GLFW_KEY_PERIOD, keyboard::scan_code::period);
-    bind(GLFW_KEY_SLASH, keyboard::scan_code::slash);
-    bind(GLFW_KEY_0, keyboard::scan_code::_0);
-    bind(GLFW_KEY_1, keyboard::scan_code::_1);
-    bind(GLFW_KEY_2, keyboard::scan_code::_2);
-    bind(GLFW_KEY_3, keyboard::scan_code::_3);
-    bind(GLFW_KEY_4, keyboard::scan_code::_4);
-    bind(GLFW_KEY_5, keyboard::scan_code::_5);
-    bind(GLFW_KEY_6, keyboard::scan_code::_6);
-    bind(GLFW_KEY_7, keyboard::scan_code::_7);
-    bind(GLFW_KEY_8, keyboard::scan_code::_8);
-    bind(GLFW_KEY_9, keyboard::scan_code::_9);
-    bind(GLFW_KEY_SEMICOLON, keyboard::scan_code::semicolon);
-    bind(GLFW_KEY_EQUAL, keyboard::scan_code::equal);
-    bind(GLFW_KEY_A, keyboard::scan_code::a);
-    bind(GLFW_KEY_B, keyboard::scan_code::b);
-    bind(GLFW_KEY_C, keyboard::scan_code::c);
-    bind(GLFW_KEY_D, keyboard::scan_code::d);
-    bind(GLFW_KEY_E, keyboard::scan_code::e);
-    bind(GLFW_KEY_F, keyboard::scan_code::f);
-    bind(GLFW_KEY_G, keyboard::scan_code::g);
-    bind(GLFW_KEY_H, keyboard::scan_code::h);
-    bind(GLFW_KEY_I, keyboard::scan_code::i);
-    bind(GLFW_KEY_J, keyboard::scan_code::j);
-    bind(GLFW_KEY_K, keyboard::scan_code::k);
-    bind(GLFW_KEY_L, keyboard::scan_code::l);
-    bind(GLFW_KEY_M, keyboard::scan_code::m);
-    bind(GLFW_KEY_N, keyboard::scan_code::n);
-    bind(GLFW_KEY_O, keyboard::scan_code::o);
-    bind(GLFW_KEY_P, keyboard::scan_code::p);
-    bind(GLFW_KEY_Q, keyboard::scan_code::q);
-    bind(GLFW_KEY_R, keyboard::scan_code::r);
-    bind(GLFW_KEY_S, keyboard::scan_code::s);
-    bind(GLFW_KEY_T, keyboard::scan_code::t);
-    bind(GLFW_KEY_U, keyboard::scan_code::u);
-    bind(GLFW_KEY_V, keyboard::scan_code::v);
-    bind(GLFW_KEY_W, keyboard::scan_code::w);
-    bind(GLFW_KEY_X, keyboard::scan_code::x);
-    bind(GLFW_KEY_Y, keyboard::scan_code::y);
-    bind(GLFW_KEY_Z, keyboard::scan_code::z);
-    bind(GLFW_KEY_LEFT_BRACKET, keyboard::scan_code::left_bracket);
-    bind(GLFW_KEY_BACKSLASH, keyboard::scan_code::backslash);
-    bind(GLFW_KEY_RIGHT_BRACKET, keyboard::scan_code::right_bracket);
-    bind(GLFW_KEY_GRAVE_ACCENT, keyboard::scan_code::grave_accent);
-    bind(GLFW_KEY_WORLD_1, keyboard::scan_code::world_1);
-    bind(GLFW_KEY_WORLD_2, keyboard::scan_code::world_2);
-    bind(GLFW_KEY_ESCAPE, keyboard::scan_code::escape);
-    bind(GLFW_KEY_ENTER, keyboard::scan_code::enter);
-    bind(GLFW_KEY_TAB, keyboard::scan_code::tab);
-    bind(GLFW_KEY_BACKSPACE, keyboard::scan_code::backspace);
-    bind(GLFW_KEY_INSERT, keyboard::scan_code::insert);
-    bind(GLFW_KEY_DELETE, keyboard::scan_code::delete_key);
-    bind(GLFW_KEY_RIGHT, keyboard::scan_code::arrow_right);
-    bind(GLFW_KEY_LEFT, keyboard::scan_code::arrow_left);
-    bind(GLFW_KEY_DOWN, keyboard::scan_code::arrow_down);
-    bind(GLFW_KEY_UP, keyboard::scan_code::arrow_up);
-    bind(GLFW_KEY_PAGE_UP, keyboard::scan_code::page_up);
-    bind(GLFW_KEY_PAGE_DOWN, keyboard::scan_code::page_down);
-    bind(GLFW_KEY_HOME, keyboard::scan_code::home);
-    bind(GLFW_KEY_END, keyboard::scan_code::end);
-    bind(GLFW_KEY_CAPS_LOCK, keyboard::scan_code::caps_lock);
-    bind(GLFW_KEY_SCROLL_LOCK, keyboard::scan_code::scroll_lock);
-    bind(GLFW_KEY_NUM_LOCK, keyboard::scan_code::num_lock);
-    bind(GLFW_KEY_PRINT_SCREEN, keyboard::scan_code::print_screen);
-    bind(GLFW_KEY_PAUSE, keyboard::scan_code::pause);
-    bind(GLFW_KEY_F1, keyboard::scan_code::F1);
-    bind(GLFW_KEY_F2, keyboard::scan_code::F2);
-    bind(GLFW_KEY_F3, keyboard::scan_code::F3);
-    bind(GLFW_KEY_F4, keyboard::scan_code::F4);
-    bind(GLFW_KEY_F5, keyboard::scan_code::F5);
-    bind(GLFW_KEY_F6, keyboard::scan_code::F6);
-    bind(GLFW_KEY_F7, keyboard::scan_code::F7);
-    bind(GLFW_KEY_F8, keyboard::scan_code::F8);
-    bind(GLFW_KEY_F9, keyboard::scan_code::F9);
-    bind(GLFW_KEY_F10, keyboard::scan_code::F10);
-    bind(GLFW_KEY_F11, keyboard::scan_code::F11);
-    bind(GLFW_KEY_F12, keyboard::scan_code::F12);
-    bind(GLFW_KEY_F13, keyboard::scan_code::F13);
-    bind(GLFW_KEY_F14, keyboard::scan_code::F14);
-    bind(GLFW_KEY_F15, keyboard::scan_code::F15);
-    bind(GLFW_KEY_F16, keyboard::scan_code::F16);
-    bind(GLFW_KEY_F17, keyboard::scan_code::F17);
-    bind(GLFW_KEY_F18, keyboard::scan_code::F18);
-    bind(GLFW_KEY_F19, keyboard::scan_code::F19);
-    bind(GLFW_KEY_F20, keyboard::scan_code::F20);
-    bind(GLFW_KEY_F21, keyboard::scan_code::F21);
-    bind(GLFW_KEY_F22, keyboard::scan_code::F22);
-    bind(GLFW_KEY_F23, keyboard::scan_code::F23);
-    bind(GLFW_KEY_F24, keyboard::scan_code::F24);
-    bind(GLFW_KEY_F25, keyboard::scan_code::execute);
-    bind(GLFW_KEY_KP_0, keyboard::scan_code::kp_0);
-    bind(GLFW_KEY_KP_1, keyboard::scan_code::kp_1);
-    bind(GLFW_KEY_KP_2, keyboard::scan_code::kp_2);
-    bind(GLFW_KEY_KP_3, keyboard::scan_code::kp_3);
-    bind(GLFW_KEY_KP_4, keyboard::scan_code::kp_4);
-    bind(GLFW_KEY_KP_5, keyboard::scan_code::kp_5);
-    bind(GLFW_KEY_KP_6, keyboard::scan_code::kp_6);
-    bind(GLFW_KEY_KP_7, keyboard::scan_code::kp_7);
-    bind(GLFW_KEY_KP_8, keyboard::scan_code::kp_8);
-    bind(GLFW_KEY_KP_9, keyboard::scan_code::kp_9);
-    bind(GLFW_KEY_KP_DECIMAL, keyboard::scan_code::kp_decimal);
-    bind(GLFW_KEY_KP_DIVIDE, keyboard::scan_code::kp_divide);
-    bind(GLFW_KEY_KP_MULTIPLY, keyboard::scan_code::kp_multiply);
-    bind(GLFW_KEY_KP_SUBTRACT, keyboard::scan_code::kp_subtract);
-    bind(GLFW_KEY_KP_ADD, keyboard::scan_code::kp_add);
-    bind(GLFW_KEY_KP_ENTER, keyboard::scan_code::kp_enter);
-    bind(GLFW_KEY_KP_EQUAL, keyboard::scan_code::kp_equal);
-    bind(GLFW_KEY_LEFT_SHIFT, keyboard::scan_code::left_shift);
-    bind(GLFW_KEY_LEFT_CONTROL, keyboard::scan_code::left_control);
-    bind(GLFW_KEY_LEFT_ALT, keyboard::scan_code::left_alt);
-    bind(GLFW_KEY_LEFT_SUPER, keyboard::scan_code::left_super);
-    bind(GLFW_KEY_RIGHT_SHIFT, keyboard::scan_code::right_shift);
-    bind(GLFW_KEY_RIGHT_CONTROL, keyboard::scan_code::right_control);
-    bind(GLFW_KEY_RIGHT_ALT, keyboard::scan_code::right_alt);
-    bind(GLFW_KEY_RIGHT_SUPER, keyboard::scan_code::right_super);
-    bind(GLFW_KEY_MENU, keyboard::scan_code::menu);
+    bind(GLFW_KEY_SPACE, keyboard::scancode::spacebar);
+    bind(GLFW_KEY_APOSTROPHE, keyboard::scancode::apostrophe);
+    bind(GLFW_KEY_COMMA, keyboard::scancode::comma);
+    bind(GLFW_KEY_MINUS, keyboard::scancode::minus);
+    bind(GLFW_KEY_PERIOD, keyboard::scancode::period);
+    bind(GLFW_KEY_SLASH, keyboard::scancode::slash);
+    bind(GLFW_KEY_0, keyboard::scancode::_0);
+    bind(GLFW_KEY_1, keyboard::scancode::_1);
+    bind(GLFW_KEY_2, keyboard::scancode::_2);
+    bind(GLFW_KEY_3, keyboard::scancode::_3);
+    bind(GLFW_KEY_4, keyboard::scancode::_4);
+    bind(GLFW_KEY_5, keyboard::scancode::_5);
+    bind(GLFW_KEY_6, keyboard::scancode::_6);
+    bind(GLFW_KEY_7, keyboard::scancode::_7);
+    bind(GLFW_KEY_8, keyboard::scancode::_8);
+    bind(GLFW_KEY_9, keyboard::scancode::_9);
+    bind(GLFW_KEY_SEMICOLON, keyboard::scancode::semicolon);
+    bind(GLFW_KEY_EQUAL, keyboard::scancode::equal);
+    bind(GLFW_KEY_A, keyboard::scancode::a);
+    bind(GLFW_KEY_B, keyboard::scancode::b);
+    bind(GLFW_KEY_C, keyboard::scancode::c);
+    bind(GLFW_KEY_D, keyboard::scancode::d);
+    bind(GLFW_KEY_E, keyboard::scancode::e);
+    bind(GLFW_KEY_F, keyboard::scancode::f);
+    bind(GLFW_KEY_G, keyboard::scancode::g);
+    bind(GLFW_KEY_H, keyboard::scancode::h);
+    bind(GLFW_KEY_I, keyboard::scancode::i);
+    bind(GLFW_KEY_J, keyboard::scancode::j);
+    bind(GLFW_KEY_K, keyboard::scancode::k);
+    bind(GLFW_KEY_L, keyboard::scancode::l);
+    bind(GLFW_KEY_M, keyboard::scancode::m);
+    bind(GLFW_KEY_N, keyboard::scancode::n);
+    bind(GLFW_KEY_O, keyboard::scancode::o);
+    bind(GLFW_KEY_P, keyboard::scancode::p);
+    bind(GLFW_KEY_Q, keyboard::scancode::q);
+    bind(GLFW_KEY_R, keyboard::scancode::r);
+    bind(GLFW_KEY_S, keyboard::scancode::s);
+    bind(GLFW_KEY_T, keyboard::scancode::t);
+    bind(GLFW_KEY_U, keyboard::scancode::u);
+    bind(GLFW_KEY_V, keyboard::scancode::v);
+    bind(GLFW_KEY_W, keyboard::scancode::w);
+    bind(GLFW_KEY_X, keyboard::scancode::x);
+    bind(GLFW_KEY_Y, keyboard::scancode::y);
+    bind(GLFW_KEY_Z, keyboard::scancode::z);
+    bind(GLFW_KEY_LEFT_BRACKET, keyboard::scancode::left_bracket);
+    bind(GLFW_KEY_BACKSLASH, keyboard::scancode::backslash);
+    bind(GLFW_KEY_RIGHT_BRACKET, keyboard::scancode::right_bracket);
+    bind(GLFW_KEY_GRAVE_ACCENT, keyboard::scancode::grave_accent);
+    bind(GLFW_KEY_WORLD_1, keyboard::scancode::world_1);
+    bind(GLFW_KEY_WORLD_2, keyboard::scancode::world_2);
+    bind(GLFW_KEY_ESCAPE, keyboard::scancode::escape);
+    bind(GLFW_KEY_ENTER, keyboard::scancode::enter);
+    bind(GLFW_KEY_TAB, keyboard::scancode::tab);
+    bind(GLFW_KEY_BACKSPACE, keyboard::scancode::backspace);
+    bind(GLFW_KEY_INSERT, keyboard::scancode::insert);
+    bind(GLFW_KEY_DELETE, keyboard::scancode::delete_key);
+    bind(GLFW_KEY_RIGHT, keyboard::scancode::arrow_right);
+    bind(GLFW_KEY_LEFT, keyboard::scancode::arrow_left);
+    bind(GLFW_KEY_DOWN, keyboard::scancode::arrow_down);
+    bind(GLFW_KEY_UP, keyboard::scancode::arrow_up);
+    bind(GLFW_KEY_PAGE_UP, keyboard::scancode::page_up);
+    bind(GLFW_KEY_PAGE_DOWN, keyboard::scancode::page_down);
+    bind(GLFW_KEY_HOME, keyboard::scancode::home);
+    bind(GLFW_KEY_END, keyboard::scancode::end);
+    bind(GLFW_KEY_CAPS_LOCK, keyboard::scancode::caps_lock);
+    bind(GLFW_KEY_SCROLL_LOCK, keyboard::scancode::scroll_lock);
+    bind(GLFW_KEY_NUM_LOCK, keyboard::scancode::num_lock);
+    bind(GLFW_KEY_PRINT_SCREEN, keyboard::scancode::print_screen);
+    bind(GLFW_KEY_PAUSE, keyboard::scancode::pause);
+    bind(GLFW_KEY_F1, keyboard::scancode::F1);
+    bind(GLFW_KEY_F2, keyboard::scancode::F2);
+    bind(GLFW_KEY_F3, keyboard::scancode::F3);
+    bind(GLFW_KEY_F4, keyboard::scancode::F4);
+    bind(GLFW_KEY_F5, keyboard::scancode::F5);
+    bind(GLFW_KEY_F6, keyboard::scancode::F6);
+    bind(GLFW_KEY_F7, keyboard::scancode::F7);
+    bind(GLFW_KEY_F8, keyboard::scancode::F8);
+    bind(GLFW_KEY_F9, keyboard::scancode::F9);
+    bind(GLFW_KEY_F10, keyboard::scancode::F10);
+    bind(GLFW_KEY_F11, keyboard::scancode::F11);
+    bind(GLFW_KEY_F12, keyboard::scancode::F12);
+    bind(GLFW_KEY_F13, keyboard::scancode::F13);
+    bind(GLFW_KEY_F14, keyboard::scancode::F14);
+    bind(GLFW_KEY_F15, keyboard::scancode::F15);
+    bind(GLFW_KEY_F16, keyboard::scancode::F16);
+    bind(GLFW_KEY_F17, keyboard::scancode::F17);
+    bind(GLFW_KEY_F18, keyboard::scancode::F18);
+    bind(GLFW_KEY_F19, keyboard::scancode::F19);
+    bind(GLFW_KEY_F20, keyboard::scancode::F20);
+    bind(GLFW_KEY_F21, keyboard::scancode::F21);
+    bind(GLFW_KEY_F22, keyboard::scancode::F22);
+    bind(GLFW_KEY_F23, keyboard::scancode::F23);
+    bind(GLFW_KEY_F24, keyboard::scancode::F24);
+    bind(GLFW_KEY_F25, keyboard::scancode::execute);
+    bind(GLFW_KEY_KP_0, keyboard::scancode::kp_0);
+    bind(GLFW_KEY_KP_1, keyboard::scancode::kp_1);
+    bind(GLFW_KEY_KP_2, keyboard::scancode::kp_2);
+    bind(GLFW_KEY_KP_3, keyboard::scancode::kp_3);
+    bind(GLFW_KEY_KP_4, keyboard::scancode::kp_4);
+    bind(GLFW_KEY_KP_5, keyboard::scancode::kp_5);
+    bind(GLFW_KEY_KP_6, keyboard::scancode::kp_6);
+    bind(GLFW_KEY_KP_7, keyboard::scancode::kp_7);
+    bind(GLFW_KEY_KP_8, keyboard::scancode::kp_8);
+    bind(GLFW_KEY_KP_9, keyboard::scancode::kp_9);
+    bind(GLFW_KEY_KP_DECIMAL, keyboard::scancode::kp_decimal);
+    bind(GLFW_KEY_KP_DIVIDE, keyboard::scancode::kp_divide);
+    bind(GLFW_KEY_KP_MULTIPLY, keyboard::scancode::kp_multiply);
+    bind(GLFW_KEY_KP_SUBTRACT, keyboard::scancode::kp_subtract);
+    bind(GLFW_KEY_KP_ADD, keyboard::scancode::kp_add);
+    bind(GLFW_KEY_KP_ENTER, keyboard::scancode::kp_enter);
+    bind(GLFW_KEY_KP_EQUAL, keyboard::scancode::kp_equal);
+    bind(GLFW_KEY_LEFT_SHIFT, keyboard::scancode::left_shift);
+    bind(GLFW_KEY_LEFT_CONTROL, keyboard::scancode::left_control);
+    bind(GLFW_KEY_LEFT_ALT, keyboard::scancode::left_alt);
+    bind(GLFW_KEY_LEFT_SUPER, keyboard::scancode::left_super);
+    bind(GLFW_KEY_RIGHT_SHIFT, keyboard::scancode::right_shift);
+    bind(GLFW_KEY_RIGHT_CONTROL, keyboard::scancode::right_control);
+    bind(GLFW_KEY_RIGHT_ALT, keyboard::scancode::right_alt);
+    bind(GLFW_KEY_RIGHT_SUPER, keyboard::scancode::right_super);
+    bind(GLFW_KEY_MENU, keyboard::scancode::menu);
   };
 
   static constexpr auto load_logical_keys = [] -> void {
@@ -317,5 +317,5 @@ template <class TPlatform>
 std::array<keyboard::key, GLFW_KEY_LAST + 1> glfw<TPlatform>::logical_keys_ =
     {};
 template <class TPlatform>
-std::vector<keyboard::scan_code> glfw<TPlatform>::physical_keys_ = {};
+std::vector<keyboard::scancode> glfw<TPlatform>::physical_keys_ = {};
 } // namespace jage::input::adapters

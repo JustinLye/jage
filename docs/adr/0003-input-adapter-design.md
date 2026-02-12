@@ -139,7 +139,7 @@ enum class key_action : std::uint8_t {
 
 template <typename TDuration>
 struct key_event {
-    scan_code physical_key;   // Hardware scan code (layout-independent)
+    scancode physical_key;   // Hardware scan code (layout-independent)
     key_code logical_key;     // Virtual key code (layout-dependent)
     key_action action;
     TDuration timestamp;
@@ -487,7 +487,7 @@ Localized to adapter internals, doesn't change concept.
 Higher-level abstraction mapping raw input to semantic actions:
 
 ```
-key_event{scan_code::W, press} → action{move_forward, pressed}
+key_event{scancode::W, press} → action{move_forward, pressed}
 ```
 
 Separate from adapter layer — adapters produce raw events, action mapper interprets.
@@ -508,7 +508,7 @@ Adapters produce events with precise timestamps, enabling accurate recording.
 ### Enum Definitions
 
 Need to define:
-- `scan_code` — Platform-independent physical key codes
+- `scancode` — Platform-independent physical key codes
 - `key_code` — Logical/virtual key codes
 - `mouse_button` — Button identifiers
 - `button_action` / `key_action` — Press/release/repeat
