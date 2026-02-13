@@ -48,6 +48,14 @@ template <class TPlatform> class glfw {
         modifier.flip(std::to_underlying(keyboard::modifier::left_alt));
         modifier.flip(std::to_underlying(keyboard::modifier::right_alt));
       }
+      if (mods & GLFW_MOD_CONTROL) {
+        modifier.flip(std::to_underlying(keyboard::modifier::left_control));
+        modifier.flip(std::to_underlying(keyboard::modifier::right_control));
+      }
+      if (mods & GLFW_MOD_SUPER) {
+        modifier.flip(std::to_underlying(keyboard::modifier::left_gui));
+        modifier.flip(std::to_underlying(keyboard::modifier::right_gui));
+      }
     }
     return modifier;
   };

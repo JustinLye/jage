@@ -14,5 +14,5 @@ enum class modifier : std::uint8_t {
   right_gui,
 };
 
-static constexpr std::uint8_t modifier_count = 7U;
+static constexpr std::uint8_t modifier_count = 8U;
 } // namespace jage::input::keyboard

@@ -304,6 +304,34 @@ TEST_F(glfw_adapter, should_map_modifiers) {
         std::to_underlying(keyboard::modifier::right_alt))))
         << "Modifiers: " << event.modifiers.to_string();
   }
+  context.buffer.clear();
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS,
+                                GLFW_MOD_CONTROL);
+  {
+    ASSERT_FALSE(std::empty(context.buffer));
+    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+    const auto event = std::get<keyboard_event>(context.buffer.front());
+    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
+        std::to_underlying(keyboard::modifier::left_control))))
+        << "Modifiers: " << event.modifiers.to_string();
+    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
+        std::to_underlying(keyboard::modifier::right_control))))
+        << "Modifiers: " << event.modifiers.to_string();
+  }
+  context.buffer.clear();
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS,
+                                GLFW_MOD_SUPER);
+  {
+    ASSERT_FALSE(std::empty(context.buffer));
+    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+    const auto event = std::get<keyboard_event>(context.buffer.front());
+    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
+        std::to_underlying(keyboard::modifier::left_gui))))
+        << "Modifiers: " << event.modifiers.to_string();
+    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
+        std::to_underlying(keyboard::modifier::right_gui))))
+        << "Modifiers: " << event.modifiers.to_string();
+  }
 }
 
 class glfw_adapter_key_map : public testing::TestWithParam<key_param> {

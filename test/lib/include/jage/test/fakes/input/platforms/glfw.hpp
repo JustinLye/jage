@@ -44,6 +44,7 @@ public:
   using context_type = context_type_;
 
   static std::unordered_map<int, int> key_to_scancode;
+  static double seconds_since_init;
 
   static auto set_window_user_pointer(window_handler_pointer_type,
                                       user_pointer_type user_pointer) -> void {
@@ -74,9 +75,14 @@ public:
     }
     return -1;
   }
+
+  [[nodiscard]] static auto get_seconds_since_epoch() -> double {
+    return seconds_since_init;
+  }
 };
 
 template <class T> std::unique_ptr<glfw<T>> glfw<T>::instance_ = nullptr;
 template <class T> std::unordered_map<int, int> glfw<T>::key_to_scancode = {};
+template <class T> double glfw<T>::seconds_since_init = 0.0;
 
 } // namespace jage::test::fakes::input::platforms

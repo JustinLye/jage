@@ -33,4 +33,9 @@ constexpr auto operator""_ns(unsigned long long value) -> nanoseconds {
   return nanoseconds{static_cast<long double>(value)};
 }
 
+template <class TToDuration, class TFromDuration>
+constexpr auto cast(const TFromDuration &duration) -> TToDuration {
+  return std::chrono::duration_cast<TToDuration>(duration);
+}
+
 } // namespace jage::time::inline durations
