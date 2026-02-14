@@ -24,7 +24,7 @@ include(coverage)
 add_library(jage_lib INTERFACE)
 target_include_directories(jage_lib INTERFACE include)
 target_link_libraries(jage_lib INTERFACE jage::compiler_options
-                                         range-v3::range-v3)
+                                         range-v3::range-v3 glfw)
 add_library(jage::lib ALIAS jage_lib)
 
 add_subdirectory(test)

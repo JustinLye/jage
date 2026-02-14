@@ -56,7 +56,8 @@
         "dev.containers.showTerminal": "never"
         ,
         "python.defaultInterpreterPath": "${workspaceFolder}/.conan/bin/python",
-        "python.analysis.typeCheckingMode": "strict"
+        "python.analysis.typeCheckingMode": "strict",
+        "extensions.verigySignature": false
       },
       "extensions": [
         "ms-vscode.cmake-tools",
