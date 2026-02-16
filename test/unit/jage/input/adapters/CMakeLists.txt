@@ -1,1 +1,1 @@
-add_unit_test(TARGET_NAME input-adapters-glfw SOURCE_FILES glfw_test.cpp DEPENDANTS run-all-jage-input-unit-tests)
+add_unit_test(TARGET_NAME input-adapters-glfw SOURCE_FILES glfw_test.cpp)
