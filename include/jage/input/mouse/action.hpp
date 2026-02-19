@@ -2,10 +2,9 @@
 
 #include <cstdint>
 
-namespace jage::input::keyboard {
+namespace jage::input::mouse {
 enum class action : std::uint8_t {
   release,
   press,
-  repeat,
 };
 }

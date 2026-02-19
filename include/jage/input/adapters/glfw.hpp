@@ -1,9 +1,10 @@
 #pragma once
-
 #include <jage/input/keyboard/action.hpp>
 #include <jage/input/keyboard/event.hpp>
 #include <jage/input/keyboard/key.hpp>
 #include <jage/input/keyboard/scancode.hpp>
+#include <jage/input/mouse/button.hpp>
+#include <jage/input/mouse/events/click.hpp>
 #include <jage/time/durations.hpp>
 
 #include <GLFW/glfw3.h>
@@ -18,11 +19,6 @@ template <class TPlatform> class glfw {
 
   static std::array<keyboard::key, GLFW_KEY_LAST + 1> logical_keys_;
   static std::vector<keyboard::scancode> physical_keys_;
-  static constexpr std::array<keyboard::action, GLFW_REPEAT + 1> actions_ = {
-      keyboard::action::release,
-      keyboard::action::press,
-      keyboard::action::repeat,
-  };
 
   static constexpr auto get_physical_key =
       [] [[nodiscard]] (const int scancode) -> keyboard::scancode {
@@ -36,30 +32,60 @@ template <class TPlatform> class glfw {
     }
   };
 
-  static constexpr auto get_modifier =
-      [] [[nodiscard]] (
-          const auto mods) -> std::bitset<keyboard::modifier_count> {
-    auto modifier = std::bitset<keyboard::modifier_count>{};
+  [[nodiscard]] static inline auto get_modifier(const auto mods)
+      -> std::bitset<modifier_count> {
+
+    auto modifier_bitset = std::bitset<modifier_count>{};
+
+    const auto flip = [&](const auto... modifiers) -> void {
+      (modifier_bitset.flip(std::to_underlying(modifiers)), ...);
+    };
+
     if (mods != 0) [[unlikely]] {
       if (mods & GLFW_MOD_SHIFT) {
-        modifier.flip(std::to_underlying(keyboard::modifier::left_shift));
-        modifier.flip(std::to_underlying(keyboard::modifier::right_shift));
+        flip(modifier::left_shift, modifier::right_shift);
       }
       if (mods & GLFW_MOD_ALT) {
-        modifier.flip(std::to_underlying(keyboard::modifier::left_alt));
-        modifier.flip(std::to_underlying(keyboard::modifier::right_alt));
+        flip(modifier::left_alt, modifier::right_alt);
       }
       if (mods & GLFW_MOD_CONTROL) {
-        modifier.flip(std::to_underlying(keyboard::modifier::left_control));
-        modifier.flip(std::to_underlying(keyboard::modifier::right_control));
+        flip(modifier::left_control, modifier::right_control);
       }
       if (mods & GLFW_MOD_SUPER) {
-        modifier.flip(std::to_underlying(keyboard::modifier::left_gui));
-        modifier.flip(std::to_underlying(keyboard::modifier::right_gui));
+        flip(modifier::left_gui, modifier::right_gui);
+      }
+      if (mods & GLFW_MOD_CAPS_LOCK) {
+        flip(modifier::caps_lock);
+      }
+      if (mods & GLFW_MOD_NUM_LOCK) {
+        flip(modifier::num_lock);
       }
     }
-    return modifier;
+    return modifier_bitset;
+  }
+
+  static constexpr auto get_current_timestamp =
+      [] [[nodiscard]] -> TPlatform::context_type::duration_type {
+    return time::cast<typename TPlatform::context_type::duration_type>(
+        TPlatform::get_seconds_since_init());
   };
+
+  static constexpr auto mouse_button_callback =
+      [](typename TPlatform::window_handler_pointer_type window, int button,
+         int action, int mods) {
+        auto &context = *static_cast<typename TPlatform::context_type *>(
+            TPlatform::get_window_user_pointer(window));
+
+        context.push(typename TPlatform::context_type::event_type{
+            mouse::events::click<
+                typename TPlatform::context_type::duration_type>{
+                .timestamp = get_current_timestamp(),
+                .button = static_cast<mouse::button>(button),
+                .action = static_cast<mouse::action>(action),
+                .modifiers = get_modifier(mods),
+            },
+        });
+      };
 
   static constexpr auto key_callback =
       [](typename TPlatform::window_handler_pointer_type window, int key,
@@ -69,13 +95,11 @@ template <class TPlatform> class glfw {
 
     context.push(typename TPlatform::context_type::event_type{
         keyboard::event<typename TPlatform::context_type::duration_type>{
-            .timestamp =
-                time::cast<typename TPlatform::context_type::duration_type>(
-                    TPlatform::get_seconds_since_init()),
+            .timestamp = get_current_timestamp(),
             .key = key != GLFW_KEY_UNKNOWN ? logical_keys_[key]
                                            : keyboard::key::unidentified,
             .scancode = get_physical_key(scancode),
-            .action = actions_[static_cast<std::size_t>(action)],
+            .action = static_cast<keyboard::action>(action),
             .modifiers = get_modifier(mods),
         }});
   };
@@ -349,6 +373,7 @@ public:
     load_logical_keys();
     load_physical_scancodes(platform);
     platform.set_key_callback(window, key_callback);
+    platform.set_mouse_button_callback(window, mouse_button_callback);
   }
 };
 

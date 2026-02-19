@@ -2,7 +2,7 @@
 
 #include <jage/input/keyboard/action.hpp>
 #include <jage/input/keyboard/key.hpp>
-#include <jage/input/keyboard/modifier.hpp>
+#include <jage/input/modifier.hpp>
 #include <jage/input/keyboard/scancode.hpp>
 
 #include <jage/time/internal/concepts/real_number_duration.hpp>
