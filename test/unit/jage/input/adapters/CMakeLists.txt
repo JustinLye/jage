@@ -1,1 +1,1 @@
-add_unit_test(TARGET_NAME input-adapters-glfw SOURCE_FILES glfw_test.cpp)
+add_subdirectory(glfw)

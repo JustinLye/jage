@@ -18,11 +18,14 @@ template <class TContext> class glfw {
   using window_handle_pointer_type_ = window_handle_type_ *;
   using key_callback_type_ = void (*)(window_handle_pointer_type_, int, int,
                                       int, int);
+  using mouse_button_callback_type_ = void (*)(window_handle_pointer_type_, int,
+                                               int, int);
   using context_type_ = TContext;
 
   window_handle_type_ window_handle_{0};
   user_pointer_type_ user_pointer_{nullptr};
   key_callback_type_ key_callback_{nullptr};
+  mouse_button_callback_type_ mouse_button_callback_{nullptr};
   time::seconds seconds_since_init_{0};
   bool initialized_{false};
 
@@ -45,6 +48,7 @@ public:
   using window_handler_pointer_type = window_handle_pointer_type_;
   using user_pointer_type = user_pointer_type_;
   using key_callback_type = key_callback_type_;
+  using mouse_button_callback_type = mouse_button_callback_type_;
   using context_type = context_type_;
   using duration_type = time::seconds;
 
@@ -55,8 +59,8 @@ public:
     get_instance().user_pointer_ = user_pointer;
   }
 
-  [[nodiscard]] static auto
-  get_window_user_pointer(window_handler_pointer_type) -> user_pointer_type {
+  [[nodiscard]] static auto get_window_user_pointer(window_handler_pointer_type)
+      -> user_pointer_type {
     return get_instance().user_pointer_;
   }
 
@@ -65,10 +69,24 @@ public:
     get_instance().key_callback_ = key_callback;
   }
 
-  static auto trigger_key_callback(int key, int scancode, int action,
-                                   int mods) -> void {
+  static auto
+  set_mouse_button_callback(window_handler_pointer_type,
+                            mouse_button_callback_type mouse_button_callback)
+      -> void {
+    get_instance().mouse_button_callback_ = mouse_button_callback;
+  }
+
+  static auto trigger_key_callback(int key, int scancode, int action, int mods)
+      -> void {
     auto &instance = get_instance();
     instance.trigger_callback(instance.key_callback_, key, scancode, action,
+                              mods);
+  }
+
+  static auto trigger_mouse_button_callback(int button, int action, int mods)
+      -> void {
+    auto &instance = get_instance();
+    instance.trigger_callback(instance.mouse_button_callback_, button, action,
                               mods);
   }
 
@@ -94,7 +112,10 @@ public:
     return get_instance().initialized_;
   }
 
-  auto reset() -> void { instance_.reset(); }
+  auto reset() -> void {
+    instance_.reset();
+    key_to_scancode.clear();
+  }
 };
 
 template <class T> std::unique_ptr<glfw<T>> glfw<T>::instance_ = nullptr;
