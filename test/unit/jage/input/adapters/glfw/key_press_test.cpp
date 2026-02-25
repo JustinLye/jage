@@ -59,6 +59,31 @@ TEST_F(glfw_adapter,
   EXPECT_EQ(keyboard::scancode::unidentified, event.scancode);
 }
 
+TEST_F(glfw_adapter,
+       should_return_unidentified_for_scancode_that_is_not_identified) {
+  std::ignore = adapter_type{nullptr, platform,
+                             platform_type::context_type::duration_type{}};
+  platform.trigger_key_callback(GLFW_KEY_ESCAPE, GLFW_KEY_UNKNOWN, GLFW_PRESS,
+                                0);
+  platform.trigger_key_callback(GLFW_KEY_UNKNOWN, 0x43, GLFW_PRESS, 0);
+
+  ASSERT_FALSE(std::empty(context.buffer));
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+  {
+    const auto event = std::get<keyboard_event>(context.buffer.front());
+    EXPECT_EQ(keyboard::key::escape, event.key);
+    EXPECT_EQ(keyboard::scancode::unidentified, event.scancode);
+  }
+  context.buffer.pop_front();
+  ASSERT_FALSE(std::empty(context.buffer));
+  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
+  {
+    const auto event = std::get<keyboard_event>(context.buffer.front());
+    EXPECT_EQ(keyboard::key::unidentified, event.key);
+    EXPECT_EQ(keyboard::scancode::unidentified, event.scancode);
+  }
+}
+
 TEST_F(glfw_adapter, should_map_action_appropriately) {
   std::ignore = adapter_type{nullptr, platform,
                              platform_type::context_type::duration_type{}};
@@ -92,11 +117,11 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::left_shift))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::left_shift))))
         << "Modifiers: " << event.modifiers.to_string();
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::right_shift))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::right_shift))))
         << "Modifiers: " << event.modifiers.to_string();
   }
   context.buffer.clear();
@@ -106,11 +131,11 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::left_alt))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::left_alt))))
         << "Modifiers: " << event.modifiers.to_string();
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::right_alt))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::right_alt))))
         << "Modifiers: " << event.modifiers.to_string();
   }
   context.buffer.clear();
@@ -120,11 +145,11 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::left_control))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::left_control))))
         << "Modifiers: " << event.modifiers.to_string();
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::right_control))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::right_control))))
         << "Modifiers: " << event.modifiers.to_string();
   }
   context.buffer.clear();
@@ -134,11 +159,11 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::left_gui))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::left_gui))))
         << "Modifiers: " << event.modifiers.to_string();
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::right_gui))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::right_gui))))
         << "Modifiers: " << event.modifiers.to_string();
   }
   context.buffer.clear();
@@ -148,8 +173,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::caps_lock))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::caps_lock))))
         << "Modifiers: " << event.modifiers.to_string();
   }
   context.buffer.clear();
@@ -159,8 +184,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
     const auto event = std::get<keyboard_event>(context.buffer.front());
-    EXPECT_TRUE(event.modifiers.test(static_cast<std::size_t>(
-        std::to_underlying(modifier::num_lock))))
+    EXPECT_TRUE(event.modifiers.test(
+        static_cast<std::size_t>(std::to_underlying(modifier::num_lock))))
         << "Modifiers: " << event.modifiers.to_string();
   }
 }
@@ -224,10 +249,9 @@ struct key_param {
   jage::input::keyboard::scancode expected_scancode;
 };
 
-constexpr auto make_key_param(const int glfw_key,
-                              const keyboard::key expected_key,
-                              const keyboard::scancode expected_scancode)
-    -> key_param {
+constexpr auto
+make_key_param(const int glfw_key, const keyboard::key expected_key,
+               const keyboard::scancode expected_scancode) -> key_param {
   return key_param{
       .glfw_key = glfw_key,
       .os_scancode = static_cast<int>(expected_scancode),
