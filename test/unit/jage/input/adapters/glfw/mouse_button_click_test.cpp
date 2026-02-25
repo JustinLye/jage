@@ -1,4 +1,5 @@
 #include <jage/input/adapters/glfw.hpp>
+#include <jage/input/event.hpp>
 #include <jage/input/keyboard/event.hpp>
 #include <jage/input/mouse/action.hpp>
 #include <jage/input/mouse/button.hpp>
@@ -20,8 +21,8 @@ using duration_type = jage::time::durations::nanoseconds;
 using mouse_click_event = jage::input::mouse::events::click<duration_type>;
 using key_press_event = jage::input::keyboard::event<duration_type>;
 using context_type =
-    jage::test::fakes::input::context::glfw<duration_type, mouse_click_event,
-                                            key_press_event>;
+    jage::test::fakes::input::context::glfw<duration_type,
+                                            jage::input::event<duration_type>>;
 using platform_type = jage::test::fakes::input::platforms::glfw<context_type>;
 using adapter_type = jage::input::adapters::glfw<platform_type>;
 
@@ -206,41 +207,40 @@ INSTANTIATE_TEST_SUITE_P(
         },
     }));
 
-INSTANTIATE_TEST_SUITE_P(
-    modifier_mappings, glfw_adapter_button_click_modifier,
-    testing::ValuesIn(std::array{
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_SHIFT,
-            .expected_left = modifier::left_shift,
-            .expected_right = modifier::right_shift,
-        },
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_CONTROL,
-            .expected_left = modifier::left_control,
-            .expected_right = modifier::right_control,
-        },
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_ALT,
-            .expected_left = modifier::left_alt,
-            .expected_right = modifier::right_alt,
-        },
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_SUPER,
-            .expected_left = modifier::left_gui,
-            .expected_right = modifier::right_gui,
-        },
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_CAPS_LOCK,
-            .expected_left = modifier::caps_lock,
-            .expected_right = std::nullopt,
-        },
-        modifier_param{
-            .glfw_modifier = GLFW_MOD_NUM_LOCK,
-            .expected_left = modifier::num_lock,
-            .expected_right = std::nullopt,
-        },
+INSTANTIATE_TEST_SUITE_P(modifier_mappings, glfw_adapter_button_click_modifier,
+                         testing::ValuesIn(std::array{
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_SHIFT,
+                                 .expected_left = modifier::left_shift,
+                                 .expected_right = modifier::right_shift,
+                             },
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_CONTROL,
+                                 .expected_left = modifier::left_control,
+                                 .expected_right = modifier::right_control,
+                             },
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_ALT,
+                                 .expected_left = modifier::left_alt,
+                                 .expected_right = modifier::right_alt,
+                             },
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_SUPER,
+                                 .expected_left = modifier::left_gui,
+                                 .expected_right = modifier::right_gui,
+                             },
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_CAPS_LOCK,
+                                 .expected_left = modifier::caps_lock,
+                                 .expected_right = std::nullopt,
+                             },
+                             modifier_param{
+                                 .glfw_modifier = GLFW_MOD_NUM_LOCK,
+                                 .expected_left = modifier::num_lock,
+                                 .expected_right = std::nullopt,
+                             },
 
-    }));
+                         }));
 
 INSTANTIATE_TEST_SUITE_P(action_mapping, glfw_adapter_button_click_action,
                          ::testing::ValuesIn(std::array{

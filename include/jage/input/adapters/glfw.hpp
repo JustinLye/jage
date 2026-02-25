@@ -5,6 +5,7 @@
 #include <jage/input/keyboard/scancode.hpp>
 #include <jage/input/mouse/button.hpp>
 #include <jage/input/mouse/events/click.hpp>
+#include <jage/input/mouse/events/cursor/position.hpp>
 #include <jage/time/durations.hpp>
 
 #include <GLFW/glfw3.h>
@@ -32,8 +33,8 @@ template <class TPlatform> class glfw {
     }
   };
 
-  [[nodiscard]] static inline auto get_modifier(const auto mods)
-      -> std::bitset<modifier_count> {
+  [[nodiscard]] static inline auto
+  get_modifier(const auto mods) -> std::bitset<modifier_count> {
 
     auto modifier_bitset = std::bitset<modifier_count>{};
 
@@ -68,6 +69,22 @@ template <class TPlatform> class glfw {
       [] [[nodiscard]] -> TPlatform::context_type::duration_type {
     return time::cast<typename TPlatform::context_type::duration_type>(
         TPlatform::get_seconds_since_init());
+  };
+
+  static constexpr auto cursor_position_callback =
+      [](typename TPlatform::window_handler_pointer_type window, double xpos,
+         double ypos) -> void {
+    auto &context = *static_cast<typename TPlatform::context_type *>(
+        TPlatform::get_window_user_pointer(window));
+
+    context.push(typename TPlatform::context_type::event_type{
+        mouse::events::cursor::position<
+            typename TPlatform::context_type::duration_type>{
+            .timestamp = get_current_timestamp(),
+            .x = xpos,
+            .y = ypos,
+        },
+    });
   };
 
   static constexpr auto mouse_button_callback =
@@ -374,6 +391,7 @@ public:
     load_physical_scancodes(platform);
     platform.set_key_callback(window, key_callback);
     platform.set_mouse_button_callback(window, mouse_button_callback);
+    platform.set_cursor_position_callback(window, cursor_position_callback);
   }
 };
 
