@@ -22,6 +22,8 @@ template <class TContext> class glfw {
                                                int, int);
   using cursor_position_callback_type_ = void (*)(window_handle_pointer_type_,
                                                   double, double);
+  using scroll_callback_type_ = void (*)(window_handle_pointer_type_, double,
+                                         double);
   using context_type_ = TContext;
 
   window_handle_type_ window_handle_{0};
@@ -29,6 +31,7 @@ template <class TContext> class glfw {
   key_callback_type_ key_callback_{nullptr};
   mouse_button_callback_type_ mouse_button_callback_{nullptr};
   cursor_position_callback_type_ cursor_position_callback_{nullptr};
+  scroll_callback_type_ scroll_callback_{nullptr};
   time::seconds seconds_since_init_{0};
   bool initialized_{false};
   std::unordered_map<int, int> input_modes_;
@@ -54,6 +57,7 @@ public:
   using key_callback_type = key_callback_type_;
   using mouse_button_callback_type = mouse_button_callback_type_;
   using cursor_position_callback_type = cursor_position_callback_type_;
+  using scroll_callback_type = scroll_callback_type_;
   using context_type = context_type_;
   using duration_type = time::seconds;
 
@@ -95,6 +99,12 @@ public:
     return get_instance().input_modes_[mode];
   }
 
+  static auto
+  set_scroll_callback(window_handle_pointer_type,
+                      scroll_callback_type scroll_callback) -> void {
+    get_instance().scroll_callback_ = scroll_callback;
+  }
+
   static auto trigger_key_callback(int key, int scancode, int action,
                                    int mods) -> void {
     auto &instance = get_instance();
@@ -114,6 +124,11 @@ public:
     auto &instance = get_instance();
     instance.trigger_callback(instance.cursor_position_callback_, x_position,
                               y_position);
+  }
+
+  static auto trigger_scroll_callback(double xoffset, double yoffset) -> void {
+    auto &instance = get_instance();
+    instance.trigger_callback(instance.scroll_callback_, xoffset, yoffset);
   }
 
   [[nodiscard]] static auto get_key_scancode(int key) -> int {
