@@ -45,7 +45,8 @@ static_assert(sizeof(double_buffer<twice_the_cache_line, std::atomic>) %
                   cacheline_size ==
               0);
 
-TEST(concurrency_double_buffer, Have_default_constructed_value_when_initialized) {
+TEST(concurrency_double_buffer,
+     Have_default_constructed_value_when_initialized) {
   auto &mock = *atomic<std::uint8_t>::get_instance();
   auto buffer = double_buffer<unaligned, atomic>{};
   static_assert(sizeof(buffer) % cacheline_size == 0);
@@ -53,8 +54,8 @@ TEST(concurrency_double_buffer, Have_default_constructed_value_when_initialized)
   EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
       .WillOnce(testing::Return(0U));
   const auto payload = buffer.read();
-
-  EXPECT_EQ(42UZ, payload.value);
+  const auto value = payload.value;
+  EXPECT_EQ(42UZ, value);
   atomic<std::uint8_t>::instance.reset();
 }
 
@@ -70,6 +71,7 @@ TEST(concurrency_double_buffer, Update_inactive_buffer) {
       .WillOnce(testing::Return(1U));
   buffer.write(unaligned{.value = 99UZ});
   const auto payload = buffer.read();
-  EXPECT_EQ(99UZ, payload.value);
+  const auto value = payload.value;
+  EXPECT_EQ(99UZ, value);
   atomic<std::uint8_t>::instance.reset();
 }
