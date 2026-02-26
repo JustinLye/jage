@@ -22,8 +22,8 @@ template <class TPlatform> class glfw {
   static std::array<keyboard::key, GLFW_KEY_LAST + 1> logical_keys_;
   static std::vector<keyboard::scancode> physical_keys_;
   using duration_type = typename TPlatform::context_type::duration_type;
-  using window_handler_pointer_type =
-      typename TPlatform::window_handler_pointer_type;
+  using window_handle_pointer_type =
+      typename TPlatform::window_handle_pointer_type;
 
   static constexpr auto get_physical_key =
       [] [[nodiscard]] (const int scancode) -> keyboard::scancode {
@@ -75,18 +75,18 @@ template <class TPlatform> class glfw {
   };
 
   static constexpr auto cursor_is_disabled =
-      [] [[nodiscard]] (window_handler_pointer_type window) -> bool {
+      [] [[nodiscard]] (window_handle_pointer_type window) -> bool {
     return GLFW_CURSOR_DISABLED ==
            TPlatform::get_input_mode(window, GLFW_CURSOR);
   };
 
-  static constexpr auto get_context(window_handler_pointer_type window) ->
+  static constexpr auto get_context(window_handle_pointer_type window) ->
       typename TPlatform::context_type & {
     return *static_cast<typename TPlatform::context_type *>(
         TPlatform::get_window_user_pointer(window));
   }
 
-  static constexpr auto push_event(window_handler_pointer_type window,
+  static constexpr auto push_event(window_handle_pointer_type window,
                                    auto &&event) -> void {
     auto &context = *static_cast<typename TPlatform::context_type *>(
         TPlatform::get_window_user_pointer(window));
@@ -101,7 +101,7 @@ template <class TPlatform> class glfw {
   };
 
   static constexpr auto cursor_position_callback =
-      [](window_handler_pointer_type window, double xpos, double ypos) -> void {
+      [](window_handle_pointer_type window, double xpos, double ypos) -> void {
     auto &[last_x_pos, last_y_pos] =
         get_context(window).last_known_cursor_position;
     if (almost_equal(xpos, last_x_pos) and almost_equal(ypos, last_y_pos)) {
@@ -126,7 +126,7 @@ template <class TPlatform> class glfw {
   };
 
   static constexpr auto mouse_button_callback =
-      [](window_handler_pointer_type window, int button, int action, int mods) {
+      [](window_handle_pointer_type window, int button, int action, int mods) {
         push_event(window, mouse::events::click<duration_type>{
                                .timestamp = get_current_timestamp(),
                                .button = static_cast<mouse::button>(button),
@@ -135,7 +135,7 @@ template <class TPlatform> class glfw {
                            });
       };
 
-  static constexpr auto key_callback = [](window_handler_pointer_type window,
+  static constexpr auto key_callback = [](window_handle_pointer_type window,
                                           int key, int scancode, int action,
                                           int mods) -> void {
     push_event(window,
@@ -410,7 +410,7 @@ template <class TPlatform> class glfw {
   };
 
 public:
-  glfw(window_handler_pointer_type window, TPlatform &platform,
+  glfw(window_handle_pointer_type window, TPlatform &platform,
        const duration_type &epoch) {
     platform.initialize();
     platform.set_seconds_since_init(time::cast<time::seconds>(epoch));

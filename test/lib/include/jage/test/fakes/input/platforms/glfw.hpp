@@ -49,7 +49,7 @@ template <class TContext> class glfw {
   }
 
 public:
-  using window_handler_pointer_type = window_handle_pointer_type_;
+  using window_handle_pointer_type = window_handle_pointer_type_;
   using user_pointer_type = user_pointer_type_;
   using key_callback_type = key_callback_type_;
   using mouse_button_callback_type = mouse_button_callback_type_;
@@ -59,39 +59,39 @@ public:
 
   static std::unordered_map<int, int> key_to_scancode;
 
-  static auto set_window_user_pointer(window_handler_pointer_type,
+  static auto set_window_user_pointer(window_handle_pointer_type,
                                       user_pointer_type user_pointer) -> void {
     get_instance().user_pointer_ = user_pointer;
   }
 
   [[nodiscard]] static auto
-  get_window_user_pointer(window_handler_pointer_type) -> user_pointer_type {
+  get_window_user_pointer(window_handle_pointer_type) -> user_pointer_type {
     return get_instance().user_pointer_;
   }
 
-  static auto set_key_callback(window_handler_pointer_type,
+  static auto set_key_callback(window_handle_pointer_type,
                                key_callback_type key_callback) -> void {
     get_instance().key_callback_ = key_callback;
   }
 
   static auto set_mouse_button_callback(
-      window_handler_pointer_type,
+      window_handle_pointer_type,
       mouse_button_callback_type mouse_button_callback) -> void {
     get_instance().mouse_button_callback_ = mouse_button_callback;
   }
 
   static auto set_cursor_position_callback(
-      window_handler_pointer_type,
+      window_handle_pointer_type,
       cursor_position_callback_type cursor_position_callback) -> void {
     get_instance().cursor_position_callback_ = cursor_position_callback;
   }
 
-  static auto set_input_mode(window_handler_pointer_type, int mode,
+  static auto set_input_mode(window_handle_pointer_type, int mode,
                              int value) -> void {
     get_instance().input_modes_[mode] = value;
   }
 
-  static auto get_input_mode(window_handler_pointer_type, int mode) -> int {
+  static auto get_input_mode(window_handle_pointer_type, int mode) -> int {
     return get_instance().input_modes_[mode];
   }
 
