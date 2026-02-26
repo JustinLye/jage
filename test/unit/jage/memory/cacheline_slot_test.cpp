@@ -113,11 +113,13 @@ TEST(
 TEST(memory_cacheline_slot, Act_like_underlying_value) {
   auto value = cacheline_slot<unaligned>{unaligned{.bits = 1, .payload = 2}};
   EXPECT_EQ(1, value.bits);
-  EXPECT_EQ(2, value.payload);
+  const auto payload = value.payload;
+  EXPECT_EQ(2, payload);
 
   auto test = [&](const unaligned &f) {
     EXPECT_EQ(1, f.bits);
-    EXPECT_EQ(2, f.payload);
+    const auto payload = f.payload;
+    EXPECT_EQ(2, payload);
   };
   test(value);
 }
