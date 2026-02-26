@@ -34,8 +34,8 @@ protected:
 };
 
 TEST_F(glfw_adapter, should_send_cursor_position_event) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.trigger_cursor_position_callback(1.52, 4.20);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(std::holds_alternative<cursor_position_event_type>(
@@ -49,8 +49,8 @@ TEST_F(glfw_adapter, should_send_cursor_position_event) {
 
 TEST_F(glfw_adapter,
        should_not_send_cursor_position_event_if_cursor_has_not_updated) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.trigger_cursor_position_callback(1, 1);
   context.buffer.clear();
   platform.trigger_cursor_position_callback(
@@ -59,8 +59,8 @@ TEST_F(glfw_adapter,
 }
 
 TEST_F(glfw_adapter, should_send_event_after_accumulating_small_updates) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.trigger_cursor_position_callback(1, 1);
   context.buffer.clear();
   platform.trigger_cursor_position_callback(
@@ -76,16 +76,16 @@ TEST_F(glfw_adapter, should_send_event_after_accumulating_small_updates) {
 TEST_F(
     glfw_adapter,
     should_not_send_cursor_motion_event_after_disabling_cursor_without_motion) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(0, 0);
   EXPECT_TRUE(std::empty(context.buffer));
 }
 
 TEST_F(glfw_adapter, should_send_motion_after_motion_when_cursor_is_disabled) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{99}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{99});
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(1.5, 4.242);
   ASSERT_FALSE(std::empty(context.buffer));
@@ -98,8 +98,8 @@ TEST_F(glfw_adapter, should_send_motion_after_motion_when_cursor_is_disabled) {
 }
 
 TEST_F(glfw_adapter, should_update_motion_delta_values) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{99}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{99});
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(1.5, 4.242);
   context.buffer.clear();
@@ -115,8 +115,8 @@ TEST_F(glfw_adapter, should_update_motion_delta_values) {
 
 TEST_F(glfw_adapter,
        should_not_update_motion_delta_values_until_position_changes) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{99}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{99});
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(1.5, 4.242);
   platform.trigger_cursor_position_callback(2.25, 5.0);
@@ -134,8 +134,8 @@ TEST_F(glfw_adapter,
 }
 
 TEST_F(glfw_adapter, should_not_send_event_small_change) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(1, 1);
   context.buffer.clear();
@@ -150,8 +150,8 @@ TEST_F(glfw_adapter, should_not_send_event_small_change) {
 }
 
 TEST_F(glfw_adapter, should_transition_correctly) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{42}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{42});
   platform.trigger_cursor_position_callback(1, 1);
   platform.set_input_mode(nullptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   platform.trigger_cursor_position_callback(1.5, 2.5);

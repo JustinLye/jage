@@ -73,8 +73,8 @@ struct button_param {
 using glfw_adapter_button_click = glfw_adapter_test<button_param>;
 
 TEST_P(glfw_adapter_button_click, should_map_button_click) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   const auto &[glfw_button, expected_output_button] = GetParam();
   platform.trigger_mouse_button_callback(glfw_button, GLFW_PRESS, 0);
   ASSERT_FALSE(std::empty(context.buffer));
@@ -93,8 +93,8 @@ struct modifier_param {
 using glfw_adapter_button_click_modifier = glfw_adapter_test<modifier_param>;
 
 TEST_P(glfw_adapter_button_click_modifier, should_map_modifier) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   const auto &[glfw_modifier, expected_left, optional_expected_right] =
       GetParam();
   platform.trigger_mouse_button_callback(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS,
@@ -119,8 +119,8 @@ struct action_param {
 
 using glfw_adapter_button_click_action = glfw_adapter_test<action_param>;
 TEST_P(glfw_adapter_button_click_action, should_map_action) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   const auto &[glfw_action, expected_action] = GetParam();
   platform.trigger_mouse_button_callback(GLFW_MOUSE_BUTTON_LEFT, glfw_action,
                                          0);
@@ -136,7 +136,7 @@ using glfw_adapter_timestamp_test = glfw_adapter_test<no_test_param>;
 TEST_F(glfw_adapter_timestamp_test, should_set_timestamp) {
   const auto initial_duration = context_type::duration_type{42e+9};
 
-  std::ignore = adapter_type{nullptr, platform, initial_duration};
+  adapter_type::initialize(nullptr, platform, initial_duration);
   platform.trigger_mouse_button_callback(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, 0);
   {
     ASSERT_FALSE(std::empty(context.buffer));

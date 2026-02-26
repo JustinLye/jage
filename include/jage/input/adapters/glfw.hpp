@@ -428,8 +428,9 @@ template <class TPlatform> class glfw {
   };
 
 public:
-  glfw(window_handle_pointer_type window, TPlatform &platform,
-       const duration_type &epoch) {
+  static constexpr auto initialize = [](window_handle_pointer_type window,
+                                        TPlatform &platform,
+                                        const duration_type &epoch) {
     platform.initialize();
     platform.set_seconds_since_init(time::cast<time::seconds>(epoch));
     load_logical_keys();
@@ -438,7 +439,7 @@ public:
     platform.set_mouse_button_callback(window, mouse_button_callback);
     platform.set_cursor_position_callback(window, cursor_position_callback);
     platform.set_scroll_callback(window, scroll_callback);
-  }
+  };
 };
 
 template <class TPlatform>

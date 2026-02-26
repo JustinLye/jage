@@ -33,7 +33,7 @@ protected:
 };
 
 TEST_F(glfw_adapter, should_push_vertical_scroll_event_on_y_offset_change) {
-  std::ignore = adapter_type{nullptr, platform, duration_type{42}};
+  adapter_type::initialize(nullptr, platform, duration_type{42});
   platform.trigger_scroll_callback(0.0, 1.75);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
@@ -44,7 +44,7 @@ TEST_F(glfw_adapter, should_push_vertical_scroll_event_on_y_offset_change) {
 }
 
 TEST_F(glfw_adapter, should_push_horizontal_scroll_event_on_x_offset_change) {
-  std::ignore = adapter_type{nullptr, platform, duration_type{100}};
+  adapter_type::initialize(nullptr, platform, duration_type{100});
   platform.trigger_scroll_callback(2.5, 0.0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
