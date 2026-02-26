@@ -257,7 +257,7 @@ jobs:
 
   test-coverage:
     needs: build-ci-image
-    if: ${{ github.event_name == 'schedule' && needs.build-ci-image.result == 'success' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.build-ci-image.result == 'success' }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
@@ -311,7 +311,7 @@ jobs:
 
   deploy-coverage:
     needs: test-coverage
-    if: ${{ github.event_name == 'schedule' && needs.test-coverage.result == 'success' }}
+    if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && needs.test-coverage.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       pages: write
