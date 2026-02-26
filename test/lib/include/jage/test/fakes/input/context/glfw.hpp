@@ -14,6 +14,7 @@ struct glfw<TDuration, TEvents...> {
   using event_type = std::variant<TEvents...>;
   using duration_type = TDuration;
   std::deque<event_type> buffer;
+  std::pair<double, double> last_known_cursor_position{};
 
   auto push(auto &&event) -> void {
     buffer.push_back(std::forward<decltype(event)>(event));

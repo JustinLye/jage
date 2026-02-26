@@ -5,6 +5,7 @@
 #include <jage/input/keyboard/scancode.hpp>
 #include <jage/input/mouse/button.hpp>
 #include <jage/input/mouse/events/click.hpp>
+#include <jage/input/mouse/events/cursor/motion.hpp>
 #include <jage/input/mouse/events/cursor/position.hpp>
 #include <jage/time/durations.hpp>
 
@@ -73,6 +74,18 @@ template <class TPlatform> class glfw {
     return time::cast<duration_type>(TPlatform::get_seconds_since_init());
   };
 
+  static constexpr auto cursor_is_disabled =
+      [] [[nodiscard]] (window_handler_pointer_type window) -> bool {
+    return GLFW_CURSOR_DISABLED ==
+           TPlatform::get_input_mode(window, GLFW_CURSOR);
+  };
+
+  static constexpr auto get_context(window_handler_pointer_type window) ->
+      typename TPlatform::context_type & {
+    return *static_cast<typename TPlatform::context_type *>(
+        TPlatform::get_window_user_pointer(window));
+  }
+
   static constexpr auto push_event(window_handler_pointer_type window,
                                    auto &&event) -> void {
     auto &context = *static_cast<typename TPlatform::context_type *>(
@@ -80,13 +93,36 @@ template <class TPlatform> class glfw {
     context.push(std::forward<decltype(event)>(event));
   };
 
+  static constexpr auto almost_equal = [] [[nodiscard]] (double lhs,
+                                                         double rhs) -> bool {
+    auto difference = std::abs(lhs - rhs);
+    return difference <= std::numeric_limits<double>::epsilon() *
+                             std::max(std::abs(lhs), std::abs(rhs));
+  };
+
   static constexpr auto cursor_position_callback =
       [](window_handler_pointer_type window, double xpos, double ypos) -> void {
-    push_event(window, mouse::events::cursor::position<duration_type>{
-                           .timestamp = get_current_timestamp(),
-                           .x = xpos,
-                           .y = ypos,
-                       });
+    auto &[last_x_pos, last_y_pos] =
+        get_context(window).last_known_cursor_position;
+    if (almost_equal(xpos, last_x_pos) and almost_equal(ypos, last_y_pos)) {
+      return;
+    }
+    if (cursor_is_disabled(window)) {
+      push_event(window, mouse::events::cursor::motion<duration_type>{
+                             .timestamp = get_current_timestamp(),
+                             .delta_x = xpos - last_x_pos,
+                             .delta_y = ypos - last_y_pos,
+                         });
+
+    } else {
+      push_event(window, mouse::events::cursor::position<duration_type>{
+                             .timestamp = get_current_timestamp(),
+                             .x = xpos,
+                             .y = ypos,
+                         });
+    }
+    last_x_pos = xpos;
+    last_y_pos = ypos;
   };
 
   static constexpr auto mouse_button_callback =

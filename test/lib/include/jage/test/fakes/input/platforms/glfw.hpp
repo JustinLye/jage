@@ -31,6 +31,7 @@ template <class TContext> class glfw {
   cursor_position_callback_type_ cursor_position_callback_{nullptr};
   time::seconds seconds_since_init_{0};
   bool initialized_{false};
+  std::unordered_map<int, int> input_modes_;
 
   static std::unique_ptr<glfw> instance_;
 
@@ -83,6 +84,15 @@ public:
       window_handler_pointer_type,
       cursor_position_callback_type cursor_position_callback) -> void {
     get_instance().cursor_position_callback_ = cursor_position_callback;
+  }
+
+  static auto set_input_mode(window_handler_pointer_type, int mode,
+                             int value) -> void {
+    get_instance().input_modes_[mode] = value;
+  }
+
+  static auto get_input_mode(window_handler_pointer_type, int mode) -> int {
+    return get_instance().input_modes_[mode];
   }
 
   static auto trigger_key_callback(int key, int scancode, int action,
