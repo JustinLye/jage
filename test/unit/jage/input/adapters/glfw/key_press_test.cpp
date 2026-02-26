@@ -41,16 +41,16 @@ protected:
 };
 
 TEST_F(glfw_adapter, should_set_keyboard_callback) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS, 0);
   EXPECT_FALSE(std::empty(context.buffer));
 }
 
 TEST_F(glfw_adapter,
        should_return_unidentified_for_key_that_is_not_identified) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   platform.trigger_key_callback(337, 0x05, GLFW_PRESS, 0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front()));
@@ -61,8 +61,8 @@ TEST_F(glfw_adapter,
 
 TEST_F(glfw_adapter,
        should_return_unidentified_for_scancode_that_is_not_identified) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, GLFW_KEY_UNKNOWN, GLFW_PRESS,
                                 0);
   platform.trigger_key_callback(GLFW_KEY_UNKNOWN, 0x43, GLFW_PRESS, 0);
@@ -85,8 +85,8 @@ TEST_F(glfw_adapter,
 }
 
 TEST_F(glfw_adapter, should_map_action_appropriately) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_RELEASE, 0);
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS, 0);
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_REPEAT, 0);
@@ -109,8 +109,8 @@ TEST_F(glfw_adapter, should_map_action_appropriately) {
 }
 
 TEST_F(glfw_adapter, should_map_modifiers) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS,
                                 GLFW_MOD_SHIFT);
   {
@@ -194,8 +194,8 @@ TEST_F(glfw_adapter, should_set_timestamp) {
   platform.set_seconds_since_init(platform_type::duration_type{11});
   EXPECT_EQ(platform_type::duration_type{11},
             platform.get_seconds_since_init());
-  std::ignore =
-      adapter_type{nullptr, platform, context_type::duration_type{42e+9}};
+  adapter_type::initialize(nullptr, platform,
+                           context_type::duration_type{42e+9});
   EXPECT_EQ(jage::time::cast<platform_type::duration_type>(
                 context_type::duration_type{42e+9}),
             platform.get_seconds_since_init());
@@ -223,8 +223,8 @@ TEST_F(glfw_adapter, should_map_unknown_to_unidentified) {
   platform.set_seconds_since_init(platform_type::duration_type{11});
   EXPECT_EQ(platform_type::duration_type{11},
             platform.get_seconds_since_init());
-  std::ignore =
-      adapter_type{nullptr, platform, context_type::duration_type{42e+9}};
+  adapter_type::initialize(nullptr, platform,
+                           context_type::duration_type{42e+9});
   EXPECT_EQ(jage::time::cast<platform_type::duration_type>(
                 context_type::duration_type{42e+9}),
             platform.get_seconds_since_init());
@@ -238,7 +238,7 @@ TEST_F(glfw_adapter, should_map_unknown_to_unidentified) {
 
 TEST_F(glfw_adapter, should_initalize_platform_on_construction) {
   ASSERT_FALSE(platform.is_initialized());
-  std::ignore = adapter_type{nullptr, platform, context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform, context_type::duration_type{});
   EXPECT_TRUE(platform.is_initialized());
 }
 
@@ -278,8 +278,8 @@ protected:
 };
 
 TEST_P(glfw_adapter_key_map, should_map_glfw_keys_and_scan_codes) {
-  std::ignore = adapter_type{nullptr, platform,
-                             platform_type::context_type::duration_type{}};
+  adapter_type::initialize(nullptr, platform,
+                           platform_type::context_type::duration_type{});
   const auto &[glfw_key, os_scancode, expected_key, expected_scancode] =
       GetParam();
   platform.trigger_key_callback(glfw_key, os_scancode, GLFW_PRESS, 0);
