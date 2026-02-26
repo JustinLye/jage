@@ -7,6 +7,8 @@
 #include <jage/input/mouse/events/click.hpp>
 #include <jage/input/mouse/events/cursor/motion.hpp>
 #include <jage/input/mouse/events/cursor/position.hpp>
+#include <jage/input/mouse/events/horizontal_scroll.hpp>
+#include <jage/input/mouse/events/vertical_scroll.hpp>
 #include <jage/time/durations.hpp>
 
 #include <GLFW/glfw3.h>
@@ -88,8 +90,8 @@ template <class TPlatform> class glfw {
 
   static constexpr auto push_event(window_handle_pointer_type window,
                                    auto &&event) -> void {
-    auto &context = *static_cast<typename TPlatform::context_type *>(
-        TPlatform::get_window_user_pointer(window));
+
+    auto &context = get_context(window);
     context.push(std::forward<decltype(event)>(event));
   };
 
@@ -98,6 +100,22 @@ template <class TPlatform> class glfw {
     auto difference = std::abs(lhs - rhs);
     return difference <= std::numeric_limits<double>::epsilon() *
                              std::max(std::abs(lhs), std::abs(rhs));
+  };
+
+  static constexpr auto scroll_callback = [](window_handle_pointer_type window,
+                                             double xoffset,
+                                             double yoffset) -> void {
+    if (0.0 != yoffset) {
+      push_event(window, mouse::events::vertical_scroll<duration_type>{
+                             .timestamp = get_current_timestamp(),
+                             .offset = yoffset,
+                         });
+    } else {
+      push_event(window, mouse::events::horizontal_scroll<duration_type>{
+                             .timestamp = get_current_timestamp(),
+                             .offset = xoffset,
+                         });
+    }
   };
 
   static constexpr auto cursor_position_callback =
@@ -419,6 +437,7 @@ public:
     platform.set_key_callback(window, key_callback);
     platform.set_mouse_button_callback(window, mouse_button_callback);
     platform.set_cursor_position_callback(window, cursor_position_callback);
+    platform.set_scroll_callback(window, scroll_callback);
   }
 };
 
