@@ -11,7 +11,7 @@
   "containerUser": "root",
   "overrideCommand": false,
   "updateRemoteUserUID": true,
-  "workspaceFolder": "/workspaces/jage",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {},
   "runArgs": [
     "--security-opt=seccomp=${localWorkspaceFolder}/.devcontainer/seccomp-personality.json"
@@ -53,8 +53,7 @@
         "[python]": {
           "editor.defaultFormatter": "ms-python.black-formatter"
         },
-        "dev.containers.showTerminal": "never"
-        ,
+        "dev.containers.showTerminal": "never",
         "python.defaultInterpreterPath": "${workspaceFolder}/.conan/bin/python",
         "python.analysis.typeCheckingMode": "strict",
         "extensions.verigySignature": false
@@ -68,7 +67,8 @@
         "llvm-vs-code-extensions.vscode-clangd",
         "xaver.clang-format",
         "openai.chatgpt",
-        "anthropic.claude-code"
+        "anthropic.claude-code",
+        "mkhl.direnv"
       ]
     }
   },
