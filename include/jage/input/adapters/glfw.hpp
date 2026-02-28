@@ -1,4 +1,5 @@
 #pragma once
+#include <jage/external/glfw.hpp>
 #include <jage/input/keyboard/action.hpp>
 #include <jage/input/keyboard/event.hpp>
 #include <jage/input/keyboard/key.hpp>
@@ -10,8 +11,6 @@
 #include <jage/input/mouse/events/horizontal_scroll.hpp>
 #include <jage/input/mouse/events/vertical_scroll.hpp>
 #include <jage/time/durations.hpp>
-
-#include <GLFW/glfw3.h>
 
 #include <array>
 #include <utility>

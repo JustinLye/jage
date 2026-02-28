@@ -1,3 +1,4 @@
+#include <jage/external/glfw.hpp>
 #include <jage/input/adapters/glfw.hpp>
 #include <jage/input/event.hpp>
 #include <jage/input/keyboard/event.hpp>
@@ -5,8 +6,6 @@
 #include <jage/input/mouse/button.hpp>
 #include <jage/input/mouse/events/click.hpp>
 #include <jage/time/durations.hpp>
-
-#include <GLFW/glfw3.h>
 
 #include <jage/test/fakes/input/context/glfw.hpp>
 #include <jage/test/fakes/input/platforms/glfw.hpp>

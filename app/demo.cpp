@@ -1,6 +1,4 @@
-#include <glad/glad.h>
-
-#include <GLFW/glfw3.h>
+#include <jage/external/glfw.hpp>
 
 #include <iostream>
 
