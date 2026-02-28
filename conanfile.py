@@ -23,10 +23,12 @@ class JAGERecipe(ConanFile):
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = "CMakeLists.txt", "src/*"
     requires = (
+        "fmt/10.2.1",
         "glad/0.1.36",
         "glfw/3.4",
         "glm/1.0.1",
         "gtest/1.15.0",
+        "imgui/1.91.8-docking",
         "range-v3/0.12.0",
         "assimp/5.4.3",
     )
