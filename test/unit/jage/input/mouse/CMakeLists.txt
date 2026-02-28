@@ -1,0 +1,2 @@
+add_unit_test(TARGET_NAME input-mouse-action-serialize SOURCE_FILES action_serialize_test.cpp)
+add_unit_test(TARGET_NAME input-mouse-button-serialize SOURCE_FILES button_serialize_test.cpp)
