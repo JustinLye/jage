@@ -305,7 +305,19 @@ The `add_unit_test()` function (defined in `test/unit/CMakeLists.txt`) automatic
 
 ## Dev Container Workflow
 
-The preferred development environment is the devcontainer (`.devcontainer/devcontainer.json`):
+**All builds, tests, and CMake commands MUST be run inside the devcontainer.** Never install build tools on the host machine. When running from outside the container (e.g., from Claude Code on the host), use `docker exec` to execute commands inside the running devcontainer:
+
+```bash
+# Find the container name
+docker ps --format '{{.Names}}'
+
+# Run a command inside the container
+docker exec <container_name> bash -c "cd /workspaces/jage && <command>"
+```
+
+The workspace is mounted at `/workspaces/jage` inside the container.
+
+The devcontainer (`.devcontainer/devcontainer.json`):
 - Based on custom Dockerfile in `docker/Dockerfile`
 - Includes C++ toolchains (GCC 14, Clang), CMake, Python, direnv
 - Preconfigured with VS Code extensions: clangd, CMake Tools, Python with Pylance (strict type checking), Black formatter
