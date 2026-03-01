@@ -30,6 +30,7 @@ add_library(jage::lib ALIAS jage_lib)
 add_subdirectory(test)
 add_coverage_target()
 add_subdirectory(app)
+add_subdirectory(editor)
 
 set(LINK_TARGET_DIR "${CMAKE_SOURCE_DIR}/build")
 
