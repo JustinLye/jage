@@ -1,7 +1,7 @@
 #include <jage/external/glfw.hpp>
 #include <jage/input/adapters/glfw.hpp>
 #include <jage/input/event.hpp>
-#include <jage/input/keyboard/event.hpp>
+#include <jage/input/keyboard/events/key_press.hpp>
 #include <jage/input/mouse/action.hpp>
 #include <jage/input/mouse/button.hpp>
 #include <jage/input/mouse/events/click.hpp>
@@ -17,8 +17,8 @@
 #include <utility>
 
 using duration_type = jage::time::durations::nanoseconds;
-using mouse_click_event = jage::input::mouse::events::click<duration_type>;
-using key_press_event = jage::input::keyboard::event<duration_type>;
+using mouse_click_event = jage::input::mouse::events::click;
+using key_press_event = jage::input::keyboard::events::key_press;
 using context_type =
     jage::test::fakes::input::context::glfw<duration_type,
                                             jage::input::event<duration_type>>;
@@ -78,8 +78,8 @@ TEST_P(glfw_adapter_button_click, should_map_button_click) {
   platform.trigger_mouse_button_callback(glfw_button, GLFW_PRESS, 0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<mouse_click_event>(context.buffer.front()));
-  const auto event = std::get<mouse_click_event>(context.buffer.front());
+      std::holds_alternative<mouse_click_event>(context.buffer.front().payload));
+  const auto event = std::get<mouse_click_event>(context.buffer.front().payload);
   EXPECT_EQ(expected_output_button, event.button);
 }
 
@@ -100,8 +100,8 @@ TEST_P(glfw_adapter_button_click_modifier, should_map_modifier) {
                                          glfw_modifier);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<mouse_click_event>(context.buffer.front()));
-  const auto event = std::get<mouse_click_event>(context.buffer.front());
+      std::holds_alternative<mouse_click_event>(context.buffer.front().payload));
+  const auto event = std::get<mouse_click_event>(context.buffer.front().payload);
   EXPECT_TRUE(event.modifiers.test(
       static_cast<std::size_t>(std::to_underlying(expected_left))));
   optional_expected_right.and_then([&](const auto expected_right) {
@@ -125,8 +125,8 @@ TEST_P(glfw_adapter_button_click_action, should_map_action) {
                                          0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<mouse_click_event>(context.buffer.front()));
-  const auto event = std::get<mouse_click_event>(context.buffer.front());
+      std::holds_alternative<mouse_click_event>(context.buffer.front().payload));
+  const auto event = std::get<mouse_click_event>(context.buffer.front().payload);
   EXPECT_EQ(expected_action, event.action);
 }
 
@@ -140,9 +140,8 @@ TEST_F(glfw_adapter_timestamp_test, should_set_timestamp) {
   {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(
-        std::holds_alternative<mouse_click_event>(context.buffer.front()));
-    const auto event = std::get<mouse_click_event>(context.buffer.front());
-    EXPECT_EQ(initial_duration, event.timestamp);
+        std::holds_alternative<mouse_click_event>(context.buffer.front().payload));
+    EXPECT_EQ(initial_duration, context.buffer.front().timestamp);
   }
   context.buffer.clear();
   const auto next_duration = context_type::duration_type{99e+9};
@@ -151,9 +150,8 @@ TEST_F(glfw_adapter_timestamp_test, should_set_timestamp) {
   {
     ASSERT_FALSE(std::empty(context.buffer));
     ASSERT_TRUE(
-        std::holds_alternative<mouse_click_event>(context.buffer.front()));
-    const auto event = std::get<mouse_click_event>(context.buffer.front());
-    EXPECT_EQ(next_duration, event.timestamp);
+        std::holds_alternative<mouse_click_event>(context.buffer.front().payload));
+    EXPECT_EQ(next_duration, context.buffer.front().timestamp);
   }
 }
 

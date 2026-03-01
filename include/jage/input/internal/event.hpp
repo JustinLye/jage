@@ -6,6 +6,10 @@
 
 namespace jage::input::internal {
 template <time::internal::concepts::real_number_duration TTimeDuration,
-          template <class> class... TEvents>
-using event = std::variant<TEvents<TTimeDuration>...>;
+          class... TPayloads>
+struct event {
+  using payload_type = std::variant<TPayloads...>;
+  TTimeDuration timestamp;
+  payload_type payload;
+};
 } // namespace jage::input::internal
