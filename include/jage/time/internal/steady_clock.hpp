@@ -13,8 +13,9 @@ template <class TDuration> struct steady_clock {
   static constexpr auto is_steady = true;
 
   [[nodiscard]] static auto now() -> time_point {
-    return std::chrono::time_point_cast<duration>(
-        std::chrono::steady_clock::now());
+    return time_point{
+        std::chrono::time_point_cast<duration>(std::chrono::steady_clock::now())
+            .time_since_epoch()};
   }
 };
 
