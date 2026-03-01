@@ -1,7 +1,7 @@
 #pragma once
 #include <jage/external/glfw.hpp>
 #include <jage/input/keyboard/action.hpp>
-#include <jage/input/keyboard/event.hpp>
+#include <jage/input/keyboard/events/key_press.hpp>
 #include <jage/input/keyboard/key.hpp>
 #include <jage/input/keyboard/scancode.hpp>
 #include <jage/input/mouse/button.hpp>
@@ -23,6 +23,7 @@ template <class TPlatform> class glfw {
   static std::array<keyboard::key, GLFW_KEY_LAST + 1> logical_keys_;
   static std::vector<keyboard::scancode> physical_keys_;
   using duration_type = typename TPlatform::context_type::duration_type;
+  using event_type = typename TPlatform::context_type::event_type;
   using window_handle_pointer_type =
       typename TPlatform::window_handle_pointer_type;
 
@@ -88,10 +89,12 @@ template <class TPlatform> class glfw {
   }
 
   static constexpr auto push_event(window_handle_pointer_type window,
-                                   auto &&event) -> void {
-
+                                   auto &&payload) -> void {
     auto &context = get_context(window);
-    context.push(std::forward<decltype(event)>(event));
+    context.push(event_type{
+        .timestamp = get_current_timestamp(),
+        .payload = std::forward<decltype(payload)>(payload),
+    });
   };
 
   static constexpr auto almost_equal = [] [[nodiscard]] (double lhs,
@@ -105,13 +108,11 @@ template <class TPlatform> class glfw {
                                              double xoffset,
                                              double yoffset) -> void {
     if (0.0 != yoffset) {
-      push_event(window, mouse::events::vertical_scroll<duration_type>{
-                             .timestamp = get_current_timestamp(),
+      push_event(window, mouse::events::vertical_scroll{
                              .offset = yoffset,
                          });
     } else {
-      push_event(window, mouse::events::horizontal_scroll<duration_type>{
-                             .timestamp = get_current_timestamp(),
+      push_event(window, mouse::events::horizontal_scroll{
                              .offset = xoffset,
                          });
     }
@@ -125,15 +126,13 @@ template <class TPlatform> class glfw {
       return;
     }
     if (cursor_is_disabled(window)) {
-      push_event(window, mouse::events::cursor::motion<duration_type>{
-                             .timestamp = get_current_timestamp(),
+      push_event(window, mouse::events::cursor::motion{
                              .delta_x = xpos - last_x_pos,
                              .delta_y = ypos - last_y_pos,
                          });
 
     } else {
-      push_event(window, mouse::events::cursor::position<duration_type>{
-                             .timestamp = get_current_timestamp(),
+      push_event(window, mouse::events::cursor::position{
                              .x = xpos,
                              .y = ypos,
                          });
@@ -144,8 +143,7 @@ template <class TPlatform> class glfw {
 
   static constexpr auto mouse_button_callback =
       [](window_handle_pointer_type window, int button, int action, int mods) {
-        push_event(window, mouse::events::click<duration_type>{
-                               .timestamp = get_current_timestamp(),
+        push_event(window, mouse::events::click{
                                .button = static_cast<mouse::button>(button),
                                .action = static_cast<mouse::action>(action),
                                .modifiers = get_modifier(mods),
@@ -156,8 +154,7 @@ template <class TPlatform> class glfw {
                                           int key, int scancode, int action,
                                           int mods) -> void {
     push_event(window,
-               keyboard::event<duration_type>{
-                   .timestamp = get_current_timestamp(),
+               keyboard::events::key_press{
                    .key = key != GLFW_KEY_UNKNOWN ? logical_keys_[key]
                                                   : keyboard::key::unidentified,
                    .scancode = get_physical_key(scancode),

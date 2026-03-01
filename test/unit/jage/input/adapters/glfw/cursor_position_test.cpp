@@ -17,10 +17,10 @@ using context_type =
                                             jage::input::event<duration_type>>;
 using platform_type = jage::test::fakes::input::platforms::glfw<context_type>;
 using adapter_type = jage::input::adapters::glfw<platform_type>;
-using cursor_position_event_type = jage::input::mouse::events::cursor::position<
-    jage::time::durations::nanoseconds>;
-using cursor_motion_event_type = jage::input::mouse::events::cursor::motion<
-    jage::time::durations::nanoseconds>;
+using cursor_position_event_type =
+    jage::input::mouse::events::cursor::position;
+using cursor_motion_event_type =
+    jage::input::mouse::events::cursor::motion;
 
 class glfw_adapter : public testing::Test {
 protected:
@@ -39,10 +39,10 @@ TEST_F(glfw_adapter, should_send_cursor_position_event) {
   platform.trigger_cursor_position_callback(1.52, 4.20);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(std::holds_alternative<cursor_position_event_type>(
-      context.buffer.front()));
+      context.buffer.front().payload));
+  EXPECT_EQ(42, context.buffer.front().timestamp.count());
   const auto event =
-      std::get<cursor_position_event_type>(context.buffer.front());
-  EXPECT_EQ(42, event.timestamp.count());
+      std::get<cursor_position_event_type>(context.buffer.front().payload);
   EXPECT_DOUBLE_EQ(1.52, event.x);
   EXPECT_DOUBLE_EQ(4.20, event.y);
 }
@@ -90,9 +90,9 @@ TEST_F(glfw_adapter, should_send_motion_after_motion_when_cursor_is_disabled) {
   platform.trigger_cursor_position_callback(1.5, 4.242);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<cursor_motion_event_type>(context.buffer.front()));
-  const auto event = std::get<cursor_motion_event_type>(context.buffer.front());
-  EXPECT_EQ(99, event.timestamp.count());
+      std::holds_alternative<cursor_motion_event_type>(context.buffer.front().payload));
+  EXPECT_EQ(99, context.buffer.front().timestamp.count());
+  const auto event = std::get<cursor_motion_event_type>(context.buffer.front().payload);
   EXPECT_DOUBLE_EQ(1.50, event.delta_x);
   EXPECT_DOUBLE_EQ(4.242, event.delta_y);
 }
@@ -106,9 +106,9 @@ TEST_F(glfw_adapter, should_update_motion_delta_values) {
   platform.trigger_cursor_position_callback(2.25, 5.0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<cursor_motion_event_type>(context.buffer.front()));
-  const auto event = std::get<cursor_motion_event_type>(context.buffer.front());
-  EXPECT_EQ(99, event.timestamp.count());
+      std::holds_alternative<cursor_motion_event_type>(context.buffer.front().payload));
+  EXPECT_EQ(99, context.buffer.front().timestamp.count());
+  const auto event = std::get<cursor_motion_event_type>(context.buffer.front().payload);
   EXPECT_DOUBLE_EQ(0.75, event.delta_x);
   EXPECT_DOUBLE_EQ(0.758, event.delta_y);
 }
@@ -127,8 +127,8 @@ TEST_F(glfw_adapter,
   platform.trigger_cursor_position_callback(2.256, 5.0);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<cursor_motion_event_type>(context.buffer.front()));
-  const auto event = std::get<cursor_motion_event_type>(context.buffer.front());
+      std::holds_alternative<cursor_motion_event_type>(context.buffer.front().payload));
+  const auto event = std::get<cursor_motion_event_type>(context.buffer.front().payload);
   EXPECT_NEAR(0.006, event.delta_x, 1e-12);
   EXPECT_DOUBLE_EQ(0.0, event.delta_y);
 }
@@ -158,20 +158,20 @@ TEST_F(glfw_adapter, should_transition_correctly) {
 
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(std::holds_alternative<cursor_position_event_type>(
-      context.buffer.front()));
+      context.buffer.front().payload));
   {
     const auto event =
-        std::get<cursor_position_event_type>(context.buffer.front());
+        std::get<cursor_position_event_type>(context.buffer.front().payload);
     EXPECT_DOUBLE_EQ(1, event.x);
     EXPECT_DOUBLE_EQ(1, event.y);
   }
   context.buffer.pop_front();
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<cursor_motion_event_type>(context.buffer.front()));
+      std::holds_alternative<cursor_motion_event_type>(context.buffer.front().payload));
   {
     const auto event =
-        std::get<cursor_motion_event_type>(context.buffer.front());
+        std::get<cursor_motion_event_type>(context.buffer.front().payload);
     EXPECT_NEAR(0.5, event.delta_x, 1e-12);
     EXPECT_NEAR(1.5, event.delta_y, 1e-12);
   }
@@ -183,10 +183,10 @@ TEST_F(glfw_adapter, should_transition_correctly) {
   platform.trigger_cursor_position_callback(99.42, 42.99);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(std::holds_alternative<cursor_position_event_type>(
-      context.buffer.front()));
+      context.buffer.front().payload));
   {
     const auto event =
-        std::get<cursor_position_event_type>(context.buffer.front());
+        std::get<cursor_position_event_type>(context.buffer.front().payload);
     EXPECT_DOUBLE_EQ(99.42, event.x);
     EXPECT_DOUBLE_EQ(42.99, event.y);
   }
@@ -198,10 +198,10 @@ TEST_F(glfw_adapter, should_transition_correctly) {
   platform.trigger_cursor_position_callback(99.43, 43.01);
   ASSERT_FALSE(std::empty(context.buffer));
   ASSERT_TRUE(
-      std::holds_alternative<cursor_motion_event_type>(context.buffer.front()));
+      std::holds_alternative<cursor_motion_event_type>(context.buffer.front().payload));
   {
     const auto event =
-        std::get<cursor_motion_event_type>(context.buffer.front());
+        std::get<cursor_motion_event_type>(context.buffer.front().payload);
     EXPECT_NEAR(0.01, event.delta_x, 1e-12);
     EXPECT_NEAR(0.02, event.delta_y, 1e-12);
   }

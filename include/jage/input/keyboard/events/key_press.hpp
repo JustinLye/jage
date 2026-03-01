@@ -5,17 +5,13 @@
 #include <jage/input/modifier.hpp>
 #include <jage/input/keyboard/scancode.hpp>
 
-#include <jage/time/internal/concepts/real_number_duration.hpp>
-
 #include <bitset>
 
-namespace jage::input::keyboard {
-template <time::internal::concepts::real_number_duration TDuration>
-struct event {
-  TDuration timestamp;
+namespace jage::input::keyboard::events {
+struct key_press {
   keyboard::key key;
   keyboard::scancode scancode;
   keyboard::action action;
   std::bitset<modifier_count> modifiers;
 };
-} // namespace jage::input::keyboard
+} // namespace jage::input::keyboard::events
