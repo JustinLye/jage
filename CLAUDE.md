@@ -311,9 +311,11 @@ The `add_unit_test()` function (defined in `test/unit/CMakeLists.txt`) automatic
 # Find the container name
 docker ps --format '{{.Names}}'
 
-# Run a command inside the container
-docker exec <container_name> bash -c "cd /workspaces/jage && <command>"
+# Run a command inside the container (always use --user vscode)
+docker exec --user vscode <container_name> bash -c "cd /workspaces/jage && <command>"
 ```
+
+**Important:** Always use `--user vscode` with `docker exec`. The container runs as root by default, but the workspace files are owned by the `vscode` user. Running commands as root will change file ownership to `root:root`, causing permission issues in the VS Code terminal.
 
 The workspace is mounted at `/workspaces/jage` inside the container.
 
