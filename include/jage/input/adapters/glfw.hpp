@@ -430,7 +430,6 @@ public:
   static constexpr auto initialize = [](window_handle_pointer_type window,
                                         TPlatform &platform,
                                         const duration_type &epoch) {
-    platform.initialize();
     platform.set_seconds_since_init(time::cast<time::seconds>(epoch));
     load_logical_keys();
     load_physical_scancodes(platform);

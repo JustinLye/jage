@@ -235,12 +235,6 @@ TEST_F(glfw_adapter, should_map_unknown_to_unidentified) {
   EXPECT_EQ(jage::input::keyboard::key::unidentified, event.key);
 }
 
-TEST_F(glfw_adapter, should_initalize_platform_on_construction) {
-  ASSERT_FALSE(platform.is_initialized());
-  adapter_type::initialize(nullptr, platform, context_type::duration_type{});
-  EXPECT_TRUE(platform.is_initialized());
-}
-
 struct key_param {
   int glfw_key;
   int os_scancode;
