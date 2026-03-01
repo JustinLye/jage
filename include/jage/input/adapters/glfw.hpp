@@ -120,7 +120,7 @@ template <class TPlatform> class glfw {
   static constexpr auto cursor_position_callback =
       [](window_handle_pointer_type window, double xpos, double ypos) -> void {
     auto &[last_x_pos, last_y_pos] =
-        get_context(window).last_known_cursor_position;
+        get_context(window).last_known_cursor_position();
     if (almost_equal(xpos, last_x_pos) and almost_equal(ypos, last_y_pos)) {
       return;
     }
