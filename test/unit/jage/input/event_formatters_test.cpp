@@ -16,8 +16,7 @@ using namespace jage::time;
 
 using keyboard_key_param = std::pair<keyboard::key, std::string>;
 
-struct keyboard_key_format_test
-    : testing::TestWithParam<keyboard_key_param> {};
+struct keyboard_key_format_test : testing::TestWithParam<keyboard_key_param> {};
 
 TEST_P(keyboard_key_format_test, should_format_key_as_serialized_name) {
   const auto &[input, expected] = GetParam();
@@ -31,37 +30,33 @@ const auto keyboard_key_format_params = std::vector<keyboard_key_param>{
     {keyboard::key::F1, "F1"},
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    keyboard_key_format, keyboard_key_format_test,
-    testing::ValuesIn(keyboard_key_format_params),
-    [](const auto &info) -> std::string {
-      return fmt::format("key_{}", info.param.second);
-    });
+INSTANTIATE_TEST_SUITE_P(keyboard_key_format, keyboard_key_format_test,
+                         testing::ValuesIn(keyboard_key_format_params),
+                         [](const auto &info) -> std::string {
+                           return fmt::format("key_{}", info.param.second);
+                         });
 
 using keyboard_action_param = std::pair<keyboard::action, std::string>;
 
 struct keyboard_action_format_test
     : testing::TestWithParam<keyboard_action_param> {};
 
-TEST_P(keyboard_action_format_test,
-       should_format_action_as_serialized_name) {
+TEST_P(keyboard_action_format_test, should_format_action_as_serialized_name) {
   const auto &[input, expected] = GetParam();
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
 
-const auto keyboard_action_format_params =
-    std::vector<keyboard_action_param>{
-        {keyboard::action::press, "press"},
-        {keyboard::action::release, "release"},
-        {keyboard::action::repeat, "repeat"},
-    };
+const auto keyboard_action_format_params = std::vector<keyboard_action_param>{
+    {keyboard::action::press, "press"},
+    {keyboard::action::release, "release"},
+    {keyboard::action::repeat, "repeat"},
+};
 
-INSTANTIATE_TEST_SUITE_P(
-    keyboard_action_format, keyboard_action_format_test,
-    testing::ValuesIn(keyboard_action_format_params),
-    [](const auto &info) -> std::string {
-      return fmt::format("action_{}", info.param.second);
-    });
+INSTANTIATE_TEST_SUITE_P(keyboard_action_format, keyboard_action_format_test,
+                         testing::ValuesIn(keyboard_action_format_params),
+                         [](const auto &info) -> std::string {
+                           return fmt::format("action_{}", info.param.second);
+                         });
 
 using keyboard_scancode_param = std::pair<keyboard::scancode, std::string>;
 
@@ -81,20 +76,18 @@ const auto keyboard_scancode_format_params =
         {keyboard::scancode::F12, "F12"},
     };
 
-INSTANTIATE_TEST_SUITE_P(
-    keyboard_scancode_format, keyboard_scancode_format_test,
-    testing::ValuesIn(keyboard_scancode_format_params),
-    [](const auto &info) -> std::string {
-      return fmt::format("scancode_{}", info.param.second);
-    });
+INSTANTIATE_TEST_SUITE_P(keyboard_scancode_format,
+                         keyboard_scancode_format_test,
+                         testing::ValuesIn(keyboard_scancode_format_params),
+                         [](const auto &info) -> std::string {
+                           return fmt::format("scancode_{}", info.param.second);
+                         });
 
 using mouse_button_param = std::pair<mouse::button, std::string>;
 
-struct mouse_button_format_test
-    : testing::TestWithParam<mouse_button_param> {};
+struct mouse_button_format_test : testing::TestWithParam<mouse_button_param> {};
 
-TEST_P(mouse_button_format_test,
-       should_format_button_as_serialized_name) {
+TEST_P(mouse_button_format_test, should_format_button_as_serialized_name) {
   const auto &[input, expected] = GetParam();
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
@@ -105,20 +98,17 @@ const auto mouse_button_format_params = std::vector<mouse_button_param>{
     {mouse::button::middle, "middle"},
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    mouse_button_format, mouse_button_format_test,
-    testing::ValuesIn(mouse_button_format_params),
-    [](const auto &info) -> std::string {
-      return fmt::format("button_{}", info.param.second);
-    });
+INSTANTIATE_TEST_SUITE_P(mouse_button_format, mouse_button_format_test,
+                         testing::ValuesIn(mouse_button_format_params),
+                         [](const auto &info) -> std::string {
+                           return fmt::format("button_{}", info.param.second);
+                         });
 
 using mouse_action_param = std::pair<mouse::action, std::string>;
 
-struct mouse_action_format_test
-    : testing::TestWithParam<mouse_action_param> {};
+struct mouse_action_format_test : testing::TestWithParam<mouse_action_param> {};
 
-TEST_P(mouse_action_format_test,
-       should_format_action_as_serialized_name) {
+TEST_P(mouse_action_format_test, should_format_action_as_serialized_name) {
   const auto &[input, expected] = GetParam();
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
@@ -128,17 +118,15 @@ const auto mouse_action_format_params = std::vector<mouse_action_param>{
     {mouse::action::release, "release"},
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    mouse_action_format, mouse_action_format_test,
-    testing::ValuesIn(mouse_action_format_params),
-    [](const auto &info) -> std::string {
-      return fmt::format("action_{}", info.param.second);
-    });
+INSTANTIATE_TEST_SUITE_P(mouse_action_format, mouse_action_format_test,
+                         testing::ValuesIn(mouse_action_format_params),
+                         [](const auto &info) -> std::string {
+                           return fmt::format("action_{}", info.param.second);
+                         });
 
 using mouse_click_param = std::pair<mouse::events::click, std::string>;
 
-struct mouse_click_format_test
-    : testing::TestWithParam<mouse_click_param> {};
+struct mouse_click_format_test : testing::TestWithParam<mouse_click_param> {};
 
 TEST_P(mouse_click_format_test, should_format_click_event) {
   const auto &[input, expected] = GetParam();
@@ -190,11 +178,11 @@ const auto key_press_format_params = std::vector<key_press_param>{
       "action": press,
       "modifiers": 0000000000
   })"},
-    {keyboard::events::key_press{
-         .key = keyboard::key::escape,
-         .scancode = keyboard::scancode::escape,
-         .action = keyboard::action::release,
-         .modifiers = std::bitset<modifier_count>{0b101}},
+    {keyboard::events::key_press{.key = keyboard::key::escape,
+                                 .scancode = keyboard::scancode::escape,
+                                 .action = keyboard::action::release,
+                                 .modifiers =
+                                     std::bitset<modifier_count>{0b101}},
      R"("key-press": {
       "key": escape,
       "scancode": escape,
@@ -220,22 +208,20 @@ TEST_P(cursor_position_format_test, should_format_cursor_position_event) {
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
 
-const auto cursor_position_format_params =
-    std::vector<cursor_position_param>{
-        {mouse::events::cursor::position{.x = 100.5, .y = 200.5},
-         R"("cursor-position": {
+const auto cursor_position_format_params = std::vector<cursor_position_param>{
+    {mouse::events::cursor::position{.x = 100.5, .y = 200.5},
+     R"("cursor-position": {
       "x": 100.5,
-      "y": 200.5,
+      "y": 200.5
   })"},
-        {mouse::events::cursor::position{.x = -1.25, .y = 3.75},
-         R"("cursor-position": {
+    {mouse::events::cursor::position{.x = -1.25, .y = 3.75},
+     R"("cursor-position": {
       "x": -1.25,
-      "y": 3.75,
+      "y": 3.75
   })"},
-    };
+};
 
-INSTANTIATE_TEST_SUITE_P(cursor_position_format,
-                         cursor_position_format_test,
+INSTANTIATE_TEST_SUITE_P(cursor_position_format, cursor_position_format_test,
                          testing::ValuesIn(cursor_position_format_params),
                          [](const auto &info) -> std::string {
                            return fmt::format("case_{}", info.index);
@@ -244,8 +230,8 @@ INSTANTIATE_TEST_SUITE_P(cursor_position_format,
 using cursor_motion_param =
     std::pair<mouse::events::cursor::motion, std::string>;
 
-struct cursor_motion_format_test
-    : testing::TestWithParam<cursor_motion_param> {};
+struct cursor_motion_format_test : testing::TestWithParam<cursor_motion_param> {
+};
 
 TEST_P(cursor_motion_format_test, should_format_cursor_motion_event) {
   const auto &[input, expected] = GetParam();
@@ -272,8 +258,7 @@ using horizontal_scroll_param =
 struct horizontal_scroll_format_test
     : testing::TestWithParam<horizontal_scroll_param> {};
 
-TEST_P(horizontal_scroll_format_test,
-       should_format_horizontal_scroll_event) {
+TEST_P(horizontal_scroll_format_test, should_format_horizontal_scroll_event) {
   const auto &[input, expected] = GetParam();
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
@@ -308,16 +293,14 @@ TEST_P(vertical_scroll_format_test, should_format_vertical_scroll_event) {
   EXPECT_EQ(fmt::format("{}", input), expected);
 }
 
-const auto vertical_scroll_format_params =
-    std::vector<vertical_scroll_param>{
-        {mouse::events::vertical_scroll{.offset = 2.75},
-         R"("vertical-scroll": {
+const auto vertical_scroll_format_params = std::vector<vertical_scroll_param>{
+    {mouse::events::vertical_scroll{.offset = 2.75},
+     R"("vertical-scroll": {
       "offset": 2.75
   })"},
-    };
+};
 
-INSTANTIATE_TEST_SUITE_P(vertical_scroll_format,
-                         vertical_scroll_format_test,
+INSTANTIATE_TEST_SUITE_P(vertical_scroll_format, vertical_scroll_format_test,
                          testing::ValuesIn(vertical_scroll_format_params),
                          [](const auto &info) -> std::string {
                            return fmt::format("case_{}", info.index);
@@ -329,16 +312,15 @@ struct jage_ns_param {
   std::string expected_date_prefix;
 };
 
-struct jage_nanoseconds_format_test
-    : testing::TestWithParam<jage_ns_param> {};
+struct jage_nanoseconds_format_test : testing::TestWithParam<jage_ns_param> {};
 
 TEST_P(jage_nanoseconds_format_test,
        should_format_timestamp_with_date_and_ns_count) {
   const auto &param = GetParam();
   auto result = fmt::format("{}", param.input);
   EXPECT_THAT(result, testing::HasSubstr(param.expected_date_prefix));
-  EXPECT_THAT(result, testing::HasSubstr(fmt::format(
-                          "{} ns since epoch", param.expected_ns_count)));
+  EXPECT_THAT(result, testing::HasSubstr(fmt::format("{} ns since epoch",
+                                                     param.expected_ns_count)));
 }
 
 const auto jage_ns_format_params = std::vector<jage_ns_param>{
@@ -346,12 +328,11 @@ const auto jage_ns_format_params = std::vector<jage_ns_param>{
     {durations::nanoseconds{86400000000000.0}, 86400000000000, "1970-01-02"},
 };
 
-INSTANTIATE_TEST_SUITE_P(jage_nanoseconds_format,
-                         jage_nanoseconds_format_test,
+INSTANTIATE_TEST_SUITE_P(jage_nanoseconds_format, jage_nanoseconds_format_test,
                          testing::ValuesIn(jage_ns_format_params),
                          [](const auto &info) -> std::string {
-                           return fmt::format(
-                               "ns_{}", info.param.expected_ns_count);
+                           return fmt::format("ns_{}",
+                                              info.param.expected_ns_count);
                          });
 
 struct chrono_ns_param {
@@ -368,8 +349,8 @@ TEST_P(chrono_nanoseconds_format_test,
   const auto &param = GetParam();
   auto result = fmt::format("{}", param.input);
   EXPECT_THAT(result, testing::HasSubstr(param.expected_date_prefix));
-  EXPECT_THAT(result, testing::HasSubstr(fmt::format(
-                          "{} ns since epoch", param.expected_ns_count)));
+  EXPECT_THAT(result, testing::HasSubstr(fmt::format("{} ns since epoch",
+                                                     param.expected_ns_count)));
 }
 
 const auto chrono_ns_format_params = std::vector<chrono_ns_param>{
@@ -381,8 +362,8 @@ INSTANTIATE_TEST_SUITE_P(chrono_nanoseconds_format,
                          chrono_nanoseconds_format_test,
                          testing::ValuesIn(chrono_ns_format_params),
                          [](const auto &info) -> std::string {
-                           return fmt::format(
-                               "ns_{}", info.param.expected_ns_count);
+                           return fmt::format("ns_{}",
+                                              info.param.expected_ns_count);
                          });
 
 using event_type = event<durations::nanoseconds>;
@@ -401,20 +382,40 @@ const auto payload_format_params = std::vector<payload_param>{
     {payload_type{mouse::events::cursor::position{.x = 1.5, .y = 2.5}},
      R"("cursor-position": {
       "x": 1.5,
-      "y": 2.5,
+      "y": 2.5
   })"},
     {payload_type{mouse::events::vertical_scroll{.offset = 4.5}},
      R"("vertical-scroll": {
       "offset": 4.5
   })"},
-    {payload_type{mouse::events::click{
-         .button = mouse::button::left,
-         .action = mouse::action::press,
-         .modifiers = std::bitset<modifier_count>{}}},
+    {payload_type{mouse::events::horizontal_scroll{.offset = 4.5}},
+     R"("horizontal-scroll": {
+      "offset": 4.5
+  })"},
+    {payload_type{
+         mouse::events::click{.button = mouse::button::left,
+                              .action = mouse::action::press,
+                              .modifiers = std::bitset<modifier_count>{}}},
      R"("mouse-click": {
       "button": left,
       "action": press,
       "modifiers": 0000000000
+  })"},
+    {payload_type{mouse::events::cursor::motion{.delta_x = 42, .delta_y = 99}},
+     R"("cursor-motion": {
+      "delta_x": 42,
+      "delta_y": 99
+  })"},
+    {payload_type{keyboard::events::key_press{
+         .key = keyboard::key::escape,
+         .scancode = keyboard::scancode::escape,
+         .action = keyboard::action::release,
+         .modifiers = std::bitset<modifier_count>{0b101}}},
+     R"("key-press": {
+      "key": escape,
+      "scancode": escape,
+      "action": release,
+      "modifiers": 0000000101
   })"},
 };
 
@@ -441,8 +442,8 @@ TEST_P(event_format_test, should_format_event_with_timestamp_and_payload) {
 
 const auto event_format_params = std::vector<event_param>{
     {event_type{.timestamp = durations::nanoseconds{1000000000.0},
-                .payload = mouse::events::cursor::position{.x = 5.5,
-                                                           .y = 10.5}},
+                .payload =
+                    mouse::events::cursor::position{.x = 5.5, .y = 10.5}},
      {R"("input-event": {)", R"("timestamp":)", R"("cursor-position":)",
       "1000000000 ns since epoch", R"("x": 5.5)", R"("y": 10.5)"}},
     {event_type{.timestamp = durations::nanoseconds{2000000000.0},
@@ -466,8 +467,7 @@ struct snapshot_param {
 
 struct snapshot_format_test : testing::TestWithParam<snapshot_param> {};
 
-TEST_P(snapshot_format_test,
-       should_format_snapshot_with_frame_timing_fields) {
+TEST_P(snapshot_format_test, should_format_snapshot_with_frame_timing_fields) {
   const auto &param = GetParam();
   auto result = fmt::format("{}", param.input);
   for (const auto &substring : param.expected_substrings) {
