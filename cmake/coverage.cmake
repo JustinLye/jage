@@ -31,7 +31,7 @@ function(add_coverage_target)
     coverage
     DEPENDS run-all-jage-unit-tests
     COMMAND lcov --gcov-tool gcov-14 --capture --directory . --output-file coverage.info --ignore-errors mismatch
-    COMMAND lcov --gcov-tool gcov-14 --remove coverage.info '/usr/*' '*/test/*' --output-file coverage.info
+    COMMAND lcov --gcov-tool gcov-14 --remove coverage.info '/usr/*' '*/test/*' '*gmock*' '*include/fmt*' '*gtest*' --output-file coverage.info
     COMMAND genhtml coverage.info --output-directory coverage-report
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Generating coverage report")

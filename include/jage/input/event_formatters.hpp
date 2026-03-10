@@ -81,10 +81,10 @@ struct fmt::formatter<jage::time::durations::nanoseconds>
     auto timepoint = std::chrono::system_clock::time_point{
         std::chrono::duration_cast<std::chrono::system_clock::duration>(
             input_timestamp)};
-    return fmt::formatter<std::string>::format(
+    const auto text =
         fmt::format("{:%Y-%m-%d %H:%M:%S} ({} ns since epoch)", timepoint,
-                    static_cast<std::uint64_t>(input_timestamp.count())),
-        ctx);
+                    static_cast<std::uint64_t>(input_timestamp.count()));
+    return fmt::formatter<std::string>::format(text, ctx);
   }
 };
 
@@ -99,10 +99,10 @@ struct fmt::formatter<std::chrono::nanoseconds> : fmt::formatter<std::string> {
         std::chrono::duration_cast<std::chrono::system_clock::duration>(
             input_timestamp) -
         cst_adj};
-    return fmt::formatter<std::string>::format(
+    const auto text =
         fmt::format("{:%Y-%m-%d %H:%M:%S} ({} ns since epoch)", timepoint,
-                    static_cast<std::uint64_t>(input_timestamp.count())),
-        ctx);
+                    static_cast<std::uint64_t>(input_timestamp.count()));
+    return fmt::formatter<std::string>::format(text, ctx);
   }
 };
 
@@ -149,7 +149,7 @@ struct fmt::formatter<jage::input::mouse::events::cursor::position>
               fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("cursor-position": {{
       "x": {},
-      "y": {},
+      "y": {}
   }})";
     return fmt::formatter<std::string>::format(
         fmt::format(fmt::runtime(template_text), input_event.x, input_event.y),
