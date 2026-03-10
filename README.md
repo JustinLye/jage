@@ -137,7 +137,7 @@ Run the demo app:
 Preferred: run these inside the Dev Container so your environment matches CI.
 
 ```bash
-cmake --build build --target run-all-jage-unit-tests
+cmake --build build --target run-all-jage-engine-unit-tests
 ```
 
 ## Coverage

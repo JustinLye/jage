@@ -119,7 +119,7 @@ Presets are named like `conan-build-linux-gcc-debug`. If no presets appear, you 
 ### Running All Tests
 
 ```bash
-cmake --build build --target run-all-jage-unit-tests
+cmake --build build --target run-all-jage-engine-unit-tests
 ```
 
 This target is marked `ALL`, so it runs automatically on every build.
@@ -206,7 +206,7 @@ Using runtime assertions enables **see-all-failures-at-once**:
 
 ### Header-Only Library
 
-JAGE is a header-only C++23 library in `include/jage/`. The core library (`jage::lib`) is an INTERFACE target that includes:
+JAGE is a header-only C++23 library in `include/jage/`. The core library (`jage::engine::lib`) is an INTERFACE target that includes:
 - The `include/` directory
 - `jage::compiler_options` (warnings-as-errors, sanitizer flags)
 - `range-v3::range-v3` dependency
@@ -269,7 +269,7 @@ Testing dependencies:
 Tests mirror the library structure:
 - `test/unit/jage/...` follows the same hierarchy as `include/jage/...`
 - Each subsystem has a `CMakeLists.txt` that creates a `run-all-jage-<subsystem>-unit-tests` target
-- Subsystem test targets roll up into `run-all-jage-unit-tests`
+- Subsystem test targets roll up into `run-all-jage-engine-unit-tests`
 
 ### Adding a New Test
 
@@ -279,20 +279,20 @@ Tests mirror the library structure:
    add_unit_test(TARGET_NAME <name> SOURCE_FILES <name>_test.cpp
                  DEPENDANTS run-all-jage-<parent>-unit-tests)
    ```
-3. Optional: Add `LINK_LIBS <additional-libs>` if the test needs extra dependencies beyond `jage::test::lib`
+3. Optional: Add `LINK_LIBS <additional-libs>` if the test needs extra dependencies beyond `jage::engine::test::lib`
 
 The `add_unit_test()` function (defined in `test/unit/CMakeLists.txt`) automatically:
 - Creates executable `jage-unit-test-<name>`
-- Links against `jage::test::lib` (which includes `jage::lib` and `gunit`)
+- Links against `jage::engine::test::lib` (which includes `jage::engine::lib` and `gunit`)
 - Enables coverage instrumentation if `JAGE_ENABLE_TEST_COVERAGE` is set
 - Creates a run target that executes the test with `--gtest_color=yes`
-- Adds the run target to `run-all-jage-unit-tests` and any specified `DEPENDANTS`
+- Adds the run target to `run-all-jage-engine-unit-tests` and any specified `DEPENDANTS`
 
 ### Test Helpers
 
-`test/lib/` provides `jage::test::lib`, an INTERFACE library that includes:
+`test/lib/` provides `jage::engine::test::lib`, an INTERFACE library that includes:
 - `test/lib/include/` for test utilities
-- `jage::lib` (the main library)
+- `jage::engine::lib` (the main library)
 - `gunit` (GoogleTest/GoogleMock with BDD extensions)
 
 ## Compiler Options

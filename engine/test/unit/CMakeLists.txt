@@ -23,7 +23,7 @@ function(add_unit_test)
     endif()
   endif()
 
-  set(LINK_LIBS jage::test::lib)
+  set(LINK_LIBS jage::engine::test::lib)
   if(DEFINED ARG_LINK_LIBS)
     list(APPEND LINK_LIBS ${ARG_LINK_LIBS})
   endif()
@@ -47,7 +47,7 @@ function(add_unit_test)
     ${RUN_TARGET_NAME}
     DEPENDS ${RUN_TARGET_STAMP_FILEPATH})
 
-  add_dependencies(run-all-jage-unit-tests ${RUN_TARGET_NAME})
+  add_dependencies(run-all-jage-engine-unit-tests ${RUN_TARGET_NAME})
 
   if(DEFINED ARG_DEPENDANTS)
     foreach(DEPENDANT ${ARG_DEPENDANTS})
@@ -57,5 +57,5 @@ function(add_unit_test)
 
 endfunction()
 
-add_custom_target(run-all-jage-unit-tests ALL)
-add_subdirectory(jage)
+add_custom_target(run-all-jage-engine-unit-tests ALL)
+add_subdirectory(engine)
