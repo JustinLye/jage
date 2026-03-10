@@ -8,4 +8,5 @@ add_library(imgui_backends STATIC
 target_include_directories(imgui_backends PUBLIC ${IMGUI_BINDINGS_DIR})
 target_link_libraries(imgui_backends PUBLIC imgui::imgui glfw glad::glad)
 
-add_subdirectory(app)
+add_executable(jage-editor main.cpp)
+target_link_libraries(jage-editor PRIVATE jage::engine::lib imgui_backends)

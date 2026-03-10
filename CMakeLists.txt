@@ -21,9 +21,8 @@ find_package(GTest)
 include(compiler_options)
 include(coverage)
 
-add_subdirectory(engine)
-add_subdirectory(app)
-add_subdirectory(editor)
+add_subdirectory(libs)
+add_subdirectory(apps)
 
 set(LINK_TARGET_DIR "${CMAKE_SOURCE_DIR}/build")
 
