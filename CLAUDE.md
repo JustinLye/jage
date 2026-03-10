@@ -221,16 +221,16 @@ The library is organized into several subsystems:
 - Driver pattern: Users provide window and input controller implementations to `jage::game`
 
 **Input System**
-- Button abstraction (`jage::input::button::*`): Generic button state machine tracking pressed/held/released states
+- Button abstraction (`jage::engine::input::button::*`): Generic button state machine tracking pressed/held/released states
 - Specialized monitors: `keyboard::monitor`, `mouse::monitor`, `cursor::monitor`
-- `jage::input::controller`: Aggregates all input monitors and polls them together
+- `jage::engine::input::controller`: Aggregates all input monitors and polls them together
 - Fixed-capacity callbacks: Input monitors use compile-time sized callback arrays to avoid dynamic allocation
 - Per-button state tracking: Each button maintains its own state (idle/pressed/held/released)
 
 **Time Utilities**
 - Real-number durations: Floating-point time representations for game logic
-- `jage::time::hertz` user-defined literal (e.g., `60.0_hz`)
-- `jage::time::clock`: Steady clock with time scaling support
+- `jage::engine::time::hertz` user-defined literal (e.g., `60.0_hz`)
+- `jage::engine::time::clock`: Steady clock with time scaling support
 - Snapshot reporting: Time snapshots capture frame timing information
 
 **Concurrency Primitives**
@@ -238,7 +238,7 @@ The library is organized into several subsystems:
 - Atomic index swapping between two cacheline-aligned slots
 
 **Containers**
-- `jage::containers::spsc::queue<TEvent, Capacity>`: Lock-free single-producer/single-consumer queue
+- `jage::engine::containers::spsc::queue<TEvent, Capacity>`: Lock-free single-producer/single-consumer queue
 - Overwrites oldest element when full (circular buffer behavior)
 - Cacheline-aware layout to prevent false sharing
 

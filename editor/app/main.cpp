@@ -1,15 +1,15 @@
-#include <jage/containers/spmc/ring_buffer.hpp>
-#include <jage/external/glfw.hpp>
-#include <jage/input/adapters/glfw.hpp>
-#include <jage/input/contexts/glfw.hpp>
-#include <jage/input/event.hpp>
-#include <jage/input/platforms/glfw.hpp>
-#include <jage/time/clock.hpp>
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
-#include <jage/time/hertz.hpp>
+#include <jage/engine/containers/spmc/ring_buffer.hpp>
+#include <jage/engine/external/glfw.hpp>
+#include <jage/engine/input/adapters/glfw.hpp>
+#include <jage/engine/input/contexts/glfw.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/input/platforms/glfw.hpp>
+#include <jage/engine/time/clock.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
+#include <jage/engine/time/hertz.hpp>
 
-#include <jage/ext/internal/overloaded.hpp>
+#include <jage/engine/ext/internal/overloaded.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -22,67 +22,73 @@
 #include <variant>
 #include <vector>
 
-using duration_type = jage::time::durations::nanoseconds;
-using event_type = jage::input::event<duration_type>;
+using duration_type = jage::engine::time::durations::nanoseconds;
+using event_type = jage::engine::input::event<duration_type>;
 
 struct event_log_entry {
   std::string text;
 };
 
 auto format_keyboard_event(
-    const jage::input::keyboard::events::key_press &ev) -> std::string {
-  return fmt::format(
-      "[key] {} ({}) {} mods={}", jage::input::keyboard::serialize(ev.key),
-      jage::input::keyboard::serialize(ev.scancode),
-      jage::input::keyboard::serialize(ev.action), ev.modifiers.to_string());
+    const jage::engine::input::keyboard::events::key_press &ev) -> std::string {
+  return fmt::format("[key] {} ({}) {} mods={}",
+                     jage::engine::input::keyboard::serialize(ev.key),
+                     jage::engine::input::keyboard::serialize(ev.scancode),
+                     jage::engine::input::keyboard::serialize(ev.action),
+                     ev.modifiers.to_string());
 }
 
-auto format_mouse_click(
-    const jage::input::mouse::events::click &ev) -> std::string {
-  return fmt::format(
-      "[mouse] {} {} mods={}", jage::input::mouse::serialize(ev.button),
-      jage::input::mouse::serialize(ev.action), ev.modifiers.to_string());
+auto format_mouse_click(const jage::engine::input::mouse::events::click &ev)
+    -> std::string {
+  return fmt::format("[mouse] {} {} mods={}",
+                     jage::engine::input::mouse::serialize(ev.button),
+                     jage::engine::input::mouse::serialize(ev.action),
+                     ev.modifiers.to_string());
 }
 
 auto format_cursor_position(
-    const jage::input::mouse::events::cursor::position &ev) -> std::string {
+    const jage::engine::input::mouse::events::cursor::position &ev)
+    -> std::string {
   return fmt::format("[cursor] pos ({:.1f}, {:.1f})", ev.x, ev.y);
 }
 
 auto format_cursor_motion(
-    const jage::input::mouse::events::cursor::motion &ev) -> std::string {
+    const jage::engine::input::mouse::events::cursor::motion &ev)
+    -> std::string {
   return fmt::format("[cursor] delta ({:.1f}, {:.1f})", ev.delta_x, ev.delta_y);
 }
 
 auto format_horizontal_scroll(
-    const jage::input::mouse::events::horizontal_scroll &ev) -> std::string {
+    const jage::engine::input::mouse::events::horizontal_scroll &ev)
+    -> std::string {
   return fmt::format("[scroll] horizontal {:.2f}", ev.offset);
 }
 
 auto format_vertical_scroll(
-    const jage::input::mouse::events::vertical_scroll &ev) -> std::string {
+    const jage::engine::input::mouse::events::vertical_scroll &ev)
+    -> std::string {
   return fmt::format("[scroll] vertical {:.2f}", ev.offset);
 }
 
 auto format_event(const event_type &ev) -> std::string {
   return std::visit(
-      jage::ext::internal::overloaded{
-          [](const jage::input::keyboard::events::key_press &e) {
+      jage::engine::ext::internal::overloaded{
+          [](const jage::engine::input::keyboard::events::key_press &e) {
             return format_keyboard_event(e);
           },
-          [](const jage::input::mouse::events::click &e) {
+          [](const jage::engine::input::mouse::events::click &e) {
             return format_mouse_click(e);
           },
-          [](const jage::input::mouse::events::cursor::position &e) {
+          [](const jage::engine::input::mouse::events::cursor::position &e) {
             return format_cursor_position(e);
           },
-          [](const jage::input::mouse::events::cursor::motion &e) {
+          [](const jage::engine::input::mouse::events::cursor::motion &e) {
             return format_cursor_motion(e);
           },
-          [](const jage::input::mouse::events::horizontal_scroll &e) {
+          [](const jage::engine::input::mouse::events::horizontal_scroll &e) {
             return format_horizontal_scroll(e);
           },
-          [](const jage::input::mouse::events::vertical_scroll &e) {
+          [](const jage::engine::input::mouse::events::vertical_scroll &e) {
             return format_vertical_scroll(e);
           },
       },
@@ -90,7 +96,7 @@ auto format_event(const event_type &ev) -> std::string {
 }
 
 auto draw_frame_stats_panel(
-    const jage::time::events::snapshot<duration_type> &snap) -> void {
+    const jage::engine::time::events::snapshot<duration_type> &snap) -> void {
   ImGui::Begin("Frame Stats");
   ImGui::Text("Frame: %lu", snap.frame);
   ImGui::Text("Time Scale: %.2f", snap.time_scale);
@@ -126,11 +132,13 @@ auto main(int, char *[]) -> int {
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
   };
 
-  using buffer_type = jage::containers::spmc::ring_buffer<event_type, 256>;
+  using buffer_type =
+      jage::engine::containers::spmc::ring_buffer<event_type, 256>;
   auto event_buffer = buffer_type{};
 
-  using context_type = jage::input::contexts::glfw<duration_type, buffer_type>;
-  using platform_type = jage::input::platforms::glfw<context_type>;
+  using context_type =
+      jage::engine::input::contexts::glfw<duration_type, buffer_type>;
+  using platform_type = jage::engine::input::platforms::glfw<context_type>;
   auto context = context_type{event_buffer};
   auto platform = platform_type{};
 
@@ -159,9 +167,9 @@ auto main(int, char *[]) -> int {
 
   platform.set_window_user_pointer(window, static_cast<void *>(&context));
 
-  auto adapter = jage::input::adapters::glfw<platform_type>{};
-  using jage::time::operator""_Hz;
-  auto clock = jage::time::clock<duration_type>{60_Hz};
+  auto adapter = jage::engine::input::adapters::glfw<platform_type>{};
+  using jage::engine::time::operator""_Hz;
+  auto clock = jage::engine::time::clock<duration_type>{60_Hz};
   adapter.initialize(window, platform, clock.real_time());
 
   platform.set_framebuffer_size_callback(window, frame_buffer_size_callback);
@@ -210,18 +218,17 @@ auto main(int, char *[]) -> int {
       auto next_event = event_buffer.read(read_index % event_buffer.capacity());
       ++read_index;
 
-      std::visit(
-          jage::ext::internal::overloaded{
-              [&](const jage::input::keyboard::events::key_press &key_press)
-                  -> void {
-                if (key_press.scancode ==
-                    jage::input::keyboard::scancode::escape) {
-                  glfwSetWindowShouldClose(window, GLFW_TRUE);
-                }
-              },
-              [](const auto &) -> void {},
-          },
-          next_event.payload);
+      std::visit(jage::engine::ext::internal::overloaded{
+                     [&](const jage::engine::input::keyboard::events::key_press
+                             &key_press) -> void {
+                       if (key_press.scancode ==
+                           jage::engine::input::keyboard::scancode::escape) {
+                         glfwSetWindowShouldClose(window, GLFW_TRUE);
+                       }
+                     },
+                     [](const auto &) -> void {},
+                 },
+                 next_event.payload);
 
       event_log.push_back({.text = format_event(next_event)});
       if (event_log.size() > max_log_entries) {

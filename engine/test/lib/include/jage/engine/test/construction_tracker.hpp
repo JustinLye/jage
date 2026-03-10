@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <utility>
 
-namespace jage::test {
+namespace jage::engine::test {
 class construction_tracker {
   enum class construction_type_ : std::uint8_t {
     by_default,
@@ -42,4 +42,4 @@ public:
   }
 };
 
-} // namespace jage::test
+} // namespace jage::engine::test

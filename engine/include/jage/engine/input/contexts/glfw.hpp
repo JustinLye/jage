@@ -1,15 +1,15 @@
 #pragma once
 
-#include <jage/input/event.hpp>
-#include <jage/time/durations.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/time/durations.hpp>
 
-#include <jage/input/internal/concepts/event_sink.hpp>
-#include <jage/time/internal/concepts/real_number_duration.hpp>
+#include <jage/engine/input/internal/concepts/event_sink.hpp>
+#include <jage/engine/time/internal/concepts/real_number_duration.hpp>
 
 #include <functional>
 #include <utility>
 
-namespace jage::input::contexts {
+namespace jage::engine::input::contexts {
 template <time::internal::concepts::real_number_duration TTimeDuration,
           class TEventSink>
   requires internal::concepts::event_sink<TEventSink, event<TTimeDuration>>
@@ -43,4 +43,4 @@ public:
   }
 };
 
-} // namespace jage::input::contexts
+} // namespace jage::engine::input::contexts

@@ -1,22 +1,22 @@
-#include <jage/time/durations.hpp>
-#include <jage/time/hertz.hpp>
+#include <jage/engine/test/fakes/time/source.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/hertz.hpp>
 
-#include <jage/time/internal/clock.hpp>
-
-#include <jage/test/fakes/time/source.hpp>
+#include <jage/engine/time/internal/clock.hpp>
 
 #include <gtest/gtest.h>
 
 #include <chrono>
 #include <stdexcept>
 
-using time_source = jage::test::fakes::time::source<jage::time::nanoseconds>;
-using jage::time::operator""_ns;
-using jage::time::operator""_Hz;
+using time_source =
+    jage::engine::test::fakes::time::source<jage::engine::time::nanoseconds>;
+using jage::engine::time::operator""_ns;
+using jage::engine::time::operator""_Hz;
 
 class clock_queries : public ::testing::Test {
 protected:
-  jage::time::internal::clock<time_source> clock{60_Hz};
+  jage::engine::time::internal::clock<time_source> clock{60_Hz};
 
   auto SetUp() -> void override { time_source::current_time = 42_ns; }
 };
@@ -25,10 +25,11 @@ TEST_F(clock_queries, Return_real_time) { EXPECT_EQ(42_ns, clock.real_time()); }
 
 TEST_F(clock_queries, Return_correct_tick_duration) {
   EXPECT_NEAR(16666666.666666666, clock.tick_duration().count(), 1e-6);
-  EXPECT_NEAR(
-      33333333.333333332,
-      jage::time::internal::clock<time_source>{30_Hz}.tick_duration().count(),
-      1e-6);
+  EXPECT_NEAR(33333333.333333332,
+              jage::engine::time::internal::clock<time_source>{30_Hz}
+                  .tick_duration()
+                  .count(),
+              1e-6);
 }
 
 TEST_F(clock_queries, Return_game_time) {
@@ -61,20 +62,22 @@ TEST_F(clock_queries, Return_correct_ticks) {
 
 TEST_F(clock_queries, Use_time_source_duration) {
   {
-    const auto sut = jage::time::internal::clock<
-        jage::test::fakes::time::source<jage::time::microseconds>>{30_Hz};
+    const auto sut = jage::engine::time::internal::clock<
+        jage::engine::test::fakes::time::source<
+            jage::engine::time::microseconds>>{30_Hz};
     EXPECT_NEAR(33333.3333333333, sut.tick_duration().count(), 1e-6);
   }
   {
-    const auto sut = jage::time::internal::clock<
-        jage::test::fakes::time::source<jage::time::milliseconds>>{60_Hz};
+    const auto sut = jage::engine::time::internal::clock<
+        jage::engine::test::fakes::time::source<
+            jage::engine::time::milliseconds>>{60_Hz};
     EXPECT_NEAR(16.6666666667, sut.tick_duration().count(), 1e-6);
   }
 }
 
 TEST_F(clock_queries, Be_stable) {
   auto &current_time = time_source::current_time;
-  auto sut = jage::time::internal::clock<time_source>{200_Hz};
+  auto sut = jage::engine::time::internal::clock<time_source>{200_Hz};
   current_time = 0_ns;
   EXPECT_EQ(0UZ, sut.ticks());
   EXPECT_EQ(0UZ, sut.ticks());
@@ -88,7 +91,7 @@ TEST_F(clock_queries, Be_stable) {
 
 TEST(clock_scale, Time_scale_operations) {
   auto &current_time = time_source::current_time;
-  auto clock = jage::time::internal::clock<time_source>{60_Hz};
+  auto clock = jage::engine::time::internal::clock<time_source>{60_Hz};
   current_time = 17000000_ns;
 
   ASSERT_EQ(1UZ, clock.ticks());
@@ -155,9 +158,9 @@ TEST(clock_scale, Time_scale_operations) {
 }
 
 TEST(clock_snapshot, Snapshot_reporting) {
-  using jage::time::operator""_ms;
+  using jage::engine::time::operator""_ms;
 
-  auto clock = jage::time::internal::clock<time_source>{10000_Hz};
+  auto clock = jage::engine::time::internal::clock<time_source>{10000_Hz};
   auto &current_time = time_source::current_time;
   current_time = 0_ns;
 
@@ -173,8 +176,9 @@ TEST(clock_snapshot, Snapshot_reporting) {
   }
 
   {
-    const auto local_clock = jage::time::internal::clock<
-        jage::test::fakes::time::source<jage::time::milliseconds>>{100_Hz};
+    const auto local_clock = jage::engine::time::internal::clock<
+        jage::engine::test::fakes::time::source<
+            jage::engine::time::milliseconds>>{100_Hz};
     EXPECT_EQ(10_ms, local_clock.snapshot().tick_duration);
   }
 

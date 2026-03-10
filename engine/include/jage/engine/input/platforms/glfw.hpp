@@ -1,12 +1,12 @@
 #pragma once
 
-#include <jage/external/glfw.hpp>
-#include <jage/input/contexts/glfw.hpp>
-#include <jage/time/durations.hpp>
+#include <jage/engine/external/glfw.hpp>
+#include <jage/engine/input/contexts/glfw.hpp>
+#include <jage/engine/time/durations.hpp>
 
-#include <jage/time/internal/concepts/real_number_duration.hpp>
+#include <jage/engine/time/internal/concepts/real_number_duration.hpp>
 
-namespace jage::input::platforms {
+namespace jage::engine::input::platforms {
 template <class TContext> struct glfw {
   using context_type = TContext;
   using window_handle_pointer_type = GLFWwindow *;
@@ -106,4 +106,4 @@ template <class TContext> struct glfw {
     return mode->refreshRate;
   }
 };
-} // namespace jage::input::platforms
+} // namespace jage::engine::input::platforms

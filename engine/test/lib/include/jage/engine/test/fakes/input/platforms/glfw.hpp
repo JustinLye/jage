@@ -1,15 +1,14 @@
 #pragma once
 
-#include <jage/time/durations.hpp>
-
-#include <jage/test/fakes/input/context/glfw.hpp>
+#include <jage/engine/test/fakes/input/context/glfw.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <utility>
 
-namespace jage::test::fakes::input::platforms {
+namespace jage::engine::test::fakes::input::platforms {
 
 // TODO: Make this a concept
 template <class TContext> class glfw {
@@ -162,4 +161,4 @@ public:
 template <class T> std::unique_ptr<glfw<T>> glfw<T>::instance_ = nullptr;
 template <class T> std::unordered_map<int, int> glfw<T>::key_to_scancode = {};
 
-} // namespace jage::test::fakes::input::platforms
+} // namespace jage::engine::test::fakes::input::platforms

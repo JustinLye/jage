@@ -1,21 +1,21 @@
 #pragma once
 
-#include <jage/input/event.hpp>
-#include <jage/input/keyboard/action.hpp>
-#include <jage/input/keyboard/events/key_press.hpp>
-#include <jage/input/keyboard/key.hpp>
-#include <jage/input/keyboard/scancode.hpp>
-#include <jage/input/mouse/action.hpp>
-#include <jage/input/mouse/button.hpp>
-#include <jage/input/mouse/events/click.hpp>
-#include <jage/input/mouse/events/cursor/motion.hpp>
-#include <jage/input/mouse/events/cursor/position.hpp>
-#include <jage/input/mouse/events/horizontal_scroll.hpp>
-#include <jage/input/mouse/events/vertical_scroll.hpp>
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/input/keyboard/action.hpp>
+#include <jage/engine/input/keyboard/events/key_press.hpp>
+#include <jage/engine/input/keyboard/key.hpp>
+#include <jage/engine/input/keyboard/scancode.hpp>
+#include <jage/engine/input/mouse/action.hpp>
+#include <jage/engine/input/mouse/button.hpp>
+#include <jage/engine/input/mouse/events/click.hpp>
+#include <jage/engine/input/mouse/events/cursor/motion.hpp>
+#include <jage/engine/input/mouse/events/cursor/position.hpp>
+#include <jage/engine/input/mouse/events/horizontal_scroll.hpp>
+#include <jage/engine/input/mouse/events/vertical_scroll.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
 
-#include <jage/ext/internal/overloaded.hpp>
+#include <jage/engine/ext/internal/overloaded.hpp>
 
 #include <chrono>
 #include <fmt/chrono.h>
@@ -24,59 +24,59 @@
 #include <string_view>
 
 template <>
-struct fmt::formatter<jage::input::keyboard::key>
+struct fmt::formatter<jage::engine::input::keyboard::key>
     : fmt::formatter<std::string_view> {
-  auto format(const jage::input::keyboard::key &input_key,
+  auto format(const jage::engine::input::keyboard::key &input_key,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string_view>::format(
-        jage::input::keyboard::serialize(input_key), ctx);
+        jage::engine::input::keyboard::serialize(input_key), ctx);
   }
 };
 
 template <>
-struct fmt::formatter<jage::input::keyboard::action>
+struct fmt::formatter<jage::engine::input::keyboard::action>
     : fmt::formatter<std::string_view> {
-  auto format(const jage::input::keyboard::action &input_action,
+  auto format(const jage::engine::input::keyboard::action &input_action,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string_view>::format(
-        jage::input::keyboard::serialize(input_action), ctx);
+        jage::engine::input::keyboard::serialize(input_action), ctx);
   }
 };
 
 template <>
-struct fmt::formatter<jage::input::keyboard::scancode>
+struct fmt::formatter<jage::engine::input::keyboard::scancode>
     : fmt::formatter<std::string_view> {
-  auto format(const jage::input::keyboard::scancode &input_scancode,
+  auto format(const jage::engine::input::keyboard::scancode &input_scancode,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string_view>::format(
-        jage::input::keyboard::serialize(input_scancode), ctx);
+        jage::engine::input::keyboard::serialize(input_scancode), ctx);
   }
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::button>
+struct fmt::formatter<jage::engine::input::mouse::button>
     : fmt::formatter<std::string_view> {
-  auto format(const jage::input::mouse::button &input_button,
+  auto format(const jage::engine::input::mouse::button &input_button,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string_view>::format(
-        jage::input::mouse::serialize(input_button), ctx);
+        jage::engine::input::mouse::serialize(input_button), ctx);
   }
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::action>
+struct fmt::formatter<jage::engine::input::mouse::action>
     : fmt::formatter<std::string_view> {
-  auto format(const jage::input::mouse::action &input_action,
+  auto format(const jage::engine::input::mouse::action &input_action,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string_view>::format(
-        jage::input::mouse::serialize(input_action), ctx);
+        jage::engine::input::mouse::serialize(input_action), ctx);
   }
 };
 
 template <>
-struct fmt::formatter<jage::time::durations::nanoseconds>
+struct fmt::formatter<jage::engine::time::durations::nanoseconds>
     : fmt::formatter<std::string> {
-  auto format(const jage::time::durations::nanoseconds &input_timestamp,
+  auto format(const jage::engine::time::durations::nanoseconds &input_timestamp,
               fmt::format_context &ctx) const {
     auto timepoint = std::chrono::system_clock::time_point{
         std::chrono::duration_cast<std::chrono::system_clock::duration>(
@@ -107,9 +107,9 @@ struct fmt::formatter<std::chrono::nanoseconds> : fmt::formatter<std::string> {
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::events::click>
+struct fmt::formatter<jage::engine::input::mouse::events::click>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::mouse::events::click &input_event,
+  auto format(const jage::engine::input::mouse::events::click &input_event,
               fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("mouse-click": {{
       "button": {},
@@ -124,10 +124,11 @@ struct fmt::formatter<jage::input::mouse::events::click>
 };
 
 template <>
-struct fmt::formatter<jage::input::keyboard::events::key_press>
+struct fmt::formatter<jage::engine::input::keyboard::events::key_press>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::keyboard::events::key_press &input_event,
-              fmt::format_context &ctx) const {
+  auto
+  format(const jage::engine::input::keyboard::events::key_press &input_event,
+         fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("key-press": {{
       "key": {},
       "scancode": {},
@@ -143,10 +144,11 @@ struct fmt::formatter<jage::input::keyboard::events::key_press>
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::events::cursor::position>
+struct fmt::formatter<jage::engine::input::mouse::events::cursor::position>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::mouse::events::cursor::position &input_event,
-              fmt::format_context &ctx) const {
+  auto format(
+      const jage::engine::input::mouse::events::cursor::position &input_event,
+      fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("cursor-position": {{
       "x": {},
       "y": {}
@@ -158,10 +160,11 @@ struct fmt::formatter<jage::input::mouse::events::cursor::position>
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::events::cursor::motion>
+struct fmt::formatter<jage::engine::input::mouse::events::cursor::motion>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::mouse::events::cursor::motion &input_event,
-              fmt::format_context &ctx) const {
+  auto
+  format(const jage::engine::input::mouse::events::cursor::motion &input_event,
+         fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("cursor-motion": {{
       "delta_x": {},
       "delta_y": {}
@@ -174,10 +177,11 @@ struct fmt::formatter<jage::input::mouse::events::cursor::motion>
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::events::horizontal_scroll>
+struct fmt::formatter<jage::engine::input::mouse::events::horizontal_scroll>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::mouse::events::horizontal_scroll &input_event,
-              fmt::format_context &ctx) const {
+  auto format(
+      const jage::engine::input::mouse::events::horizontal_scroll &input_event,
+      fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("horizontal-scroll": {{
       "offset": {}
   }})";
@@ -187,10 +191,11 @@ struct fmt::formatter<jage::input::mouse::events::horizontal_scroll>
 };
 
 template <>
-struct fmt::formatter<jage::input::mouse::events::vertical_scroll>
+struct fmt::formatter<jage::engine::input::mouse::events::vertical_scroll>
     : fmt::formatter<std::string> {
-  auto format(const jage::input::mouse::events::vertical_scroll &input_event,
-              fmt::format_context &ctx) const {
+  auto
+  format(const jage::engine::input::mouse::events::vertical_scroll &input_event,
+         fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("vertical-scroll": {{
       "offset": {}
   }})";
@@ -200,13 +205,11 @@ struct fmt::formatter<jage::input::mouse::events::vertical_scroll>
 };
 
 template <>
-struct fmt::formatter<
-    jage::time::events::snapshot<jage::time::durations::nanoseconds>>
-    : fmt::formatter<std::string> {
-  auto
-  format(const jage::time::events::snapshot<jage::time::durations::nanoseconds>
-             &input_event,
-         fmt::format_context &ctx) const {
+struct fmt::formatter<jage::engine::time::events::snapshot<
+    jage::engine::time::durations::nanoseconds>> : fmt::formatter<std::string> {
+  auto format(const jage::engine::time::events::snapshot<
+                  jage::engine::time::durations::nanoseconds> &input_event,
+              fmt::format_context &ctx) const {
     static constexpr auto template_text = R"(
 "frame": {{
   "wall-time": {},
@@ -232,15 +235,15 @@ struct fmt::formatter<
 };
 
 template <>
-struct fmt::formatter<
-    jage::input::event<jage::time::durations::nanoseconds>::payload_type>
+struct fmt::formatter<jage::engine::input::event<
+    jage::engine::time::durations::nanoseconds>::payload_type>
     : fmt::formatter<std::string> {
-  auto format(
-      const jage::input::event<jage::time::durations::nanoseconds>::payload_type
-          &input_event,
-      fmt::format_context &ctx) const {
+  auto format(const jage::engine::input::event<
+                  jage::engine::time::durations::nanoseconds>::payload_type
+                  &input_event,
+              fmt::format_context &ctx) const {
     return fmt::formatter<std::string>::format(
-        std::visit(jage::ext::internal::overloaded{
+        std::visit(jage::engine::ext::internal::overloaded{
                        [&]<class T>(const T &payload) -> std::string
                          requires fmt::is_formattable<T>::value
                        { return fmt::format("{}", payload); },
@@ -254,11 +257,12 @@ struct fmt::formatter<
 };
 
 template <>
-struct fmt::formatter<jage::input::event<jage::time::durations::nanoseconds>>
+struct fmt::formatter<
+    jage::engine::input::event<jage::engine::time::durations::nanoseconds>>
     : fmt::formatter<std::string> {
-  auto format(
-      const jage::input::event<jage::time::durations::nanoseconds> &input_event,
-      fmt::format_context &ctx) const {
+  auto format(const jage::engine::input::event<
+                  jage::engine::time::durations::nanoseconds> &input_event,
+              fmt::format_context &ctx) const {
     static constexpr auto template_text = R"("input-event": {{
     "wall-time": {},
     "timestamp": {},

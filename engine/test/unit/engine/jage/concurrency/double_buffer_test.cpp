@@ -1,8 +1,7 @@
-#include <jage/concurrency/double_buffer.hpp>
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/time/durations.hpp>
-
-#include <jage/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/concurrency/double_buffer.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -10,9 +9,9 @@
 #include <cstddef>
 #include <cstdint>
 
-using jage::concurrency::double_buffer;
-using jage::memory::cacheline_size;
-using jage::test::mocks::concurrency::atomic;
+using jage::engine::concurrency::double_buffer;
+using jage::engine::memory::cacheline_size;
+using jage::engine::test::mocks::concurrency::atomic;
 
 using one_byte_over_cache_line = std::array<std::byte, cacheline_size + 1UZ>;
 using equal_to_cache_line = std::array<std::byte, cacheline_size>;

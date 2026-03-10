@@ -1,16 +1,15 @@
-#include <jage/concurrency/double_buffer.hpp>
+#include <jage/engine/concurrency/double_buffer.hpp>
+#include <jage/engine/test/fakes/concurrency/atomic.hpp>
 
-#include <jage/concurrency/internal/concepts/buffer.hpp>
-
-#include <jage/test/fakes/concurrency/atomic.hpp>
+#include <jage/engine/concurrency/internal/concepts/buffer.hpp>
 
 #include <gtest/gtest.h>
 
 struct foo {};
 
-using jage::concurrency::double_buffer;
-using jage::concurrency::internal::concepts::buffer;
-using jage::test::fakes::concurrency::atomic;
+using jage::engine::concurrency::double_buffer;
+using jage::engine::concurrency::internal::concepts::buffer;
+using jage::engine::test::fakes::concurrency::atomic;
 
 TEST(internal_buffer_concept, Accept_double_buffer) {
   EXPECT_TRUE((buffer<double_buffer<foo, atomic>>));

@@ -1,16 +1,16 @@
 #pragma once
 
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/time/events/snapshot.hpp>
-#include <jage/time/hertz.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
+#include <jage/engine/time/hertz.hpp>
 
-#include <jage/time/internal/concepts/real_number_time_source.hpp>
+#include <jage/engine/time/internal/concepts/real_number_time_source.hpp>
 
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
 
-namespace jage::time::internal {
+namespace jage::engine::time::internal {
 
 template <internal::concepts::real_number_time_source TTimeSource>
   requires(TTimeSource::is_steady)
@@ -25,8 +25,8 @@ class clock {
   std::uint64_t elapsed_ticks_{};
   double time_scale_{1.0};
 
-  [[nodiscard]] auto ticks(const duration_ current_time) const
-      -> std::uint64_t {
+  [[nodiscard]] auto
+  ticks(const duration_ current_time) const -> std::uint64_t {
     const auto accumulated_time = current_time - elapsed_time_;
     return static_cast<std::uint64_t>(
                std::floor(accumulated_time.count() / tick_duration_.count())) +
@@ -52,8 +52,8 @@ public:
     return duration_type{ticks() * tick_duration_.count()};
   }
 
-  [[nodiscard]] constexpr auto tick_duration() const noexcept
-      -> const duration_type & {
+  [[nodiscard]] constexpr auto
+  tick_duration() const noexcept -> const duration_type & {
     return tick_duration_;
   }
 
@@ -88,4 +88,4 @@ public:
   }
 };
 
-} // namespace jage::time::internal
+} // namespace jage::engine::time::internal

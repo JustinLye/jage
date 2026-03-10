@@ -1,4 +1,4 @@
-#include <jage/input/mouse/action.hpp>
+#include <jage/engine/input/mouse/action.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-using jage::input::mouse::action;
-using jage::input::mouse::serialize;
+using jage::engine::input::mouse::action;
+using jage::engine::input::mouse::serialize;
 using test_parameter_type = std::pair<action, std::string>;
 
 struct input_mouse_action_serialize_test

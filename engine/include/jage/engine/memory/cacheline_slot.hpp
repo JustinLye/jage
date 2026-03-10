@@ -1,13 +1,13 @@
 #pragma once
 
-#include <jage/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
 
 #include <array>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
 
-namespace jage::memory {
+namespace jage::engine::memory {
 
 template <class TUnderlyingValue>
 class alignas(cacheline_size) cacheline_slot final : public TUnderlyingValue {
@@ -94,4 +94,4 @@ cacheline_slot(TUnderlyingValue &) -> cacheline_slot<TUnderlyingValue>;
 template <class TUnderlyingValue>
 cacheline_slot(TUnderlyingValue &&) -> cacheline_slot<TUnderlyingValue>;
 
-} // namespace jage::memory
+} // namespace jage::engine::memory

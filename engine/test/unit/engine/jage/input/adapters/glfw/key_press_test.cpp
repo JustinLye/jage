@@ -1,27 +1,27 @@
-#include <jage/external/glfw.hpp>
-#include <jage/input/adapters/glfw.hpp>
-#include <jage/input/event.hpp>
-#include <jage/input/keyboard/events/key_press.hpp>
-#include <jage/time/durations.hpp>
-
-#include <jage/test/fakes/input/context/glfw.hpp>
-#include <jage/test/fakes/input/platforms/glfw.hpp>
+#include <jage/engine/external/glfw.hpp>
+#include <jage/engine/input/adapters/glfw.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/input/keyboard/events/key_press.hpp>
+#include <jage/engine/test/fakes/input/context/glfw.hpp>
+#include <jage/engine/test/fakes/input/platforms/glfw.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <gtest/gtest.h>
 
 #include <array>
 #include <variant>
 
-namespace context = jage::test::fakes::input::context;
-namespace platforms = jage::test::fakes::input::platforms;
-namespace keyboard = jage::input::keyboard;
-namespace durations = jage::time::durations;
-namespace adapters = jage::input::adapters;
-using jage::input::modifier;
+namespace context = jage::engine::test::fakes::input::context;
+namespace platforms = jage::engine::test::fakes::input::platforms;
+namespace keyboard = jage::engine::input::keyboard;
+namespace durations = jage::engine::time::durations;
+namespace adapters = jage::engine::input::adapters;
+using jage::engine::input::modifier;
 
 using keyboard_event = keyboard::events::key_press;
-using context_type = context::glfw<durations::nanoseconds,
-                                   jage::input::event<durations::nanoseconds>>;
+using context_type =
+    context::glfw<durations::nanoseconds,
+                  jage::engine::input::event<durations::nanoseconds>>;
 using platform_type = platforms::glfw<context_type>;
 using adapter_type = adapters::glfw<platform_type>;
 
@@ -52,7 +52,8 @@ TEST_F(glfw_adapter,
                            platform_type::context_type::duration_type{});
   platform.trigger_key_callback(337, 0x05, GLFW_PRESS, 0);
   ASSERT_FALSE(std::empty(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   const auto event = std::get<keyboard_event>(context.buffer.front().payload);
   EXPECT_EQ(keyboard::key::unidentified, event.key);
   EXPECT_EQ(keyboard::scancode::unidentified, event.scancode);
@@ -67,7 +68,8 @@ TEST_F(glfw_adapter,
   platform.trigger_key_callback(GLFW_KEY_UNKNOWN, 0x43, GLFW_PRESS, 0);
 
   ASSERT_FALSE(std::empty(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   {
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_EQ(keyboard::key::escape, event.key);
@@ -75,7 +77,8 @@ TEST_F(glfw_adapter,
   }
   context.buffer.pop_front();
   ASSERT_FALSE(std::empty(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   {
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_EQ(keyboard::key::unidentified, event.key);
@@ -90,17 +93,20 @@ TEST_F(glfw_adapter, should_map_action_appropriately) {
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS, 0);
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_REPEAT, 0);
   ASSERT_EQ(3, std::size(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   {
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_EQ(keyboard::action::release, event.action);
   }
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.at(1).payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.at(1).payload));
   {
     const auto event = std::get<keyboard_event>(context.buffer.at(1).payload);
     EXPECT_EQ(keyboard::action::press, event.action);
   }
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.back().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.back().payload));
   {
     const auto event = std::get<keyboard_event>(context.buffer.back().payload);
     EXPECT_EQ(keyboard::action::repeat, event.action);
@@ -114,7 +120,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_SHIFT);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::left_shift))))
@@ -128,7 +135,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_ALT);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::left_alt))))
@@ -142,7 +150,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_CONTROL);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::left_control))))
@@ -156,7 +165,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_SUPER);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::left_gui))))
@@ -170,7 +180,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_CAPS_LOCK);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::caps_lock))))
@@ -181,7 +192,8 @@ TEST_F(glfw_adapter, should_map_modifiers) {
                                 GLFW_MOD_NUM_LOCK);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
     const auto event = std::get<keyboard_event>(context.buffer.front().payload);
     EXPECT_TRUE(event.modifiers.test(
         static_cast<std::size_t>(std::to_underlying(modifier::num_lock))))
@@ -195,15 +207,17 @@ TEST_F(glfw_adapter, should_set_timestamp) {
             platform.get_seconds_since_init());
   adapter_type::initialize(nullptr, platform,
                            context_type::duration_type{42e+9});
-  EXPECT_EQ(jage::time::cast<platform_type::duration_type>(
+  EXPECT_EQ(jage::engine::time::cast<platform_type::duration_type>(
                 context_type::duration_type{42e+9}),
             platform.get_seconds_since_init());
   platform.trigger_key_callback(GLFW_KEY_ESCAPE, 0x04, GLFW_PRESS,
                                 GLFW_MOD_SHIFT);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
-    EXPECT_EQ(context_type::duration_type{42e+9}, context.buffer.front().timestamp);
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    EXPECT_EQ(context_type::duration_type{42e+9},
+              context.buffer.front().timestamp);
   }
   context.buffer.clear();
   platform.set_seconds_since_init(context_type::duration_type{99e+9});
@@ -211,8 +225,10 @@ TEST_F(glfw_adapter, should_set_timestamp) {
                                 GLFW_MOD_SHIFT);
   {
     ASSERT_FALSE(std::empty(context.buffer));
-    ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
-    EXPECT_EQ(context_type::duration_type{99e+9}, context.buffer.front().timestamp);
+    ASSERT_TRUE(
+        std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+    EXPECT_EQ(context_type::duration_type{99e+9},
+              context.buffer.front().timestamp);
   }
 }
 
@@ -222,22 +238,23 @@ TEST_F(glfw_adapter, should_map_unknown_to_unidentified) {
             platform.get_seconds_since_init());
   adapter_type::initialize(nullptr, platform,
                            context_type::duration_type{42e+9});
-  EXPECT_EQ(jage::time::cast<platform_type::duration_type>(
+  EXPECT_EQ(jage::engine::time::cast<platform_type::duration_type>(
                 context_type::duration_type{42e+9}),
             platform.get_seconds_since_init());
   platform.trigger_key_callback(GLFW_KEY_UNKNOWN, 0x04, GLFW_PRESS,
                                 GLFW_MOD_SHIFT);
   ASSERT_FALSE(std::empty(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   const auto event = std::get<keyboard_event>(context.buffer.front().payload);
-  EXPECT_EQ(jage::input::keyboard::key::unidentified, event.key);
+  EXPECT_EQ(jage::engine::input::keyboard::key::unidentified, event.key);
 }
 
 struct key_param {
   int glfw_key;
   int os_scancode;
-  jage::input::keyboard::key expected_key;
-  jage::input::keyboard::scancode expected_scancode;
+  jage::engine::input::keyboard::key expected_key;
+  jage::engine::input::keyboard::scancode expected_scancode;
 };
 
 constexpr auto
@@ -275,7 +292,8 @@ TEST_P(glfw_adapter_key_map, should_map_glfw_keys_and_scan_codes) {
       GetParam();
   platform.trigger_key_callback(glfw_key, os_scancode, GLFW_PRESS, 0);
   ASSERT_FALSE(std::empty(context.buffer));
-  ASSERT_TRUE(std::holds_alternative<keyboard_event>(context.buffer.front().payload));
+  ASSERT_TRUE(
+      std::holds_alternative<keyboard_event>(context.buffer.front().payload));
   const auto event = std::get<keyboard_event>(context.buffer.front().payload);
   EXPECT_EQ(expected_key, event.key);
   EXPECT_EQ(expected_scancode, event.scancode);

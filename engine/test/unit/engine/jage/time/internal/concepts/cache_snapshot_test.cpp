@@ -1,15 +1,16 @@
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
 
-#include <jage/time/internal/concepts/cache_snapshot.hpp>
+#include <jage/engine/time/internal/concepts/cache_snapshot.hpp>
 
 #include <gtest/gtest.h>
 
-using jage::time::durations::seconds;
-using jage::time::events::snapshot;
+using jage::engine::time::durations::seconds;
+using jage::engine::time::events::snapshot;
 
 template <typename T>
-concept snapshot_concept = jage::time::internal::concepts::cache_snapshot<T>;
+concept snapshot_concept =
+    jage::engine::time::internal::concepts::cache_snapshot<T>;
 
 TEST(cache_snapshot_concept, Accept_snapshot_with_real_number_duration) {
   EXPECT_TRUE(snapshot_concept<snapshot<seconds>>);
@@ -78,7 +79,7 @@ TEST(cache_snapshot_concept,
   struct wrong_duration_duration_typedef {
     seconds real_time{};
     std::uint64_t frame{};
-    using duration = jage::time::durations::nanoseconds;
+    using duration = jage::engine::time::durations::nanoseconds;
   };
   static_assert(std::is_trivially_copyable_v<wrong_duration_duration_typedef>);
   EXPECT_FALSE(snapshot_concept<wrong_duration_duration_typedef>);

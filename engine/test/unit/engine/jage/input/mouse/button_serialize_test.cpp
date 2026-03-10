@@ -1,4 +1,4 @@
-#include <jage/input/mouse/button.hpp>
+#include <jage/engine/input/mouse/button.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-using jage::input::mouse::button;
-using jage::input::mouse::serialize;
+using jage::engine::input::mouse::button;
+using jage::engine::input::mouse::serialize;
 using test_parameter_type = std::pair<button, std::string>;
 
 struct input_mouse_button_serialize_test

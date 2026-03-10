@@ -1,7 +1,7 @@
 #pragma once
-#include <jage/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
 
-#include <jage/concurrency/internal/concepts/buffer.hpp>
+#include <jage/engine/concurrency/internal/concepts/buffer.hpp>
 
 #include <array>
 #include <atomic>
@@ -11,7 +11,7 @@
 #include <stdexcept>
 #endif
 
-namespace jage::containers::spmc::internal {
+namespace jage::engine::containers::spmc::internal {
 template <class TEvent, std::size_t Capacity, template <class> class TAtomic,
           template <class, template <class> class> class TBuffer>
   requires(concurrency::internal::concepts::buffer<TBuffer<TEvent, TAtomic>>)
@@ -45,4 +45,4 @@ public:
     return buffer_[index].read();
   }
 };
-} // namespace jage::containers::spmc::internal
+} // namespace jage::engine::containers::spmc::internal

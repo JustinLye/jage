@@ -1,4 +1,4 @@
-#include <jage/input/keyboard/scancode.hpp>
+#include <jage/engine/input/keyboard/scancode.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-using jage::input::keyboard::scancode;
-using jage::input::keyboard::serialize;
+using jage::engine::input::keyboard::scancode;
+using jage::engine::input::keyboard::serialize;
 using test_parameter_type = std::pair<scancode, std::string>;
 
 struct input_keyboard_scancode_serialize_test

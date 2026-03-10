@@ -4,7 +4,7 @@
 #include <string_view>
 #include <utility>
 
-namespace jage::input::mouse {
+namespace jage::engine::input::mouse {
 enum class button : std::uint8_t {
   left,
   right,
@@ -19,8 +19,8 @@ enum class button : std::uint8_t {
 
 static constexpr auto button_count = std::to_underlying(button::last) + 1UZ;
 
-[[nodiscard]] constexpr auto serialize(const button input_button)
-    -> std::string_view {
+[[nodiscard]] constexpr auto
+serialize(const button input_button) -> std::string_view {
   switch (input_button) {
   case button::left:
     return "left";
@@ -42,4 +42,4 @@ static constexpr auto button_count = std::to_underlying(button::last) + 1UZ;
     return "unknown enumerator";
   }
 }
-} // namespace jage::input::mouse
+} // namespace jage::engine::input::mouse

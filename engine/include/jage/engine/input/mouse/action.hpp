@@ -3,14 +3,14 @@
 #include <cstdint>
 #include <string_view>
 
-namespace jage::input::mouse {
+namespace jage::engine::input::mouse {
 enum class action : std::uint8_t {
   release,
   press,
 };
 
-[[nodiscard]] constexpr auto serialize(const action input_action)
-    -> std::string_view {
+[[nodiscard]] constexpr auto
+serialize(const action input_action) -> std::string_view {
   switch (input_action) {
   case action::release:
     return "release";
@@ -20,4 +20,4 @@ enum class action : std::uint8_t {
     return "unknown enumerator";
   }
 }
-} // namespace jage::input::mouse
+} // namespace jage::engine::input::mouse

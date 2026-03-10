@@ -1,14 +1,14 @@
 #pragma once
 
-#include <jage/concurrency/double_buffer.hpp>
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
+#include <jage/engine/concurrency/double_buffer.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
 
-#include <jage/time/internal/snapshot_cache.hpp>
+#include <jage/engine/time/internal/snapshot_cache.hpp>
 
 #include <atomic>
 
-namespace jage::time {
+namespace jage::engine::time {
 template <std::size_t Capacity,
           internal::concepts::real_number_duration TTimeDuration>
 using snapshot_cache =

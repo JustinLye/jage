@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace jage::test::mocks::concurrency {
+namespace jage::engine::test::mocks::concurrency {
 
 template <class T> struct atomic {
   static std::shared_ptr<atomic> instance;
@@ -45,4 +45,4 @@ template <class T> struct atomic {
 
 template <class T> std::shared_ptr<atomic<T>> atomic<T>::instance = nullptr;
 
-} // namespace jage::test::mocks::concurrency
+} // namespace jage::engine::test::mocks::concurrency

@@ -1,13 +1,13 @@
 #pragma once
 
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/memory/cacheline_slot.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_slot.hpp>
 
 #include <array>
 #include <atomic>
 #include <cstdint>
 
-namespace jage::concurrency {
+namespace jage::engine::concurrency {
 template <class T, template <class> class TAtomic = std::atomic>
 class alignas(memory::cacheline_size) double_buffer {
   alignas(
@@ -30,4 +30,4 @@ public:
     index_.store(inactive_index, std::memory_order::release);
   }
 };
-} // namespace jage::concurrency
+} // namespace jage::engine::concurrency

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <jage/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
 
 #include <compare> // IWYU pragma: keep
 #include <cstdint>
 
-namespace jage::time::events {
+namespace jage::engine::time::events {
 template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   using duration = TDuration;
   TDuration real_time{};
@@ -17,4 +17,4 @@ template <class TDuration> struct alignas(memory::cacheline_size) snapshot {
   TDuration accumulated_time{};
   auto operator<=>(const snapshot &) const = default;
 };
-} // namespace jage::time::events
+} // namespace jage::engine::time::events

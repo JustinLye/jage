@@ -1,10 +1,10 @@
 #pragma once
 
-#include <jage/time/durations.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <chrono>
 
-namespace jage::time::internal {
+namespace jage::engine::time::internal {
 template <class TDuration> struct steady_clock {
   using rep = typename TDuration::rep;
   using period = typename TDuration::period;
@@ -20,4 +20,4 @@ template <class TDuration> struct steady_clock {
 };
 
 static_assert(std::chrono::is_clock_v<steady_clock<nanoseconds>>);
-} // namespace jage::time::internal
+} // namespace jage::engine::time::internal

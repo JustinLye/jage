@@ -1,17 +1,17 @@
-#include <jage/containers/spmc/ring_buffer.hpp>
-#include <jage/external/glfw.hpp>
-#include <jage/input/adapters/glfw.hpp>
-#include <jage/input/contexts/glfw.hpp>
-#include <jage/input/event.hpp>
-#include <jage/input/event_formatters.hpp>
-#include <jage/input/platforms/glfw.hpp>
-#include <jage/scheduled_action.hpp>
-#include <jage/time/clock.hpp>
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
-#include <jage/time/hertz.hpp>
+#include <jage/engine/containers/spmc/ring_buffer.hpp>
+#include <jage/engine/external/glfw.hpp>
+#include <jage/engine/input/adapters/glfw.hpp>
+#include <jage/engine/input/contexts/glfw.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/input/event_formatters.hpp>
+#include <jage/engine/input/platforms/glfw.hpp>
+#include <jage/engine/scheduled_action.hpp>
+#include <jage/engine/time/clock.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
+#include <jage/engine/time/hertz.hpp>
 
-#include <jage/ext/internal/overloaded.hpp>
+#include <jage/engine/ext/internal/overloaded.hpp>
 
 #include <chrono>
 #include <fmt/chrono.h>
@@ -20,18 +20,18 @@
 #include <string>
 #include <variant>
 
-using duration_type = jage::time::durations::nanoseconds;
+using duration_type = jage::engine::time::durations::nanoseconds;
 
 auto operator<<(std::ostream &out,
-                const typename jage::input::event<duration_type> &input_event)
-    -> std::ostream & {
+                const typename jage::engine::input::event<duration_type>
+                    &input_event) -> std::ostream & {
   out << fmt::format("{}\n", input_event);
   return out;
 }
 
 auto operator<<(std::ostream &out,
-                const jage::time::events::snapshot<duration_type> &snapshot)
-    -> std::ostream & {
+                const jage::engine::time::events::snapshot<duration_type>
+                    &snapshot) -> std::ostream & {
   out << fmt::format("{}", snapshot) << std::endl;
   return out;
 }
@@ -42,12 +42,14 @@ auto main(int, char *[]) -> int {
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
   };
 
-  using event_type = jage::input::event<duration_type>;
-  using buffer_type = jage::containers::spmc::ring_buffer<event_type, 256>;
+  using event_type = jage::engine::input::event<duration_type>;
+  using buffer_type =
+      jage::engine::containers::spmc::ring_buffer<event_type, 256>;
   auto event_buffer = buffer_type{};
 
-  using context_type = jage::input::contexts::glfw<duration_type, buffer_type>;
-  using platform_type = jage::input::platforms::glfw<context_type>;
+  using context_type =
+      jage::engine::input::contexts::glfw<duration_type, buffer_type>;
+  using platform_type = jage::engine::input::platforms::glfw<context_type>;
   auto context = context_type{event_buffer};
   auto platform = platform_type{};
 
@@ -64,11 +66,11 @@ auto main(int, char *[]) -> int {
 
   platform.set_window_user_pointer(window, static_cast<void *>(&context));
 
-  auto adapter = jage::input::adapters::glfw<platform_type>{};
-  using jage::time::operator""_Hz;
+  auto adapter = jage::engine::input::adapters::glfw<platform_type>{};
+  using jage::engine::time::operator""_Hz;
   auto refresh_rate = platform.refresh_rate();
-  auto clock =
-      jage::time::clock<duration_type>{jage::time::hertz{refresh_rate}};
+  auto clock = jage::engine::time::clock<duration_type>{
+      jage::engine::time::hertz{refresh_rate}};
   adapter.initialize(window, platform, clock.real_time());
 
   std::ignore =
@@ -88,7 +90,7 @@ auto main(int, char *[]) -> int {
   auto average_loop_count = 0.0;
   auto average_event_count = 0.0;
   auto max_event_count = 0.0;
-  auto output_snapshot = jage::scheduled_action{
+  auto output_snapshot = jage::engine::scheduled_action{
       1s, [&] {
         const auto current_snapshot = clock.snapshot();
         ++sample_count;
@@ -133,15 +135,16 @@ auto main(int, char *[]) -> int {
       ++read_index;
       std::cout << next_input_event;
       std::visit(
-          jage::ext::internal::overloaded{
+          jage::engine::ext::internal::overloaded{
               [](auto &&) -> void {},
-              [&](jage::input::keyboard::events::key_press key_press) -> void {
+              [&](jage::engine::input::keyboard::events::key_press key_press)
+                  -> void {
                 switch (key_press.scancode) {
-                case jage::input::keyboard::scancode::escape:
+                case jage::engine::input::keyboard::scancode::escape:
                   glfwSetWindowShouldClose(window, GLFW_TRUE);
                   break;
-                case jage::input::keyboard::scancode::l: {
-                  if (jage::input::keyboard::action::release !=
+                case jage::engine::input::keyboard::scancode::l: {
+                  if (jage::engine::input::keyboard::action::release !=
                       key_press.action) {
                     break;
                   }
@@ -156,8 +159,8 @@ auto main(int, char *[]) -> int {
                                             GLFW_CURSOR_DISABLED);
                   }
                 } break;
-                case jage::input::keyboard::scancode::p: {
-                  if (jage::input::keyboard::action::release !=
+                case jage::engine::input::keyboard::scancode::p: {
+                  if (jage::engine::input::keyboard::action::release !=
                       key_press.action) {
                     break;
                   }
@@ -172,8 +175,8 @@ auto main(int, char *[]) -> int {
                     output_snapshot.resume();
                   }
                 } break;
-                case jage::input::keyboard::scancode::v: {
-                  if (jage::input::keyboard::action::release !=
+                case jage::engine::input::keyboard::scancode::v: {
+                  if (jage::engine::input::keyboard::action::release !=
                       key_press.action) {
                     break;
                   }

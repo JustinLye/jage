@@ -1,7 +1,6 @@
-#include <jage/containers/spsc/queue.hpp>
-
-#include <jage/test/fakes/concurrency/atomic.hpp>
-#include <jage/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/containers/spsc/queue.hpp>
+#include <jage/engine/test/fakes/concurrency/atomic.hpp>
+#include <jage/engine/test/mocks/concurrency/atomic.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -18,7 +17,7 @@ struct bar {
   std::uint64_t value{42};
 };
 
-using jage::containers::spsc::queue;
+using jage::engine::containers::spsc::queue;
 
 TEST(queue_initialization, Return_capacity) {
   auto sut = queue<foo, 10UZ>{};
@@ -34,7 +33,7 @@ TEST(queue_initialization, Have_value_type) {
 }
 
 TEST(queue_happy_path, Push_and_pop_operations) {
-  using jage::test::fakes::concurrency::atomic;
+  using jage::engine::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
 
   ASSERT_TRUE(std::empty(sut));
@@ -84,13 +83,13 @@ TEST(queue_happy_path, Push_and_pop_operations) {
 
 TEST(queue_empty_queue,
      Return_default_constructed_element_when_front_is_called_on_empty_queue) {
-  using jage::test::fakes::concurrency::atomic;
+  using jage::engine::test::fakes::concurrency::atomic;
   auto sut = queue<bar, 3UZ, atomic>{};
   EXPECT_EQ(bar{}.value, sut.front().value);
 }
 
 TEST(queue_empty_queue, Not_move_head_after_pop_on_empty_queue) {
-  using jage::test::fakes::concurrency::atomic;
+  using jage::engine::test::fakes::concurrency::atomic;
   auto sut = queue<bar, 3UZ, atomic>{};
   ASSERT_TRUE(std::empty(sut));
   sut.pop();
@@ -99,7 +98,7 @@ TEST(queue_empty_queue, Not_move_head_after_pop_on_empty_queue) {
 }
 
 TEST(queue_full_queue, Roll_over_operations) {
-  using jage::test::fakes::concurrency::atomic;
+  using jage::engine::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
   sut.push(foo{
       .value = 1,
@@ -153,7 +152,7 @@ TEST(queue_full_queue, Roll_over_operations) {
 }
 
 TEST(queue_roll_over, Head_index_can_be_exchanged_on_first_try) {
-  using jage::test::fakes::concurrency::atomic;
+  using jage::engine::test::fakes::concurrency::atomic;
   auto sut = queue<foo, 3UZ, atomic>{};
   sut.push(foo{
       .value = 1,
@@ -191,9 +190,9 @@ TEST(queue_size_limits, Never_exceeds_capacity_with_racy_load_order) {
 
   InSequence in_seq{};
 
-  auto &mock =
-      *jage::test::mocks::concurrency::atomic<std::uint64_t>::get_instance();
-  auto sut = queue<foo, 3UZ, jage::test::mocks::concurrency::atomic>{};
+  auto &mock = *jage::engine::test::mocks::concurrency::atomic<
+      std::uint64_t>::get_instance();
+  auto sut = queue<foo, 3UZ, jage::engine::test::mocks::concurrency::atomic>{};
 
   EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
       .WillOnce(Return(0UZ));
@@ -201,7 +200,8 @@ TEST(queue_size_limits, Never_exceeds_capacity_with_racy_load_order) {
       .WillOnce(Return(5UZ));
   EXPECT_LE(std::size(sut), sut.capacity());
 
-  jage::test::mocks::concurrency::atomic<std::uint64_t>::instance.reset();
+  jage::engine::test::mocks::concurrency::atomic<std::uint64_t>::instance
+      .reset();
 }
 
 TEST(queue_roll_over_corner_cases, Compare_and_swap_loop_edge_cases) {
@@ -212,9 +212,9 @@ TEST(queue_roll_over_corner_cases, Compare_and_swap_loop_edge_cases) {
 
   ::testing::InSequence in_seq{};
 
-  auto &mock =
-      *jage::test::mocks::concurrency::atomic<std::uint64_t>::get_instance();
-  auto sut = queue<foo, 3UZ, jage::test::mocks::concurrency::atomic>{};
+  auto &mock = *jage::engine::test::mocks::concurrency::atomic<
+      std::uint64_t>::get_instance();
+  auto sut = queue<foo, 3UZ, jage::engine::test::mocks::concurrency::atomic>{};
 
   EXPECT_CALL(mock, mock_load(std::memory_order::acquire))
       .WillOnce(Return(0UZ))
@@ -297,5 +297,6 @@ TEST(queue_roll_over_corner_cases, Compare_and_swap_loop_edge_cases) {
     EXPECT_EQ(40, sut.front().value);
   }
 
-  jage::test::mocks::concurrency::atomic<std::uint64_t>::instance.reset();
+  jage::engine::test::mocks::concurrency::atomic<std::uint64_t>::instance
+      .reset();
 }

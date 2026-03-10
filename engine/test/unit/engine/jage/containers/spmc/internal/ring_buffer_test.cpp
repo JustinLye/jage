@@ -1,8 +1,8 @@
-#include <jage/containers/spmc/internal/ring_buffer.hpp>
+#include <jage/engine/test/fakes/concurrency/atomic.hpp>
+#include <jage/engine/test/fakes/concurrency/double_buffer.hpp>
+#include <jage/engine/test/mocks/concurrency/atomic.hpp>
 
-#include <jage/test/fakes/concurrency/atomic.hpp>
-#include <jage/test/fakes/concurrency/double_buffer.hpp>
-#include <jage/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/containers/spmc/internal/ring_buffer.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -13,15 +13,15 @@
 #include <exception>
 #include <utility>
 
-using jage::containers::spmc::internal::ring_buffer;
+using jage::engine::containers::spmc::internal::ring_buffer;
 
 namespace mocks {
-using jage::test::mocks::concurrency::atomic;
+using jage::engine::test::mocks::concurrency::atomic;
 }
 
 namespace fakes {
-using jage::test::fakes::concurrency::atomic;
-using jage::test::fakes::concurrency::double_buffer;
+using jage::engine::test::fakes::concurrency::atomic;
+using jage::engine::test::fakes::concurrency::double_buffer;
 } // namespace fakes
 
 struct foo {
@@ -31,10 +31,12 @@ struct foo {
 using testing::Return;
 
 TEST(spmc_internal_ring_buffer, Provide_capacity_access) {
-  EXPECT_EQ(10, (ring_buffer<foo, 10, fakes::atomic,
-                             fakes::double_buffer>::capacity()));
-  EXPECT_EQ(100, (ring_buffer<foo, 100, fakes::atomic,
-                              fakes::double_buffer>::capacity()));
+  EXPECT_EQ(
+      10,
+      (ring_buffer<foo, 10, fakes::atomic, fakes::double_buffer>::capacity()));
+  EXPECT_EQ(
+      100,
+      (ring_buffer<foo, 100, fakes::atomic, fakes::double_buffer>::capacity()));
 }
 
 TEST(spmc_internal_ring_buffer, Default_write_head_to_0) {

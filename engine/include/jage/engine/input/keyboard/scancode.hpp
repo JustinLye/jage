@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace jage::input::keyboard {
+namespace jage::engine::input::keyboard {
 enum class scancode : std::uint16_t {
   unidentified = 0,
   a = 0x04,
@@ -378,4 +378,4 @@ serialize(const scancode input_scancode) -> std::string_view {
   }
 }
 
-} // namespace jage::input::keyboard
+} // namespace jage::engine::input::keyboard

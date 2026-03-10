@@ -1,4 +1,4 @@
-#include <jage/input/event_formatters.hpp>
+#include <jage/engine/input/event_formatters.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-using namespace jage::input;
-using namespace jage::time;
+using namespace jage::engine::input;
+using namespace jage::engine::time;
 
 using keyboard_key_param = std::pair<keyboard::key, std::string>;
 

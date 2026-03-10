@@ -1,19 +1,19 @@
-#include <jage/input/contexts/glfw.hpp>
-#include <jage/input/event.hpp>
-#include <jage/input/mouse/events/vertical_scroll.hpp>
-#include <jage/time/durations.hpp>
-
-#include <jage/test/fakes/containers/event_sink.hpp>
+#include <jage/engine/input/contexts/glfw.hpp>
+#include <jage/engine/input/event.hpp>
+#include <jage/engine/input/mouse/events/vertical_scroll.hpp>
+#include <jage/engine/test/fakes/containers/event_sink.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <gtest/gtest.h>
 
 #include <variant>
 
-using duration_type = jage::time::durations::nanoseconds;
-using event_type = jage::input::event<duration_type>;
-using sink_type = jage::test::fakes::containers::event_sink<event_type>;
-using context_type = jage::input::contexts::glfw<duration_type, sink_type>;
-using scroll_type = jage::input::mouse::events::vertical_scroll;
+using duration_type = jage::engine::time::durations::nanoseconds;
+using event_type = jage::engine::input::event<duration_type>;
+using sink_type = jage::engine::test::fakes::containers::event_sink<event_type>;
+using context_type =
+    jage::engine::input::contexts::glfw<duration_type, sink_type>;
+using scroll_type = jage::engine::input::mouse::events::vertical_scroll;
 
 class glfw_context : public testing::Test {
 protected:

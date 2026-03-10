@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <utility>
 
-namespace jage::input {
+namespace jage::engine::input {
 enum class modifier : std::uint8_t {
   left_control,
   left_shift,
@@ -20,4 +20,4 @@ enum class modifier : std::uint8_t {
 
 static constexpr std::uint8_t modifier_count =
     std::to_underlying(modifier::last) + 1;
-} // namespace jage::input
+} // namespace jage::engine::input

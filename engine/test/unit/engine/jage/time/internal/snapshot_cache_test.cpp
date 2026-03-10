@@ -1,31 +1,30 @@
-#include <jage/time/cache_match_status.hpp>
-#include <jage/time/durations.hpp>
-#include <jage/time/events/snapshot.hpp>
+#include <jage/engine/test/fakes/concurrency/atomic.hpp>
+#include <jage/engine/test/fakes/concurrency/double_buffer.hpp>
+#include <jage/engine/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/time/cache_match_status.hpp>
+#include <jage/engine/time/durations.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
 
-#include <jage/time/internal/snapshot_cache.hpp>
-
-#include <jage/test/fakes/concurrency/atomic.hpp>
-#include <jage/test/fakes/concurrency/double_buffer.hpp>
-#include <jage/test/mocks/concurrency/atomic.hpp>
+#include <jage/engine/time/internal/snapshot_cache.hpp>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include <atomic>
 
-using jage::time::cache_match_status;
-using jage::time::durations::nanoseconds;
-using jage::time::durations::operator""_ns;
-using jage::time::events::snapshot;
-using jage::time::internal::snapshot_cache;
+using jage::engine::time::cache_match_status;
+using jage::engine::time::durations::nanoseconds;
+using jage::engine::time::durations::operator""_ns;
+using jage::engine::time::events::snapshot;
+using jage::engine::time::internal::snapshot_cache;
 
 namespace fakes {
-using jage::test::fakes::concurrency::atomic;
-using jage::test::fakes::concurrency::double_buffer;
+using jage::engine::test::fakes::concurrency::atomic;
+using jage::engine::test::fakes::concurrency::double_buffer;
 } // namespace fakes
 
 namespace mocks {
-using jage::test::mocks::concurrency::atomic;
+using jage::engine::test::mocks::concurrency::atomic;
 }
 
 TEST(snapshot_compile_time_queries, Have_capacity_query) {

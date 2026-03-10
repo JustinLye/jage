@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace jage::input::keyboard {
+namespace jage::engine::input::keyboard {
 enum class action : std::uint8_t {
   release,
   press,
@@ -24,4 +24,4 @@ serialize(const action input_action) -> std::string_view {
   }
 }
 
-} // namespace jage::input::keyboard
+} // namespace jage::engine::input::keyboard

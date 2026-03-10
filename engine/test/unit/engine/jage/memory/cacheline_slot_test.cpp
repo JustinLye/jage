@@ -1,7 +1,6 @@
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/memory/cacheline_slot.hpp>
-
-#include <jage/test/construction_tracker.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_slot.hpp>
+#include <jage/engine/test/construction_tracker.hpp>
 
 #include <gtest/gtest.h>
 
@@ -88,14 +87,14 @@ public:
   operator std::uint16_t() const { return over_; }
 };
 
-using jage::memory::cacheline_size;
-using jage::memory::cacheline_slot;
+using jage::engine::memory::cacheline_size;
+using jage::engine::memory::cacheline_slot;
 
 using one_byte_over_cacheline_size =
     std::array<std::byte, cacheline_size + 1UZ>;
 using equal_to_cacheline_size = std::array<std::byte, cacheline_size>;
 using two_times_cacheline_size = std::array<std::byte, cacheline_size * 2UZ>;
-using jage::test::construction_tracker;
+using jage::engine::test::construction_tracker;
 
 TEST(memory_cacheline_slot, Pad_to_fit_on_cacheline) {
   EXPECT_EQ(cacheline_size, sizeof(cacheline_slot<unaligned>));

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <jage/time/durations.hpp>
+#include <jage/engine/time/durations.hpp>
 
-#include <jage/time/internal/concepts/real_number_duration.hpp>
+#include <jage/engine/time/internal/concepts/real_number_duration.hpp>
 
 #include <concepts>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
 
-namespace jage::time {
+namespace jage::engine::time {
 class hertz {
   using value_type_ = std::uint16_t;
   value_type_ cycles_;
@@ -49,4 +49,4 @@ constexpr auto operator""_Hz(unsigned long long value) -> hertz {
   }
   return hertz(static_cast<hertz::value_type>(value));
 }
-} // namespace jage::time
+} // namespace jage::engine::time

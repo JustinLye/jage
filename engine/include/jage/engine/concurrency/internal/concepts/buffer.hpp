@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-namespace jage::concurrency::internal::concepts {
+namespace jage::engine::concurrency::internal::concepts {
 namespace detail {
 template <class...> static constexpr auto buffer = false;
 template <template <class, template <class> class> class TBuffer, class TEvent,
@@ -16,4 +16,4 @@ static constexpr auto buffer<TBuffer<TEvent, TAtomic>> =
 } // namespace detail
 template <class... Ts>
 concept buffer = detail::buffer<Ts...>;
-} // namespace jage::concurrency::internal::concepts
+} // namespace jage::engine::concurrency::internal::concepts

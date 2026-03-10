@@ -6,12 +6,12 @@ Cool, I'm thinking about the design of the snapshot cache. I describe the snapsh
 
 So one topic I have been mulling around is how will I store snapshots. Specifically, what kind of data structure should I use? I want the structure to be a fixed size ring. I think size to use can be determined overtime. We can increase it and lower it. We can put diagnostics around it to measure the performance of various sizes, but right now that doesn't matter. 
 
-I will need to peform look ups, specifically I will need to find a snapshot by real-timestamp and I will need to find a snapshot by frame index. I can use an offset when looking up by frame index, so complexity is O(1). To find a snapshot by real-timestamp, I think I will just do a linear search for name O(N). Perhaps later, with some diagnostic data in-hand, I can optimize the search; however, I want to focus on cache usage efficiency, so the underlying container will be a std::array. Speaking of underlying containers, I was thinking about the jage::containers::queue. I like that is is cache aligned and I like that it prevents false sharing. I'm thinking I might be able to either create something similar, like a jage::containers::array. The jage::containers::queue is really close to what I want, but it doesn't have an `operator[]` (or `at()`). Maybe, I could template the jage::containers::queue on a TContainer type, where jage::containers::array is the default. This way I'm reusing some code.
+I will need to peform look ups, specifically I will need to find a snapshot by real-timestamp and I will need to find a snapshot by frame index. I can use an offset when looking up by frame index, so complexity is O(1). To find a snapshot by real-timestamp, I think I will just do a linear search for name O(N). Perhaps later, with some diagnostic data in-hand, I can optimize the search; however, I want to focus on cache usage efficiency, so the underlying container will be a std::array. Speaking of underlying containers, I was thinking about the jage::engine::containers::queue. I like that is is cache aligned and I like that it prevents false sharing. I'm thinking I might be able to either create something similar, like a jage::engine::containers::array. The jage::engine::containers::queue is really close to what I want, but it doesn't have an `operator[]` (or `at()`). Maybe, I could template the jage::engine::containers::queue on a TContainer type, where jage::engine::containers::array is the default. This way I'm reusing some code.
 
 Anyway, back to the task at hand. I think the snapshot cache will consume snapshot events, which it will write to a private buffer data member. So the snapshot cache will need
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
 class snapshot_cache {
     type_tbd buffer;
     public:
@@ -23,14 +23,14 @@ class snapshot_cache {
 
 
 
-I'm using `type_tbd` because the type of the buffer is what we are discussing. Also, as a side note I should probably move `jage::time::internal::events::snapshot` to `jage::time::events::snapshot`.
+I'm using `type_tbd` because the type of the buffer is what we are discussing. Also, as a side note I should probably move `jage::engine::time::internal::events::snapshot` to `jage::engine::time::events::snapshot`.
 
-The snaphot cache will need to provide a query interface to allow lookup by frame index and lookup by real-timestamp. I don't have one yet, but assume `jage::time::concepts::duration` exists and cannot be confused with std::uint64_t, which is the type of the frame index (a.k.a. `snapshot::ticks`)
+The snaphot cache will need to provide a query interface to allow lookup by frame index and lookup by real-timestamp. I don't have one yet, but assume `jage::engine::time::concepts::duration` exists and cannot be confused with std::uint64_t, which is the type of the frame index (a.k.a. `snapshot::ticks`)
 
 Adding the query interface, the `snapshot_cache` might look something like this:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
 class snapshot_cache {
         type_tbd buffer;
     public:
@@ -44,7 +44,7 @@ class snapshot_cache {
 As discussed in the milestone, we might return additional information when performing a cache query. So, perhaps we have something like:
 
 ```cpp
-namespace jage {
+namespace jage::engine {
     enum class accuracy : std::uint8_t {
         exact,
         estimate
@@ -55,7 +55,7 @@ namespace jage {
 We would now return some pair or tuple from find:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
 class snapshot_cache {
         type_tbd buffer;
     public:
@@ -70,10 +70,10 @@ As of right now, I think that is the minimum interface we will need.
 
 So, a single producer will be calling `push`, but many other components on other threads will be calling `find`. `type_tbd` will need to be single producer-multiple consumer. I also want it to be lock-free (if possible), cache alignment aware, and prevent false sharing. 
 
-Now that I think about it, `jage::containers::queue`. If I use the queue, snapshot_cache would look like:
+Now that I think about it, `jage::engine::containers::queue`. If I use the queue, snapshot_cache would look like:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
     template<auto Size>
     class snapshot_cache {
         containers::queue<internal::events::snapshot, Size, std::atomic> buffer;
@@ -89,7 +89,7 @@ The snapshot_cache will be the only one writing to the buffer, but it is also th
 
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
     template<auto Size>
     class snapshot_cache {
         containers::queue<internal::events::snapshot, Size, std::atomic> buffer;
@@ -106,7 +106,7 @@ namespace jage::time {
 Just forwarding the push allows the head to be overwritten; however, we will cause the `buffer` to repeatedly perform its' CAS loop. We really need a structure that just has a next write position, but it would support an interface like.
 
 ```cpp
-namespace jage::containers {
+namespace jage::engine::containers {
     template<class T, std::size_t Capacity>
     class ring_buffer {
         public:
@@ -122,12 +122,12 @@ Perhaps the `operator[]` could return an `optional`, but I'm concerned about the
 
 A type like `ring_buffer` isn't really consumed; however, its' not well organaized. When it comes to storing snapshots, we would probably want to start a search with the oldest element in the container. Just looping through and calling `operator[]` or `at` from 0 to `capacity()` could lead to missing snapshots that may have been found if we started with the oldest.
 
-The `snapshot_cache` could use `jage::containers::queue`, but on construction, `snapshot_cache` would fill the queue with default `snapshots`, The it can `pop()` (a.k.a. evict) the oldest item, before pushing a new one on. This shoud avoid any contention because the queue will never be at capacity when a new snapshot is pushed.
+The `snapshot_cache` could use `jage::engine::containers::queue`, but on construction, `snapshot_cache` would fill the queue with default `snapshots`, The it can `pop()` (a.k.a. evict) the oldest item, before pushing a new one on. This shoud avoid any contention because the queue will never be at capacity when a new snapshot is pushed.
 
 The implementation might look something like this:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
     template<auto Size>
     class snapshot_cache {
         containers::queue<internal::events::snapshot, Size, std::atomic> buffer;
@@ -157,7 +157,7 @@ I know `queue` does not `push_range`, but I can add that.
 I'm also wondering if we need to atomically read from the buffer when we are doing `find`. If so, I think wrapping the snapshot in a double buffer would help; although, it would double the size of the snapshot cache. Anyway, `snapshot_cache` would look something like:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
     template<auto Size>
     class snapshot_cache {
         containers::queue<concurrency::double_buffer<internal::events::snapshot>, Size, std::atomic> buffer;
@@ -187,7 +187,7 @@ If I did you `double_buffer` I would need to add an assignment operator so that 
 One problem I see with using `queue` is there's no way of querying past the first element in the queue. I could add `queue::operator[]` and `queue::at` methods, but then its' not really a queue anymore. Perhaps I can create a new data structure like 
 
 ```cpp
-namespace jage::containers {
+namespace jage::engine::containers {
 
     template<class T, std::size_t Capacity, template<class> class TAtomic = std::atomic>
     class ring_buffer : public queue<T, Capacity, TAtomic> {
@@ -237,7 +237,7 @@ This is a **circular buffer with indexed reads**, not a queue.
 
 ## SPMC Lock-Free: Harder Than It Seems
 
-Your current `jage::containers::queue` is **SPSC** (single producer, single consumer). SPMC requires different synchronization guarantees.
+Your current `jage::engine::containers::queue` is **SPSC** (single producer, single consumer). SPMC requires different synchronization guarantees.
 
 **The Key Questions:**
 1. **Do readers need strongly consistent snapshots?**
@@ -274,7 +274,7 @@ Your current `jage::containers::queue` is **SPSC** (single producer, single cons
 Instead of extending `queue`, let's design a purpose-built `ring_buffer` for SPMC:
 
 ```cpp
-namespace jage::containers {
+namespace jage::engine::containers {
 
 template<class T, std::size_t Capacity>
 class ring_buffer {
@@ -337,7 +337,7 @@ public:
     }
 };
 
-} // namespace jage::containers
+} // namespace jage::engine::containers
 ```
 
 ---
@@ -365,7 +365,7 @@ public:
 With this `ring_buffer`, your `snapshot_cache` becomes clean:
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
 
 template<std::size_t Size>
 class snapshot_cache {
@@ -417,7 +417,7 @@ public:
     }
 };
 
-} // namespace jage::time
+} // namespace jage::engine::time
 ```
 
 ---
@@ -470,8 +470,8 @@ For **60-120 snapshots** (1-2 seconds at 60 FPS):
 ### **4. Moving `internal::events::snapshot` to `events::snapshot`?**
 
 **Yes, do it.** `internal` suggests "don't touch," but if snapshot cache (a public API) returns `snapshot`, it's part of your public interface. Either:
-- Move to `jage::time::events::snapshot` (clear namespace)
-- Or `jage::time::snapshot` if "event" is implied by context
+- Move to `jage::engine::time::events::snapshot` (clear namespace)
+- Or `jage::engine::time::snapshot` if "event" is implied by context
 
 ---
 
@@ -580,7 +580,7 @@ O(log N) vs O(N), but only matters if N > ~100 and profiling shows it's a bottle
 
 ## Next Steps (Recommended Implementation Order)
 
-1. **Create `jage::containers::ring_buffer`** with the SPMC design above
+1. **Create `jage::engine::containers::ring_buffer`** with the SPMC design above
 2. **Implement `snapshot_cache`** using the ring buffer
 3. **Write tests** for:
    - Single producer pushing snapshots

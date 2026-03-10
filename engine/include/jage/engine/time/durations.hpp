@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace jage::time::inline durations {
+namespace jage::engine::time::inline durations {
 
 using seconds = std::chrono::duration<double, std::ratio<1>>;
 using milliseconds = std::chrono::duration<double, std::milli>;
@@ -38,4 +38,4 @@ constexpr auto cast(const TFromDuration &duration) -> TToDuration {
   return std::chrono::duration_cast<TToDuration>(duration);
 }
 
-} // namespace jage::time::inline durations
+} // namespace jage::engine::time::inline durations

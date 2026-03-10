@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace jage {
+namespace jage::engine {
 enum class scheduled_action_status : std::uint8_t {
   paused,
   active,

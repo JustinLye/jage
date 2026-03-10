@@ -1,10 +1,10 @@
-#include <jage/input/internal/concepts/event_sink.hpp>
+#include <jage/engine/input/internal/concepts/event_sink.hpp>
 
 #include <gtest/gtest.h>
 
 struct event {};
 
-using jage::input::internal::concepts::event_sink;
+using jage::engine::input::internal::concepts::event_sink;
 
 struct valid_sink {
   auto push(event &&) -> void;

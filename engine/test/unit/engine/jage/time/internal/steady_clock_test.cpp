@@ -1,10 +1,11 @@
-#include <jage/time/durations.hpp>
+#include <jage/engine/time/durations.hpp>
 
-#include <jage/time/internal/steady_clock.hpp>
+#include <jage/engine/time/internal/steady_clock.hpp>
 
 #include <gtest/gtest.h>
 
-using steady_clock = jage::time::internal::steady_clock<jage::time::nanoseconds>;
+using steady_clock =
+    jage::engine::time::internal::steady_clock<jage::engine::time::nanoseconds>;
 
 TEST(steady_clock_now, Return_time_point_with_correct_clock_type) {
   const auto time_point = steady_clock::now();

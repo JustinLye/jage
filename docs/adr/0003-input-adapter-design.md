@@ -95,7 +95,7 @@ Games receive input from multiple sources (keyboard, mouse, gamepad, network, AI
 - Consumer picks only what they need
 
 **Current Implementation Note:**
-The GLFW keyboard adapter (`jage::input::adapters::glfw<TPlatform>`) currently implements only the callback registration phase. It does not yet implement the full `input_adapter` concept (no `flush()`, `empty()`, or `capacity()` methods). The adapter:
+The GLFW keyboard adapter (`jage::engine::input::adapters::glfw<TPlatform>`) currently implements only the callback registration phase. It does not yet implement the full `input_adapter` concept (no `flush()`, `empty()`, or `capacity()` methods). The adapter:
 1. Registers a GLFW key callback via platform abstraction
 2. Maps GLFW key codes to `keyboard::key` (logical keys)
 3. Maps OS scancodes to `keyboard::scancode` (physical keys)
@@ -252,7 +252,7 @@ struct scroll_event {
 
 **Decision:** Store as `TDuration` (floating-point duration from `jage::time`).
 
-- `jage::time::nanoseconds` = `std::chrono::duration<double, std::nano>`
+- `jage::engine::time::nanoseconds` = `std::chrono::duration<double, std::nano>`
 - Platform providing microseconds → stored as nanoseconds (no precision loss)
 - Platform providing nanoseconds → stored directly
 - ~15-16 significant digits covers >100 days before sub-microsecond degradation
@@ -283,7 +283,7 @@ struct scroll_event {
 
 - Producer: Platform thread (or callback context) pushes events
 - Consumer: Game thread flushes events
-- Existing `jage::containers::spsc::queue` fits this model
+- Existing `jage::engine::containers::spsc::queue` fits this model
 
 #### Capacity
 
@@ -563,7 +563,7 @@ The actual implementation differs from the initial ADR in several ways:
 
 ### Type Naming
 
-1. **Namespace Organization:** Types live in `jage::input::keyboard` namespace
+1. **Namespace Organization:** Types live in `jage::engine::input::keyboard` namespace
    - `keyboard::event<TDuration>` instead of bare `key_event<TDuration>`
    - `keyboard::action` instead of `key_action`
    - `keyboard::key` instead of `key_code`

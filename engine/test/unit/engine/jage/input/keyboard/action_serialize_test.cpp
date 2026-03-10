@@ -1,4 +1,4 @@
-#include <jage/input/keyboard/action.hpp>
+#include <jage/engine/input/keyboard/action.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-using jage::input::keyboard::action;
-using jage::input::keyboard::serialize;
+using jage::engine::input::keyboard::action;
+using jage::engine::input::keyboard::serialize;
 using test_parameter_type = std::pair<action, std::string>;
 
 struct input_keyboard_action_serialize_test

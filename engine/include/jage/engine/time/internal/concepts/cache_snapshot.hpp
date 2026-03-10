@@ -1,11 +1,11 @@
 #pragma once
 
-#include <jage/time/internal/concepts/real_number_duration.hpp>
+#include <jage/engine/time/internal/concepts/real_number_duration.hpp>
 
 #include <concepts>
 #include <type_traits>
 
-namespace jage::time::internal::concepts {
+namespace jage::engine::time::internal::concepts {
 
 template <class TSnapshot>
 concept cache_snapshot = requires(TSnapshot s) {
@@ -17,4 +17,4 @@ concept cache_snapshot = requires(TSnapshot s) {
                         std::remove_cvref_t<decltype(s.real_time)>>;
 };
 
-} // namespace jage::time::internal::concepts
+} // namespace jage::engine::time::internal::concepts

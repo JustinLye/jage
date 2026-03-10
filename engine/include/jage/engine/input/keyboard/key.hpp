@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace jage::input::keyboard {
+namespace jage::engine::input::keyboard {
 enum class key : std::uint8_t {
   unidentified,
   spacebar,
@@ -380,4 +380,4 @@ serialize(const key input_key) -> std::string_view {
   }
 }
 
-} // namespace jage::input::keyboard
+} // namespace jage::engine::input::keyboard

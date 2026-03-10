@@ -1,14 +1,14 @@
 #pragma once
 
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/memory/cacheline_slot.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_slot.hpp>
 
 #include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>
 
-namespace jage::containers::spsc {
+namespace jage::engine::containers::spsc {
 template <class TEvent, std::size_t Capacity,
           template <class> class TAtomic = std::atomic>
 class alignas(memory::cacheline_size) queue {
@@ -62,4 +62,4 @@ public:
   }
 };
 
-} // namespace jage::containers::spsc
+} // namespace jage::engine::containers::spsc

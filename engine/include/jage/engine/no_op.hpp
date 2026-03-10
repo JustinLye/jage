@@ -1,5 +1,5 @@
 #pragma once
 
-namespace jage {
+namespace jage::engine {
 using no_op = decltype([] {});
 }

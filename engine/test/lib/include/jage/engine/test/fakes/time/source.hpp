@@ -1,10 +1,10 @@
 #pragma once
 
-#include <jage/time/durations.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <chrono>
 
-namespace jage::test::fakes::time {
+namespace jage::engine::test::fakes::time {
 template <class TDuration> struct source {
   using rep = typename TDuration::rep;
   using period = typename TDuration::period;
@@ -22,7 +22,7 @@ TDuration source<TDuration>::current_time = TDuration{};
 
 static_assert(
     std::chrono::is_clock_v<source<std::chrono::duration<double, std::nano>>>);
-static_assert(
-    std::chrono::is_clock_v<source<::jage::time::durations::nanoseconds>>);
+static_assert(std::chrono::is_clock_v<
+              source<::jage::engine::time::durations::nanoseconds>>);
 
-} // namespace jage::test::fakes::time
+} // namespace jage::engine::test::fakes::time

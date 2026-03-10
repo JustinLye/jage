@@ -1,18 +1,18 @@
 #pragma once
 
-#include <jage/concurrency/double_buffer.hpp>
-#include <jage/memory/cacheline_size.hpp>
-#include <jage/memory/cacheline_slot.hpp>
-#include <jage/time/cache_match_status.hpp>
+#include <jage/engine/concurrency/double_buffer.hpp>
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/memory/cacheline_slot.hpp>
+#include <jage/engine/time/cache_match_status.hpp>
 
-#include <jage/time/internal/concepts/cache_snapshot.hpp>
+#include <jage/engine/time/internal/concepts/cache_snapshot.hpp>
 
 #include <array>
 #include <atomic>
 #include <cstdint>
 #include <utility>
 
-namespace jage::time::internal {
+namespace jage::engine::time::internal {
 template <std::uint64_t Capacity, internal::concepts::cache_snapshot TSnapshot,
           template <class, template <class> class> class TBuffer,
           template <class> class TAtomic>
@@ -74,4 +74,4 @@ public:
     };
   }
 };
-} // namespace jage::time::internal
+} // namespace jage::engine::time::internal

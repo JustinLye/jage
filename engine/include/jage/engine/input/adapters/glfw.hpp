@@ -1,22 +1,22 @@
 #pragma once
-#include <jage/external/glfw.hpp>
-#include <jage/input/keyboard/action.hpp>
-#include <jage/input/keyboard/events/key_press.hpp>
-#include <jage/input/keyboard/key.hpp>
-#include <jage/input/keyboard/scancode.hpp>
-#include <jage/input/mouse/button.hpp>
-#include <jage/input/mouse/events/click.hpp>
-#include <jage/input/mouse/events/cursor/motion.hpp>
-#include <jage/input/mouse/events/cursor/position.hpp>
-#include <jage/input/mouse/events/horizontal_scroll.hpp>
-#include <jage/input/mouse/events/vertical_scroll.hpp>
-#include <jage/time/durations.hpp>
+#include <jage/engine/external/glfw.hpp>
+#include <jage/engine/input/keyboard/action.hpp>
+#include <jage/engine/input/keyboard/events/key_press.hpp>
+#include <jage/engine/input/keyboard/key.hpp>
+#include <jage/engine/input/keyboard/scancode.hpp>
+#include <jage/engine/input/mouse/button.hpp>
+#include <jage/engine/input/mouse/events/click.hpp>
+#include <jage/engine/input/mouse/events/cursor/motion.hpp>
+#include <jage/engine/input/mouse/events/cursor/position.hpp>
+#include <jage/engine/input/mouse/events/horizontal_scroll.hpp>
+#include <jage/engine/input/mouse/events/vertical_scroll.hpp>
+#include <jage/engine/time/durations.hpp>
 
 #include <array>
 #include <utility>
 #include <vector>
 
-namespace jage::input::adapters {
+namespace jage::engine::input::adapters {
 // TODO: Make this a concept
 template <class TPlatform> class glfw {
 
@@ -442,4 +442,4 @@ std::array<keyboard::key, GLFW_KEY_LAST + 1> glfw<TPlatform>::logical_keys_ =
     {};
 template <class TPlatform>
 std::vector<keyboard::scancode> glfw<TPlatform>::physical_keys_ = {};
-} // namespace jage::input::adapters
+} // namespace jage::engine::input::adapters

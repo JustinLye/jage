@@ -3,7 +3,7 @@
 #include <atomic>
 #include <concepts>
 
-namespace jage::test::fakes::concurrency {
+namespace jage::engine::test::fakes::concurrency {
 
 template <class TValue> struct atomic {
   TValue value{};
@@ -32,4 +32,4 @@ template <class TValue> struct atomic {
     return ++value;
   }
 };
-} // namespace jage::test::fakes::concurrency
+} // namespace jage::engine::test::fakes::concurrency

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <jage/no_op.hpp>
-#include <jage/scheduled_action_status.hpp>
+#include <jage/engine/no_op.hpp>
+#include <jage/engine/scheduled_action_status.hpp>
 
 #include <chrono>
 #include <utility>
 
-namespace jage {
+namespace jage::engine {
 template <class TAction = no_op> class scheduled_action {
   scheduled_action_status scheduled_action_status_ =
       scheduled_action_status::active;
@@ -87,4 +87,4 @@ template <class TAction>
 scheduled_action(const std::chrono::nanoseconds,
                  TAction &&) -> scheduled_action<TAction>;
 
-} // namespace jage
+} // namespace jage::engine

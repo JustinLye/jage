@@ -1,4 +1,4 @@
-#include <jage/input/keyboard/key.hpp>
+#include <jage/engine/input/keyboard/key.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-using jage::input::keyboard::key;
-using jage::input::keyboard::serialize;
+using jage::engine::input::keyboard::key;
+using jage::engine::input::keyboard::serialize;
 using test_parameter_type = std::pair<key, std::string>;
 
 struct input_keyboard_key_serialize_test
@@ -23,8 +23,8 @@ TEST_P(input_keyboard_key_serialize_test,
   EXPECT_EQ(serialize(input), expected);
 }
 
-static constexpr auto unknown_key_enumerator_0 = static_cast<key>(
-    std::numeric_limits<std::underlying_type_t<key>>::max());
+static constexpr auto unknown_key_enumerator_0 =
+    static_cast<key>(std::numeric_limits<std::underlying_type_t<key>>::max());
 static constexpr auto unknown_key_enumerator_1 = static_cast<key>(
     std::numeric_limits<std::underlying_type_t<key>>::max() - 1);
 
