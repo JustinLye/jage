@@ -1,0 +1,91 @@
+#pragma once
+
+#include <jage/engine/memory/cacheline_size.hpp>
+#include <jage/engine/time/events/snapshot.hpp>
+#include <jage/engine/time/hertz.hpp>
+
+#include <jage/engine/time/internal/concepts/real_number_time_source.hpp>
+
+#include <cmath>
+#include <cstdint>
+#include <stdexcept>
+
+namespace jage::engine::time::internal {
+
+template <internal::concepts::real_number_time_source TTimeSource>
+  requires(TTimeSource::is_steady)
+class clock {
+  using duration_ = typename TTimeSource::duration;
+  using snapshot_ = events::snapshot<duration_>;
+  static_assert(memory::cacheline_size >= sizeof(snapshot_));
+  static_assert(alignof(snapshot_) == memory::cacheline_size);
+  static_assert(sizeof(snapshot_) % memory::cacheline_size == 0);
+  duration_ elapsed_time_{};
+  duration_ tick_duration_{};
+  std::uint64_t elapsed_ticks_{};
+  double time_scale_{1.0};
+
+  [[nodiscard]] auto
+  ticks(const duration_ current_time) const -> std::uint64_t {
+    const auto accumulated_time = current_time - elapsed_time_;
+    return static_cast<std::uint64_t>(
+               std::floor(accumulated_time.count() / tick_duration_.count())) +
+           elapsed_ticks_;
+  }
+
+public:
+  using duration_type = duration_;
+  using snapshot_type = snapshot_;
+
+  constexpr clock(const hertz &cycles)
+      : tick_duration_{static_cast<duration_type>(cycles)} {};
+
+  [[nodiscard]] auto real_time() const -> duration_type {
+    return TTimeSource::now().time_since_epoch();
+  }
+
+  [[nodiscard]] auto ticks() const -> std::uint64_t {
+    return ticks(real_time() * time_scale_);
+  }
+
+  [[nodiscard]] auto game_time() const -> duration_type {
+    return duration_type{ticks() * tick_duration_.count()};
+  }
+
+  [[nodiscard]] constexpr auto
+  tick_duration() const noexcept -> const duration_type & {
+    return tick_duration_;
+  }
+
+  auto set_time_scale(const double scale) -> void {
+    if (scale < 0.0) [[unlikely]] {
+      throw std::invalid_argument(
+          "Refusing to set time scale to a negative value.");
+    }
+    elapsed_ticks_ = ticks();
+    elapsed_time_ = real_time() * scale;
+
+    time_scale_ = scale;
+  }
+
+  [[nodiscard]] auto snapshot() const -> snapshot_type {
+    const auto current_real_time = real_time();
+    const auto scaled_real_time = current_real_time * time_scale_;
+    const auto accumulated_time = scaled_real_time - elapsed_time_;
+    const auto accumulated_ticks =
+        std::floor(accumulated_time / tick_duration_);
+    const auto current_ticks = ticks(scaled_real_time);
+    return {
+        .real_time = current_real_time,
+        .tick_duration = tick_duration_,
+        .time_scale = time_scale_,
+        .elapsed_time = elapsed_time_,
+        .elapsed_frames = elapsed_ticks_,
+        .frame = current_ticks,
+        .accumulated_time =
+            accumulated_time - accumulated_ticks * tick_duration_,
+    };
+  }
+};
+
+} // namespace jage::engine::time::internal

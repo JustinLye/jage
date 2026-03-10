@@ -61,7 +61,7 @@ Implement a **private sliding window buffer within `snapshot_cache`** with:
 - Private implementation (not extracted as general-purpose container)
 
 ```cpp
-namespace jage::time {
+namespace jage::engine::time {
 
 enum class match_status : std::uint8_t {
     matched,
@@ -87,7 +87,7 @@ public:
         -> std::pair<events::snapshot, match_status>;
 };
 
-} // namespace jage::time
+} // namespace jage::engine::time
 ```
 
 ---
@@ -96,7 +96,7 @@ public:
 
 ### 1. General-Purpose Container vs Private Implementation
 
-**Alternative A: Extract `jage::containers::sliding_window<T, Capacity>`**
+**Alternative A: Extract `jage::engine::containers::sliding_window<T, Capacity>`**
 
 Pros:
 - Reusable for frame timing, input sampling, audio buffers
@@ -106,7 +106,7 @@ Cons:
 - Premature abstraction (only one use case currently)
 - Would pay for unused generality (size tracking, partial fill support)
 
-**Alternative B: Extend `jage::containers::queue`**
+**Alternative B: Extend `jage::engine::containers::queue`**
 
 Pros:
 - Code reuse
@@ -515,7 +515,7 @@ Current choice: Document contract (simpler, no garbage data).
 
 ### When to Extract General Container
 
-Extract `jage::containers::sliding_window<T, Capacity>` when:
+Extract `jage::engine::containers::sliding_window<T, Capacity>` when:
 1. Second use case emerges (frame timing, input sampling, audio buffer)
 2. Interface requirements clear from multiple examples
 3. Commonalities outweigh differences

@@ -94,7 +94,7 @@ Each slot is a `concurrency::double_buffer<TEvent>`. Writer writes into one sub-
 ### Interface
 
 ```cpp
-namespace jage::containers::spmc {
+namespace jage::engine::containers::spmc {
 
 template <typename TEvent, std::size_t Capacity>
 class ring_buffer {
@@ -113,7 +113,7 @@ private:
     alignas(memory::cacheline_size) std::atomic<std::size_t> write_head_{0};
 };
 
-} // namespace jage::containers::spmc
+} // namespace jage::engine::containers::spmc
 ```
 
 **CRITICAL: Caller Responsibility for Index Bounds**

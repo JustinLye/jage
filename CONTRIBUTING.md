@@ -30,7 +30,7 @@ conan install . -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --b
 cmake --preset conan-build-linux-gcc-debug
 
 # Build
-cmake --build build --target run-all-jage-unit-tests
+cmake --build build --target run-all-jage-engine-unit-tests
 ```
 
 ### Windows (MSVC)
@@ -48,7 +48,7 @@ conan install . -pr:a profiles/windows -pr:a profiles/msvc -pr:a profiles/debug 
 cmake --preset conan-build-windows-msvc-debug
 
 # Build
-cmake --build build --target run-all-jage-unit-tests
+cmake --build build --target run-all-jage-engine-unit-tests
 ```
 
 ## Dev Containers (VS Code)
@@ -205,7 +205,7 @@ Discuss the design before writing code. This avoids wasted effort and ensures al
    - Follow SOLID principles, ensure swappable I/O
 
 4. **Verification Phase:**
-   - Run tests: `cmake --build build --target run-all-jage-unit-tests`
+   - Run tests: `cmake --build build --target run-all-jage-engine-unit-tests`
    - Check coverage: `cmake --build build --target coverage`
    - Verify 100% coverage for new code
 
@@ -309,7 +309,7 @@ No behavior changes.
 ### Running Tests
 ```bash
 # All tests
-cmake --build build --target run-all-jage-unit-tests
+cmake --build build --target run-all-jage-engine-unit-tests
 
 # Specific subsystem
 cmake --build build --target run-all-jage-input-unit-tests

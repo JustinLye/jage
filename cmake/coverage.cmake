@@ -21,15 +21,15 @@ function(add_coverage_target)
     return()
   endif()
 
-  if(NOT TARGET run-all-jage-unit-tests)
+  if(NOT TARGET run-all-jage-engine-unit-tests)
     message(
       FATAL_ERROR
-        "Coverage target requires run-all-jage-unit-tests to be defined.")
+        "Coverage target requires run-all-jage-engine-unit-tests to be defined.")
   endif()
 
   add_custom_target(
     coverage
-    DEPENDS run-all-jage-unit-tests
+    DEPENDS run-all-jage-engine-unit-tests
     COMMAND lcov --gcov-tool gcov-14 --capture --directory . --output-file coverage.info --ignore-errors mismatch
     COMMAND lcov --gcov-tool gcov-14 --remove coverage.info '/usr/*' '*/test/*' '*gmock*' '*include/fmt*' '*gtest*' --output-file coverage.info
     COMMAND genhtml coverage.info --output-directory coverage-report
