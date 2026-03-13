@@ -10,8 +10,7 @@
 #include <jage/engine/time/durations.hpp>
 #include <jage/engine/time/events/snapshot.hpp>
 #include <jage/engine/time/hertz.hpp>
-
-#include <jage/engine/ext/internal/overloaded.hpp>
+#include <jage/stdx/overloaded.hpp>
 
 #include <chrono>
 #include <fmt/chrono.h>
@@ -135,7 +134,7 @@ auto main(int, char *[]) -> int {
       ++read_index;
       std::cout << next_input_event;
       std::visit(
-          jage::engine::ext::internal::overloaded{
+          jage::stdx::overloaded{
               [](auto &&) -> void {},
               [&](jage::engine::input::keyboard::events::key_press key_press)
                   -> void {
