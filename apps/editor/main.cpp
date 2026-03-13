@@ -8,8 +8,7 @@
 #include <jage/engine/time/durations.hpp>
 #include <jage/engine/time/events/snapshot.hpp>
 #include <jage/engine/time/hertz.hpp>
-
-#include <jage/engine/ext/internal/overloaded.hpp>
+#include <jage/stdx/overloaded.hpp>
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -72,7 +71,7 @@ auto format_vertical_scroll(
 
 auto format_event(const event_type &ev) -> std::string {
   return std::visit(
-      jage::engine::ext::internal::overloaded{
+      jage::stdx::overloaded{
           [](const jage::engine::input::keyboard::events::key_press &e) {
             return format_keyboard_event(e);
           },
@@ -218,7 +217,7 @@ auto main(int, char *[]) -> int {
       auto next_event = event_buffer.read(read_index % event_buffer.capacity());
       ++read_index;
 
-      std::visit(jage::engine::ext::internal::overloaded{
+      std::visit(jage::stdx::overloaded{
                      [&](const jage::engine::input::keyboard::events::key_press
                              &key_press) -> void {
                        if (key_press.scancode ==

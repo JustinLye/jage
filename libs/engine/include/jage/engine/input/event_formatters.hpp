@@ -14,8 +14,7 @@
 #include <jage/engine/input/mouse/events/vertical_scroll.hpp>
 #include <jage/engine/time/durations.hpp>
 #include <jage/engine/time/events/snapshot.hpp>
-
-#include <jage/engine/ext/internal/overloaded.hpp>
+#include <jage/stdx/overloaded.hpp>
 
 #include <chrono>
 #include <fmt/chrono.h>
@@ -243,7 +242,7 @@ struct fmt::formatter<jage::engine::input::event<
                   &input_event,
               fmt::format_context &ctx) const {
     return fmt::formatter<std::string>::format(
-        std::visit(jage::engine::ext::internal::overloaded{
+        std::visit(jage::stdx::overloaded{
                        [&]<class T>(const T &payload) -> std::string
                          requires fmt::is_formattable<T>::value
                        { return fmt::format("{}", payload); },

@@ -3,7 +3,7 @@
 #include <cstdint> // IWYU pragma: keep
 #include <new>     // IWYU pragma: keep
 
-namespace jage::engine::ext::internal {
+namespace jage::stdx {
 static constexpr auto hardware_constructive_interference_size = 64UZ;
 static constexpr auto hardware_destructive_interference_size = 64UZ;
 #if defined(__cpp_lib_hardware_interference_size) and                          \
@@ -21,4 +21,4 @@ static_assert(hardware_destructive_interference_size ==
 #endif
 
 #endif
-} // namespace jage::engine::ext::internal
+} // namespace jage::stdx
