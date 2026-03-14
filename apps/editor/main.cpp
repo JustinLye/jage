@@ -2,6 +2,7 @@
 #include <jage/engine/input/adapters/glfw.hpp>
 #include <jage/engine/input/contexts/glfw.hpp>
 #include <jage/engine/input/event.hpp>
+#include <jage/engine/input/event_formatters.hpp>
 #include <jage/engine/input/platforms/glfw.hpp>
 #include <jage/engine/time/clock.hpp>
 #include <jage/engine/time/durations.hpp>
@@ -24,76 +25,6 @@
 using duration_type = jage::engine::time::durations::nanoseconds;
 using event_type = jage::engine::input::event<duration_type>;
 
-struct event_log_entry {
-  std::string text;
-};
-
-auto format_keyboard_event(
-    const jage::engine::input::keyboard::events::key_press &ev) -> std::string {
-  return fmt::format("[key] {} ({}) {} mods={}",
-                     jage::engine::input::keyboard::serialize(ev.key),
-                     jage::engine::input::keyboard::serialize(ev.scancode),
-                     jage::engine::input::keyboard::serialize(ev.action),
-                     ev.modifiers.to_string());
-}
-
-auto format_mouse_click(const jage::engine::input::mouse::events::click &ev)
-    -> std::string {
-  return fmt::format("[mouse] {} {} mods={}",
-                     jage::engine::input::mouse::serialize(ev.button),
-                     jage::engine::input::mouse::serialize(ev.action),
-                     ev.modifiers.to_string());
-}
-
-auto format_cursor_position(
-    const jage::engine::input::mouse::events::cursor::position &ev)
-    -> std::string {
-  return fmt::format("[cursor] pos ({:.1f}, {:.1f})", ev.x, ev.y);
-}
-
-auto format_cursor_motion(
-    const jage::engine::input::mouse::events::cursor::motion &ev)
-    -> std::string {
-  return fmt::format("[cursor] delta ({:.1f}, {:.1f})", ev.delta_x, ev.delta_y);
-}
-
-auto format_horizontal_scroll(
-    const jage::engine::input::mouse::events::horizontal_scroll &ev)
-    -> std::string {
-  return fmt::format("[scroll] horizontal {:.2f}", ev.offset);
-}
-
-auto format_vertical_scroll(
-    const jage::engine::input::mouse::events::vertical_scroll &ev)
-    -> std::string {
-  return fmt::format("[scroll] vertical {:.2f}", ev.offset);
-}
-
-auto format_event(const event_type &ev) -> std::string {
-  return std::visit(
-      jage::stdx::overloaded{
-          [](const jage::engine::input::keyboard::events::key_press &e) {
-            return format_keyboard_event(e);
-          },
-          [](const jage::engine::input::mouse::events::click &e) {
-            return format_mouse_click(e);
-          },
-          [](const jage::engine::input::mouse::events::cursor::position &e) {
-            return format_cursor_position(e);
-          },
-          [](const jage::engine::input::mouse::events::cursor::motion &e) {
-            return format_cursor_motion(e);
-          },
-          [](const jage::engine::input::mouse::events::horizontal_scroll &e) {
-            return format_horizontal_scroll(e);
-          },
-          [](const jage::engine::input::mouse::events::vertical_scroll &e) {
-            return format_vertical_scroll(e);
-          },
-      },
-      ev.payload);
-}
-
 auto draw_frame_stats_panel(
     const jage::engine::time::events::snapshot<duration_type> &snap) -> void {
   ImGui::Begin("Frame Stats");
@@ -107,7 +38,7 @@ auto draw_frame_stats_panel(
   ImGui::End();
 }
 
-auto draw_event_log_panel(const std::vector<event_log_entry> &log) -> void {
+auto draw_event_log_panel(const std::vector<std::string> &log) -> void {
   ImGui::Begin("Input Events");
   ImGui::Text("Events: %zu", log.size());
   ImGui::Separator();
@@ -115,7 +46,7 @@ auto draw_event_log_panel(const std::vector<event_log_entry> &log) -> void {
   if (ImGui::BeginChild("EventScroll", ImVec2(0, 0), ImGuiChildFlags_None,
                         ImGuiWindowFlags_HorizontalScrollbar)) {
     for (const auto &entry : log) {
-      ImGui::TextUnformatted(entry.text.c_str());
+      ImGui::TextUnformatted(entry.c_str());
     }
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
       ImGui::SetScrollHereY(1.0F);
@@ -196,7 +127,7 @@ auto main(int, char *[]) -> int {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 330");
 
-  auto event_log = std::vector<event_log_entry>{};
+  auto event_log = std::vector<std::string>{};
   static constexpr auto max_log_entries = 500UZ;
 
   auto read_index = 0UZ;
@@ -229,7 +160,7 @@ auto main(int, char *[]) -> int {
                  },
                  next_event.payload);
 
-      event_log.push_back({.text = format_event(next_event)});
+      event_log.push_back(fmt::format("{}", next_event));
       if (event_log.size() > max_log_entries) {
         event_log.erase(event_log.begin());
       }
