@@ -16,7 +16,7 @@
   "runArgs": [
     "--security-opt=seccomp=${localWorkspaceFolder}/.devcontainer/seccomp-personality.json"
   ],
-  "postCreateCommand": "python3 -m venv .conan && ./.conan/bin/python -m pip install black && direnv reload",
+  "postCreateCommand": "python3 -m venv .conan && ./.conan/bin/python -m pip install -r requirements.txt && direnv reload && git config core.hooksPath .githooks",
   "customizations": {
     "vscode": {
       "settings": {

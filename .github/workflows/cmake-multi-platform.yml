@@ -107,7 +107,6 @@ jobs:
           docker tag ghcr.io/${{ env.OWNER_LC }}/jage-ci:latest "${{ steps.image.outputs.image }}"
           docker push "${{ steps.image.outputs.image }}"
 
-  # Determine build matrix based on event type
   setup-matrix:
     runs-on: ubuntu-latest
     outputs:
@@ -131,6 +130,36 @@ jobs:
             {"c_compiler":"clang","build_type":"release","sanitizer":"none","compiler_version":18}
           ]}' | tr -d '\n' >> "$GITHUB_OUTPUT"
 
+  includes-violations:
+    needs: [build-ci-image]
+    if: ${{ needs.build-ci-image.result == 'success' }}
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ needs.build-ci-image.outputs.image }}
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+           python-version: "3.13"
+      - name: Setup virtual environment
+        shell: bash
+        run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+      - name: Check for include violations
+        shell: bash
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          source .venv/bin/activate
+          python3 scripts/check_includes.py pull-request \
+              --start-commitish ${{ github.event.pull_request.base.sha }} \
+              --end-commitish ${{ github.event.pull_request.head.sha }}
+  
   build-and-test:
     needs: [build-ci-image, setup-matrix]
     if: ${{ needs.build-ci-image.result == 'success' }}
@@ -172,18 +201,19 @@ jobs:
       - name: Install Conan
         shell: bash
         run: |
-          python3 -m venv conan
-          source conan/bin/activate
+          python3 -m venv .conan
+          source .conan/bin/activate
           pip install conan
+          pip install -r requirements.txt
       - name: Configure Conan
         shell: bash
         run: |
-          source conan/bin/activate
+          source .conan/bin/activate
           conan install . $JAGE_CI_PROFILES --build=missing
       - name: Configure CMake
         shell: bash
         run: |
-          source conan/bin/activate
+          source .conan/bin/activate
           cmake --preset $JAGE_CI_PRESET
       - name: Build and test
         shell: bash
@@ -243,6 +273,7 @@ jobs:
           python -m venv .conan
           .\.conan\Scripts\Activate.ps1
           pip install conan
+          pip install -r requirements.txt
       - name: Configure Conan
         shell: pwsh
         run: |
@@ -282,18 +313,19 @@ jobs:
       - name: Install Conan
         shell: bash
         run: |
-          python3 -m venv conan
-          source conan/bin/activate
+          python3 -m venv .conan
+          source .conan/bin/activate
           pip install conan
+          pip install -r requirements.txt
       - name: Configure Conan
         shell: bash
         run: |
-          source conan/bin/activate
+          source .conan/bin/activate
           conan install . -pr:a profiles/coverage -pr:a profiles/linux -pr:a profiles/gcc -pr:a profiles/debug --build=missing
       - name: Configure CMake
         shell: bash
         run: |
-          source conan/bin/activate
+          source .conan/bin/activate
           cmake --preset conan-build-linux-gcc-debug
       - name: Build and run coverage
         shell: bash

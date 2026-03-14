@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+python3 "$(git rev-parse --show-toplevel)"/scripts/check_includes.py pre-commit
