@@ -23,6 +23,7 @@ include(coverage)
 
 add_subdirectory(libs)
 add_subdirectory(apps)
+add_subdirectory(scripts)
 
 set(LINK_TARGET_DIR "${CMAKE_SOURCE_DIR}/build")
 

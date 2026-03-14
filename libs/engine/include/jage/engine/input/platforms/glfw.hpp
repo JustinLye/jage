@@ -1,8 +1,8 @@
 #pragma once
 
-#include <jage/engine/external/glfw.hpp>
 #include <jage/engine/input/contexts/glfw.hpp>
 #include <jage/engine/time/durations.hpp>
+#include <jage/interop/glfw_glad.hpp>
 
 #include <jage/engine/time/internal/concepts/real_number_duration.hpp>
 

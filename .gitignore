@@ -10,3 +10,4 @@ journal/*
 !journal/.gitkeep
 .vscode/launch.json
 .claude/**
+__pycache__

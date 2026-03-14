@@ -1,5 +1,4 @@
 #include <jage/engine/containers/spmc/ring_buffer.hpp>
-#include <jage/engine/external/glfw.hpp>
 #include <jage/engine/input/adapters/glfw.hpp>
 #include <jage/engine/input/contexts/glfw.hpp>
 #include <jage/engine/input/event.hpp>
@@ -8,6 +7,7 @@
 #include <jage/engine/time/durations.hpp>
 #include <jage/engine/time/events/snapshot.hpp>
 #include <jage/engine/time/hertz.hpp>
+#include <jage/interop/glfw_glad.hpp>
 #include <jage/stdx/overloaded.hpp>
 
 #include <imgui.h>

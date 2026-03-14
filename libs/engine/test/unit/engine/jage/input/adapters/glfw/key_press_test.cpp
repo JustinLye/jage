@@ -1,10 +1,10 @@
-#include <jage/engine/external/glfw.hpp>
 #include <jage/engine/input/adapters/glfw.hpp>
 #include <jage/engine/input/event.hpp>
 #include <jage/engine/input/keyboard/events/key_press.hpp>
 #include <jage/engine/test/fakes/input/context/glfw.hpp>
 #include <jage/engine/test/fakes/input/platforms/glfw.hpp>
 #include <jage/engine/time/durations.hpp>
+#include <jage/interop/glfw_glad.hpp>
 
 #include <gtest/gtest.h>
 
