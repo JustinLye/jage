@@ -132,7 +132,7 @@ jobs:
 
   includes-violations:
     needs: [build-ci-image]
-    if: ${{ needs.build-ci-image.result == 'success' }}
+    if: ${{ needs.build-ci-image.result == 'success' && github.event_name != 'schedule' }}
     runs-on: ubuntu-latest
     container:
       image: ${{ needs.build-ci-image.outputs.image }}
