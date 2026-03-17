@@ -105,5 +105,45 @@ template <class TContext> struct glfw {
     const auto mode = glfwGetVideoMode(monitor);
     return mode->refreshRate;
   }
+
+  static auto set_swap_interval(const auto interval) -> void {
+    glfwSwapInterval(interval);
+  }
+
+  struct content_scale {
+    float x{};
+    float y{};
+  };
+
+  [[nodiscard]] static auto
+  get_content_scale(window_handle_pointer_type window) -> content_scale {
+    auto scale = content_scale{};
+    glfwGetWindowContentScale(window, &scale.x, &scale.y);
+    return scale;
+  }
+
+  struct framebuffer_size {
+    int width{};
+    int height{};
+  };
+
+  [[nodiscard]] static auto
+  get_framebuffer_size(window_handle_pointer_type window) -> framebuffer_size {
+    auto size = framebuffer_size{};
+    glfwGetFramebufferSize(window, &size.width, &size.height);
+    return size;
+  }
+
+  [[nodiscard]] static auto
+  window_should_close(window_handle_pointer_type window) -> bool {
+    return glfwWindowShouldClose(window);
+  }
+
+  static auto poll_events() -> void { glfwPollEvents(); }
+
+  static auto
+  set_window_should_close(window_handle_pointer_type window) -> void {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
 };
 } // namespace jage::engine::input::platforms

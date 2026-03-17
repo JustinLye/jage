@@ -38,23 +38,69 @@ auto draw_frame_stats_panel(
   ImGui::End();
 }
 
-auto draw_event_log_panel(const std::vector<std::string> &log) -> void {
-  ImGui::Begin("Input Events");
-  ImGui::Text("Events: %zu", log.size());
-  ImGui::Separator();
+class event_log_panel {
+  std::size_t next_write_index_{};
+  std::array<std::optional<std::string>, 500> event_buffer_{};
 
-  if (ImGui::BeginChild("EventScroll", ImVec2(0, 0), ImGuiChildFlags_None,
-                        ImGuiWindowFlags_HorizontalScrollbar)) {
-    for (const auto &entry : log) {
-      ImGui::TextUnformatted(entry.c_str());
-    }
-    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-      ImGui::SetScrollHereY(1.0F);
-    }
+public:
+  auto push_back(const auto event) -> void {
+    event_buffer_[next_write_index_++ % 500] = fmt::format("{}", event);
   }
-  ImGui::EndChild();
-  ImGui::End();
-}
+
+  auto draw() -> void {
+    ImGui::Begin("Input Events");
+    ImGui::Text("Events: %zu", next_write_index_);
+    ImGui::Separator();
+
+    if (ImGui::BeginChild("EventScroll", ImVec2(0, 0), ImGuiChildFlags_None,
+                          ImGuiWindowFlags_HorizontalScrollbar)) {
+      const auto beginning_index =
+          next_write_index_ < 500 ? 0 : next_write_index_;
+      for (auto offset = 0UZ; offset < 500; ++offset) {
+        auto index = (beginning_index + offset) % 500;
+        const auto &entry = event_buffer_[index];
+
+        if (not entry.and_then(
+                [&](const auto &text) -> std::optional<std::string> {
+                  auto line = fmt::format("[{}]: {}", index, text);
+                  ImGui::TextUnformatted(line.c_str());
+                  return text;
+                })) [[unlikely]] {
+          break;
+        }
+      }
+      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+        ImGui::SetScrollHereY(1.0F);
+      }
+    }
+    ImGui::EndChild();
+    ImGui::End();
+  }
+};
+
+static constexpr auto process_input_events = [](auto &read_index,
+                                                const auto &event_buffer,
+                                                auto &platform, auto window,
+                                                auto &event_display_panel) {
+  const auto write_index = event_buffer.write_head();
+  while (read_index < write_index) {
+    auto next_event = event_buffer.read(read_index % event_buffer.capacity());
+    ++read_index;
+    event_display_panel.push_back(next_event);
+
+    std::visit(jage::stdx::overloaded{
+                   [&](const jage::engine::input::keyboard::events::key_press
+                           &key_press) -> void {
+                     if (key_press.scancode ==
+                         jage::engine::input::keyboard::scancode::escape) {
+                       platform.set_window_should_close(window);
+                     }
+                   },
+                   [](const auto &) -> void {},
+               },
+               next_event.payload);
+  }
+};
 
 auto main(int, char *[]) -> int {
   static constexpr auto frame_buffer_size_callback =
@@ -74,23 +120,23 @@ auto main(int, char *[]) -> int {
 
   std::ignore = platform.initialize();
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  platform.set_window_hint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  platform.set_window_hint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  platform.set_window_hint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  const auto monitor = glfwGetPrimaryMonitor();
-  const auto mode = glfwGetVideoMode(monitor);
+  const auto monitor = platform.get_primary_monitor();
+  const auto mode = platform.get_video_mode(monitor);
 
-  glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-  glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-  glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-  glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+  platform.set_window_hint(GLFW_RED_BITS, mode->redBits);
+  platform.set_window_hint(GLFW_GREEN_BITS, mode->greenBits);
+  platform.set_window_hint(GLFW_BLUE_BITS, mode->blueBits);
+  platform.set_window_hint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  auto window = glfwCreateWindow(mode->width, mode->height, "JAGE Editor",
-                                 monitor, nullptr);
+  auto window = platform.create_window(mode->width, mode->height, "JAGE Editor",
+                                       monitor, nullptr);
 
-  glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);
+  platform.set_current_context(window);
+  platform.set_swap_interval(1);
 
   std::ignore =
       gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
@@ -110,9 +156,7 @@ auto main(int, char *[]) -> int {
   auto &io = ImGui::GetIO();
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-  float x_scale = 1.0F;
-  float y_scale = 1.0F;
-  glfwGetWindowContentScale(window, &x_scale, &y_scale);
+  const auto &[x_scale, y_scale] = platform.get_content_scale(window);
   float dpi_scale = std::max(x_scale, y_scale);
   std::println("dpi_scale: {}", dpi_scale);
 
@@ -127,13 +171,11 @@ auto main(int, char *[]) -> int {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init("#version 330");
 
-  auto event_log = std::vector<std::string>{};
-  static constexpr auto max_log_entries = 500UZ;
-
   auto read_index = 0UZ;
+  auto input_events_display_panel = event_log_panel{};
 
-  while (!glfwWindowShouldClose(window)) {
-    glfwPollEvents();
+  while (not platform.window_should_close(window)) {
+    platform.poll_events();
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -141,39 +183,15 @@ auto main(int, char *[]) -> int {
 
     ImGui::DockSpaceOverViewport();
 
-    const auto snap = clock.snapshot();
-    const auto write_index = event_buffer.write_head();
-
-    while (read_index < write_index) {
-      auto next_event = event_buffer.read(read_index % event_buffer.capacity());
-      ++read_index;
-
-      std::visit(jage::stdx::overloaded{
-                     [&](const jage::engine::input::keyboard::events::key_press
-                             &key_press) -> void {
-                       if (key_press.scancode ==
-                           jage::engine::input::keyboard::scancode::escape) {
-                         glfwSetWindowShouldClose(window, GLFW_TRUE);
-                       }
-                     },
-                     [](const auto &) -> void {},
-                 },
-                 next_event.payload);
-
-      event_log.push_back(fmt::format("{}", next_event));
-      if (event_log.size() > max_log_entries) {
-        event_log.erase(event_log.begin());
-      }
-    }
-
-    draw_frame_stats_panel(snap);
-    draw_event_log_panel(event_log);
+    draw_frame_stats_panel(clock.snapshot());
+    process_input_events(read_index, event_buffer, platform, window,
+                         input_events_display_panel);
+    input_events_display_panel.draw();
 
     ImGui::Render();
-    int display_w = 0;
-    int display_h = 0;
-    glfwGetFramebufferSize(window, &display_w, &display_h);
-    glViewport(0, 0, display_w, display_h);
+
+    const auto &[width, height] = platform.get_framebuffer_size(window);
+    glViewport(0, 0, width, height);
     glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

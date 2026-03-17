@@ -11,3 +11,4 @@ journal/*
 .vscode/launch.json
 .claude/**
 __pycache__
+imgui.ini
