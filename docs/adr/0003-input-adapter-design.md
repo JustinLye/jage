@@ -1,6 +1,6 @@
 # ADR-0003: Input Adapter Design
 
-**Status:** Partially Implemented (Keyboard adapter callback phase complete, flush/buffering pending)
+**Status:** Superseded by ADR-0005
 **Date:** 2026-02-04
 **Updated:** 2026-02-14
 **Authors:** Justin Lye, Claude (Opus 4.5)
