@@ -1,0 +1,4 @@
+add_unit_test(TARGET_NAME unique SOURCE_FILES unique_test.cpp)
+add_unit_test(TARGET_NAME contains SOURCE_FILES contains_test.cpp)
+add_unit_test(TARGET_NAME if_then_else SOURCE_FILES if_then_else_test.cpp)
+add_unit_test(TARGET_NAME first_index_of SOURCE_FILES first_index_of_test.cpp)
