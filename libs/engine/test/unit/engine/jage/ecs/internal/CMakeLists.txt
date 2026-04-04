@@ -1,0 +1,1 @@
+add_unit_test(TARGET_NAME ecs-internal-component-id-registry SOURCE_FILES component_id_registry_test.cpp)
