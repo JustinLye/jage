@@ -12,3 +12,4 @@ journal/*
 .claude/**
 __pycache__
 imgui.ini
+.codex

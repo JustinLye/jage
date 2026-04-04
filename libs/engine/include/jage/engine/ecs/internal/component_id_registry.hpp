@@ -41,8 +41,8 @@ template <class... TComponents> struct component_id_registry_impl {
   }
 };
 
-template <template <class...> class TList, class... TComponents>
-struct component_id_registry_impl<TList<TComponents...>>
+template <class... TComponents>
+struct component_id_registry_impl<mp::list<TComponents...>>
     : component_id_registry_impl<TComponents...> {};
 
 template <class... TComponents>

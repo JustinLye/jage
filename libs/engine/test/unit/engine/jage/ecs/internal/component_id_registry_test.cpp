@@ -89,3 +89,14 @@ TEST(component_id_registry_sanitized,
   static_assert(component_id{.value = 1} == registry.get_id<foo>());
   static_assert(component_id{.value = 2} == registry.get_id<baz>());
 }
+
+TEST(component_id_registry_special, should_not_unwrap_templated_types) {
+  using registry_type = component_id_registry<std::tuple<int, bool>>;
+
+  auto registry = registry_type{};
+
+  static_assert(component_id{.value = 1} ==
+                registry_type::invalid_component_id);
+  static_assert(component_id{.value = 0} ==
+                registry.get_id<std::tuple<int, bool>>());
+}
