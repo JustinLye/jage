@@ -1,1 +1,2 @@
+add_unit_test(TARGET_NAME ecs-archetype-signature-test SOURCE_FILES archetype_signature_test.cpp)
 add_subdirectory(internal)
