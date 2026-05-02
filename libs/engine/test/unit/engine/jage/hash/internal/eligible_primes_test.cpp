@@ -9,8 +9,9 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
 
   using jage::engine::hash::internal::eligible_primes;
 
-  static_assert(not eligible_primes<std::array{7UZ}, 7UZ, 14UZ>().has_value());
+  static_assert(std::array<std::uint64_t, 0>{} ==
+                eligible_primes<std::array{7UZ}, 7UZ, 14UZ>());
 
   static_assert(std::array{11UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>().value());
+                eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>());
 }
