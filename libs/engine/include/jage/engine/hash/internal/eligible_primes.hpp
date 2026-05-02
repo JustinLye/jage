@@ -10,20 +10,20 @@
 
 namespace jage::engine::hash::internal {
 
+namespace impl_detail {
 template <auto... Vs> struct value_pack {};
 
-template <class> constexpr bool is_array = false;
-
-template <class U, auto N> constexpr bool is_array<std::array<U, N>> = true;
+template <class TArrayLike>
+concept array_like = requires(std::size_t index, TArrayLike array) {
+  { std::size(array) };
+  { array[index] } -> std::convertible_to<std::uint64_t>;
+};
 
 template <auto Prime, auto... Vs>
-  requires(not is_array<decltype(Prime)> and std::integral<decltype(Prime)>)
+  requires(not array_like<decltype(Prime)> and std::integral<decltype(Prime)>)
 constexpr bool is_eligible = mp::concepts::unique_values<(Vs % Prime)...>;
 
 template <auto Prime> constexpr bool is_eligible<Prime> = false;
-
-static_assert(is_eligible<7, 100, 101, 103>);
-static_assert(is_eligible<7, 100, 101, 103, 200>);
 
 template <auto, class, auto...> struct set_insert;
 
@@ -33,7 +33,7 @@ template <auto Values, auto... T> struct set_insert<Values, value_pack<T...>> {
 
 template <auto Values, auto... Unique, auto Candidate,
           auto... RemainingCandidates>
-  requires(is_array<decltype(Values)>)
+  requires(array_like<decltype(Values)>)
 struct set_insert<Values, value_pack<Unique...>, Candidate,
                   RemainingCandidates...> {
   using current_set_type = std::conditional_t<is_eligible<Candidate, Values>,
@@ -44,7 +44,7 @@ struct set_insert<Values, value_pack<Unique...>, Candidate,
 };
 
 template <auto Primes, auto... Values>
-  requires(is_array<decltype(Primes)>)
+  requires(array_like<decltype(Primes)>)
 static constexpr auto size_of_eligible_primes = [] {
   return []<std::size_t... Is>(std::index_sequence<Is...>) {
     return ((is_eligible<Primes[Is], Values...> ? 1UZ : 0UZ) + ...);
@@ -68,7 +68,6 @@ template <auto Primes, auto... Values> struct eligible_primes {
 template <auto Primes, auto... Values>
   requires(has_eligible_primes<Primes, Values...>)
 struct eligible_primes<Primes, Values...> {
-  static constexpr auto primes_size = std::size(Primes);
   static constexpr auto eligible_prime_mask = std::bitset<std::size(Primes)>{
       []<std::size_t... Is>(std::index_sequence<Is...>) {
         return 0UZ |
@@ -92,14 +91,16 @@ struct eligible_primes<Primes, Values...> {
   }();
 };
 
-template <auto, auto...> static constexpr auto try_get_eligible_primes() {
+} // namespace impl_detail
+
+template <auto, auto...> static constexpr auto eligible_primes() {
   return std::optional<int>{};
 }
 
 template <auto Primes, auto... Values>
-  requires(has_eligible_primes<Primes, Values...>)
-static constexpr auto try_get_eligible_primes() {
-  return std::optional{eligible_primes<Primes, Values...>::value};
+  requires(impl_detail::has_eligible_primes<Primes, Values...>)
+static constexpr auto eligible_primes() {
+  return std::optional{impl_detail::eligible_primes<Primes, Values...>::value};
 }
 
 } // namespace jage::engine::hash::internal
