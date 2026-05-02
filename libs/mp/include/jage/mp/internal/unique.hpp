@@ -1,7 +1,8 @@
 #pragma once
 
 #include <jage/mp/contains.hpp>
-#include <jage/mp/if_then_else.hpp>
+
+#include <type_traits>
 
 namespace jage::mp::internal {
 
@@ -17,8 +18,9 @@ template <template <class...> class TList, class... TUnique, class TCandidate,
 struct set_insert<TList<TUnique...>, TCandidate, TRemainingCandidates...> {
   static constexpr auto candidate_in_set =
       contains<TCandidate, TList<TUnique...>>;
-  using current_set_type = if_then_else<candidate_in_set, TList<TUnique...>,
-                                        TList<TUnique..., TCandidate>>::type;
+  using current_set_type =
+      std::conditional_t<candidate_in_set, TList<TUnique...>,
+                         TList<TUnique..., TCandidate>>;
   using type = set_insert<current_set_type, TRemainingCandidates...>::type;
 };
 
