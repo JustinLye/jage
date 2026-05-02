@@ -11,40 +11,12 @@
 namespace jage::engine::hash::internal {
 
 namespace impl_detail {
-template <auto... Vs> struct value_pack {};
-
-template <class TArrayLike>
-concept array_like = requires(std::size_t index, TArrayLike array) {
-  { std::size(array) };
-  { array[index] } -> std::convertible_to<std::uint64_t>;
-};
-
 template <auto Prime, auto... Vs>
-  requires(not array_like<decltype(Prime)> and std::integral<decltype(Prime)>)
 constexpr bool is_eligible = mp::concepts::unique_values<(Vs % Prime)...>;
 
 template <auto Prime> constexpr bool is_eligible<Prime> = false;
 
-template <auto, class, auto...> struct set_insert;
-
-template <auto Values, auto... T> struct set_insert<Values, value_pack<T...>> {
-  using type = value_pack<T...>;
-};
-
-template <auto Values, auto... Unique, auto Candidate,
-          auto... RemainingCandidates>
-  requires(array_like<decltype(Values)>)
-struct set_insert<Values, value_pack<Unique...>, Candidate,
-                  RemainingCandidates...> {
-  using current_set_type = std::conditional_t<is_eligible<Candidate, Values>,
-                                              value_pack<Unique..., Candidate>,
-                                              value_pack<Unique...>>;
-  using type =
-      set_insert<Values, current_set_type, RemainingCandidates...>::type;
-};
-
 template <auto Primes, auto... Values>
-  requires(array_like<decltype(Primes)>)
 static constexpr auto size_of_eligible_primes = [] {
   return []<std::size_t... Is>(std::index_sequence<Is...>) {
     return ((is_eligible<Primes[Is], Values...> ? 1UZ : 0UZ) + ...);
