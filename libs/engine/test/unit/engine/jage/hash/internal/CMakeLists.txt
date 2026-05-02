@@ -1,0 +1,1 @@
+add_unit_test(TARGET_NAME jage-engine-hash-internal-eligible-primes-test SOURCE_FILES eligible_primes_test.cpp)

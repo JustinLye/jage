@@ -1,6 +1,7 @@
 #pragma once
 
 #include <jage/mp/contains.hpp>
+#include <jage/mp/list.hpp>
 
 #include <type_traits>
 
@@ -24,7 +25,10 @@ struct set_insert<TList<TUnique...>, TCandidate, TRemainingCandidates...> {
   using type = set_insert<current_set_type, TRemainingCandidates...>::type;
 };
 
-template <class, class...> struct unique;
+template <class... Ts> struct unique {
+  using type = set_insert<list<>, Ts...>::type;
+};
+
 template <template <class...> class TList, class... T>
 struct unique<TList<T...>> {
   using type = set_insert<TList<>, T...>::type;

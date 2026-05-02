@@ -23,6 +23,7 @@ TEST(jage_mp_unqiue_test, should_be_unique) {
   static_assert(std::same_as<list<foo, bar, baz>,
                              unique<list<foo, foo, bar, bar, foo, baz, bar, foo,
                                          baz, foo, bar, bar>>::type>);
+  static_assert(std::same_as<list<foo, bar>, unique<foo, bar>::type>);
 
   //   static_assert(std::same_as<list<foo>, unique<list<foo, foo>>::type>);
 }

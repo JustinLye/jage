@@ -2,8 +2,8 @@
 #include <jage/mp/internal/unique.hpp>
 
 namespace jage::mp {
-template <class TList> struct unique {
-  using type = internal::unique<TList>::type;
+template <class... Ts> struct unique {
+  using type = internal::unique<Ts...>::type;
 };
 
 } // namespace jage::mp
