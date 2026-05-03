@@ -11,25 +11,25 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
   using jage::engine::hash::internal::eligible_primes;
 
   static_assert(std::array<std::uint64_t, 0>{} ==
-                eligible_primes<std::array{7UZ}, 7UZ, 14UZ>());
+                eligible_primes<std::array{7UZ}, 7UZ, 14UZ>);
 
   static_assert(std::array<std::uint64_t, 0>{} ==
-                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 5UZ, 5UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 5UZ, 5UZ>);
 
   static_assert(std::array{11UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>());
+                eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>);
 
   static_assert(std::array{13UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 1UZ, 78UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 1UZ, 78UZ>);
 
   static_assert(std::array{11UZ, 13UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7UZ, 14UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7UZ, 14UZ>);
 
   static_assert(std::array{7UZ, 11UZ, 13UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 42UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 42UZ>);
 
   static_assert(std::array<std::uint64_t, 0>{} ==
-                eligible_primes<std::array{7UZ, 11UZ}, 0UZ, 0UZ>());
+                eligible_primes<std::array{7UZ, 11UZ}, 0UZ, 0UZ>);
 }
 
 TEST(jage_engine_hash_internal_eligible_primes_test,
@@ -38,7 +38,7 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
   using jage::engine::hash::internal::eligible_primes;
 
   static_assert(std::array{11UZ, 17UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ, 17UZ}, 7UZ, 14UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 17UZ}, 7UZ, 14UZ>);
 }
 
 TEST(jage_engine_hash_internal_eligible_primes_test,
@@ -46,9 +46,9 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
 
   using jage::engine::hash::internal::eligible_primes;
 
-  static_assert(std::same_as<
-                decltype(eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>()),
-                std::array<std::uint64_t, 1>>);
+  static_assert(
+      std::same_as<decltype(eligible_primes<std::array{7UZ, 11UZ}, 7UZ, 14UZ>),
+                   const std::array<std::uint64_t, 1>>);
 }
 
 TEST(jage_engine_hash_internal_eligible_primes_test,
@@ -57,11 +57,11 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
   using jage::engine::hash::internal::eligible_primes;
 
   static_assert(std::array<std::int32_t, 2>{11, 13} ==
-                eligible_primes<std::array{7, 11, 13}, 7, 14>());
+                eligible_primes<std::array{7, 11, 13}, 7, 14>);
 
   static_assert(
-      std::same_as<decltype(eligible_primes<std::array{7, 11, 13}, 7, 14>()),
-                   std::array<std::int32_t, 2>>);
+      std::same_as<decltype(eligible_primes<std::array{7, 11, 13}, 7, 14>),
+                   const std::array<std::int32_t, 2>>);
 }
 
 TEST(jage_engine_hash_internal_eligible_primes_test,
@@ -70,10 +70,9 @@ TEST(jage_engine_hash_internal_eligible_primes_test,
   using jage::engine::hash::internal::eligible_primes;
 
   static_assert(std::array<std::uint64_t, 2>{11UZ, 13UZ} ==
-                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7, 14UZ>());
+                eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7, 14UZ>);
 
-  static_assert(
-      std::same_as<
-          decltype(eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7, 14UZ>()),
-          std::array<std::uint64_t, 2>>);
+  static_assert(std::same_as<
+                decltype(eligible_primes<std::array{7UZ, 11UZ, 13UZ}, 7, 14UZ>),
+                const std::array<std::uint64_t, 2>>);
 }
